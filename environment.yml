@@ -1,0 +1,24 @@
+name: materialite
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10.12
+  - numpy
+  - pandas
+  - pytest
+  - jupyter
+  - scipy
+  - matplotlib
+  - h5py
+  - pytest-mock
+  - pyvista
+  - jupyter-book
+  - trame
+  - trame-vtk
+  - trame-vuetify
+  - trame-components
+  - vtk
+  - numba
+  - tqdm
+  - cupy
+prefix: ~/.conda/envs/materialite

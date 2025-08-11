@@ -1,0 +1,18 @@
+*.txt
+!tests/*.txt
+*.ph
+*.json
+output
+__pycache__*
+*.vtk
+notebooks
+ut_*
+.ipynb_checkpoints
+*.pkl
+
+# Build artifacts from jupyter book
+docs/_*
+_build/
+_build_*
+.jupyter_cache/
+.virtual_documents*

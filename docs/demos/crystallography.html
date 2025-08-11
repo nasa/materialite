@@ -1,0 +1,881 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Crystallography &#8212; Materialite</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'demos/crystallography';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="IPF Coloring" href="ipf_example.html" />
+    <link rel="prev" title="Tensors" href="tensors.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="Materialite - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="Materialite - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    Materialite (Alpha Release)
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="simple_example.html">Simple Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="material_basics.html">Material Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="material_plot.html">Material Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="material_phase.html">Material Phases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="regional_fields.html">Regional Fields</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Demos</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="tensors.html">Tensors</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Crystallography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ipf_example.html">IPF Coloring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constitutive_models.html">Constitutive Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convolution.html">Convolution Thermal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
+<li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convolution_microstructure.html">AM Microstucture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_making.html">Creating New Models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">Modules</a></li>
+
+
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/nasa/materialite" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/nasa/materialite/edit/main/docs/_sources/demos/crystallography.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/nasa/materialite/issues/new?title=Issue%20on%20page%20%2Fdemos/crystallography.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/demos/crystallography.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Crystallography</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="crystallography">
+<h1>Crystallography<a class="headerlink" href="#crystallography" title="Link to this heading">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">materialite</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Orientation</span><span class="p">,</span>
+    <span class="n">Vector</span><span class="p">,</span>
+    <span class="n">Order4SymmetricTensor</span><span class="p">,</span>
+    <span class="n">SlipSystem</span><span class="p">,</span>
+    <span class="n">add_ipf_colors_field</span><span class="p">,</span>
+    <span class="n">get_ipf</span><span class="p">,</span>
+    <span class="n">import_dream3d</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Import data from DREAM.3D and visualize the grain structure.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_container</span> <span class="o">=</span> <span class="s2">&quot;DataContainers/SyntheticVolumeDataContainer&quot;</span>
+<span class="n">material</span> <span class="o">=</span> <span class="n">import_dream3d</span><span class="p">(</span>
+    <span class="n">file</span><span class="o">=</span><span class="s2">&quot;ipf_example/example_for_ipf_map.dream3d&quot;</span><span class="p">,</span>
+    <span class="n">simpl_geometry_path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_container</span><span class="si">}</span><span class="s2">/_SIMPL_GEOMETRY&quot;</span><span class="p">,</span>
+    <span class="n">region_id_path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_container</span><span class="si">}</span><span class="s2">/EBSD Scan Data/FeatureIds&quot;</span><span class="p">,</span>
+    <span class="n">region_field_paths</span><span class="o">=</span><span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_container</span><span class="si">}</span><span class="s2">/Grain Data/EulerAngles&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;feature_ids&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/c273ef6fd265544a222a5b26eca9a097f71cd0172d874c12c975a2d5aeadfdfa.png" src="../_images/c273ef6fd265544a222a5b26eca9a097f71cd0172d874c12c975a2d5aeadfdfa.png" />
+</div>
+</div>
+<p>Create orientations using the pointwise Euler angles imported from DREAM.3D, and add them as a field to the <code class="docutils literal notranslate"><span class="pre">Material</span></code>. Materialite uses the same Euler angle convention as DREAM.3D, specifically the Bunge Euler angles representing a basis transformation from the specimen reference frame to the crystal reference frame.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eulers</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">([</span><span class="s2">&quot;euler_angles_1&quot;</span><span class="p">,</span> <span class="s2">&quot;euler_angles_2&quot;</span><span class="p">,</span> <span class="s2">&quot;euler_angles_3&quot;</span><span class="p">])</span>
+<span class="n">orientations</span> <span class="o">=</span> <span class="n">Orientation</span><span class="o">.</span><span class="n">from_euler_angles</span><span class="p">(</span><span class="n">eulers</span><span class="p">)</span>
+<span class="n">material</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">create_fields</span><span class="p">({</span><span class="s2">&quot;orientation&quot;</span><span class="p">:</span> <span class="n">orientations</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Use the orientations to compute the maximum Schmid factor at each point, assuming an FCC material (i.e., with the octahedral slip systems) and loading in the specimen “z” direction. We can do this by representing the loading direction within the reference frames of the crystals and using the <code class="docutils literal notranslate"><span class="pre">max_schmid_factor</span></code> method of the slip systems.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loading_direction</span> <span class="o">=</span> <span class="n">Vector</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">slip_systems</span> <span class="o">=</span> <span class="n">SlipSystem</span><span class="o">.</span><span class="n">octahedral</span><span class="p">()</span>
+<span class="n">crystal_loading_directions</span> <span class="o">=</span> <span class="n">loading_direction</span><span class="o">.</span><span class="n">to_crystal_frame</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
+<span class="n">max_schmid_factors</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">max_schmid_factor</span><span class="p">(</span><span class="n">crystal_loading_directions</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We could also calculate the Schmid factors by represent the Schmid tensors in the specimen reference frame. Here, we explicitly do the calculation <span class="math notranslate nohighlight">\(m_{max} = \mathbf{M} : (\mathbf{d} \otimes \mathbf{d})\)</span>, where <span class="math notranslate nohighlight">\(m_{max}\)</span> is the max Schmid factor in a crystal, <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> is the crystal Schmid tensor, and <span class="math notranslate nohighlight">\(\mathbf{d}\)</span> is the loading direction.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specimen_schmid_tensors</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">schmid_tensor</span><span class="o">.</span><span class="n">to_specimen_frame</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
+<span class="n">max_schmid_factors2</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">specimen_schmid_tensors</span> <span class="o">*</span> <span class="n">loading_direction</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">loading_direction</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Verify that the two calculations match.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">max_schmid_factors</span><span class="o">.</span><span class="n">components</span><span class="p">,</span> <span class="n">max_schmid_factors2</span><span class="o">.</span><span class="n">components</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<p>Use the orientations to compute the stiffness in the loading direction at each point.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stiffness_tensor</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_cubic_constants</span><span class="p">(</span><span class="n">C11</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
+<span class="n">directional_moduli</span> <span class="o">=</span> <span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">directional_modulus</span><span class="p">(</span><span class="n">crystal_loading_directions</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Again, we could also do this calculation in the specimen frame instead.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specimen_frame_stiffness_tensors</span> <span class="o">=</span> <span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">to_specimen_frame</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
+<span class="n">directional_moduli2</span> <span class="o">=</span> <span class="n">specimen_frame_stiffness_tensors</span><span class="o">.</span><span class="n">directional_modulus</span><span class="p">(</span>
+    <span class="n">loading_direction</span>
+<span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">directional_moduli</span><span class="o">.</span><span class="n">components</span><span class="p">,</span> <span class="n">directional_moduli2</span><span class="o">.</span><span class="n">components</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<p>Add fields to the material for the max Schmid factor, the directional modulus, and an IPF map with respect to the loading direction. The function <code class="docutils literal notranslate"><span class="pre">add_ipf_colors_field</span></code> requires the name of the field containing the <code class="docutils literal notranslate"><span class="pre">Orientation</span></code> of each point, the loading direction (as a list, numpy array, or Materialite <code class="docutils literal notranslate"><span class="pre">Vector</span></code>), and the type of unit cell (cubic or hexagonal).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">create_fields</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;orientation&quot;</span><span class="p">:</span> <span class="n">orientations</span><span class="p">,</span>
+        <span class="s2">&quot;max_schmid_factor&quot;</span><span class="p">:</span> <span class="n">max_schmid_factors</span><span class="p">,</span>
+        <span class="s2">&quot;directional_modulus&quot;</span><span class="p">:</span> <span class="n">directional_moduli</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">add_ipf_colors_field</span><span class="p">,</span>
+    <span class="n">orientation_label</span><span class="o">=</span><span class="s2">&quot;orientation&quot;</span><span class="p">,</span>
+    <span class="n">specimen_frame_direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
+    <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Plot the new fields that we created. This turns out to be an interesting case since there’s one grain that deviates from the fairly strong texture.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;directional_modulus&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/d249578b288be41fbaf88b4a20ba22ccb16bec9bc39c99db9f0edc31d9c78177.png" src="../_images/d249578b288be41fbaf88b4a20ba22ccb16bec9bc39c99db9f0edc31d9c78177.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;max_schmid_factor&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/8d9fa2f3e183780e3a70fca1e731c94888de7b6fbcc98aee5f80320ab208e353.png" src="../_images/8d9fa2f3e183780e3a70fca1e731c94888de7b6fbcc98aee5f80320ab208e353.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;ipf_color&quot;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;ipf_map&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/ad54c8c3e14dab7e07a90e90dae4e2bb4b48e57b8fab2d82a5d984879dcd7a63.png" src="../_images/ad54c8c3e14dab7e07a90e90dae4e2bb4b48e57b8fab2d82a5d984879dcd7a63.png" />
+</div>
+</div>
+<p>Here is the IPF map legend:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">ipf_legend</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;ipf_example/ipf_map_legend_cubic.png&quot;</span><span class="p">))</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ipf_legend</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.5), np.float64(2693.5), np.float64(2365.5), np.float64(-0.5))
+</pre></div>
+</div>
+<img alt="../_images/ddd85e7a5b9de158072e87b26e6aa8355c844c5def69d2e817f2162a5a1ace3c.png" src="../_images/ddd85e7a5b9de158072e87b26e6aa8355c844c5def69d2e817f2162a5a1ace3c.png" />
+</div>
+</div>
+<p>Make an inverse pole figure on the standard stereographic triangle. The <code class="docutils literal notranslate"><span class="pre">get_ipf</span></code> function takes the same inputs as <code class="docutils literal notranslate"><span class="pre">add_ipf_colors_field</span></code>. It returns the point on the IPF for each point in the <code class="docutils literal notranslate"><span class="pre">Material</span></code> and the boundary of the SST so that we can make a scatterplot of the IPF.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ipf_points</span><span class="p">,</span> <span class="n">ipf_boundary</span> <span class="o">=</span> <span class="n">get_ipf</span><span class="p">(</span>
+    <span class="n">specimen_frame_direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
+    <span class="n">orientations</span><span class="o">=</span><span class="n">orientations</span><span class="p">,</span>
+    <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ipf_boundary</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">ipf_boundary</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;k&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ipf_points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">ipf_points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="c1"># labels for crystal directions:</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+    <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="s2">&quot;$[001]$&quot;</span><span class="p">,</span>
+    <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+    <span class="mf">0.35</span><span class="p">,</span>
+    <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="s2">&quot;$[101]$&quot;</span><span class="p">,</span>
+    <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+    <span class="mf">0.3</span><span class="p">,</span>
+    <span class="mf">0.37</span><span class="p">,</span>
+    <span class="s2">&quot;$[111]$&quot;</span><span class="p">,</span>
+    <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.020710678118654756),
+ np.float64(0.4349242404917498),
+ np.float64(-0.018301270189221935),
+ np.float64(0.38432667397366066))
+</pre></div>
+</div>
+<img alt="../_images/981edf3552b12f532bfa6c38b0f011708be345054a8667b3cf1219cfbbca6be1.png" src="../_images/981edf3552b12f532bfa6c38b0f011708be345054a8667b3cf1219cfbbca6be1.png" />
+</div>
+</div>
+<p>Do the same thing but with a hexagonal unit cell and the basal and prismatic slip systems</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">material</span><span class="o">.</span><span class="n">remove_field</span><span class="p">(</span><span class="s2">&quot;ipf_color&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">remove_field</span><span class="p">(</span><span class="s2">&quot;directional_modulus&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">remove_field</span><span class="p">(</span><span class="s2">&quot;max_schmid_factor&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">slip_systems</span> <span class="o">=</span> <span class="n">SlipSystem</span><span class="o">.</span><span class="n">basal</span><span class="p">()</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">slip_systems</span><span class="o">.</span><span class="n">prismatic</span><span class="p">())</span>
+<span class="n">max_schmid_factors</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">max_schmid_factor</span><span class="p">(</span><span class="n">crystal_loading_directions</span><span class="p">)</span>
+
+<span class="n">stiffness_tensor</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_transverse_isotropic_constants</span><span class="p">(</span>
+    <span class="n">C11</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">C13</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">C33</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="mi">45</span>
+<span class="p">)</span>
+<span class="n">directional_moduli</span> <span class="o">=</span> <span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">directional_modulus</span><span class="p">(</span><span class="n">crystal_loading_directions</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">create_fields</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;max_schmid_factor&quot;</span><span class="p">:</span> <span class="n">max_schmid_factors</span><span class="p">,</span>
+        <span class="s2">&quot;directional_modulus&quot;</span><span class="p">:</span> <span class="n">directional_moduli</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">add_ipf_colors_field</span><span class="p">,</span>
+    <span class="n">orientation_label</span><span class="o">=</span><span class="s2">&quot;orientation&quot;</span><span class="p">,</span>
+    <span class="n">specimen_frame_direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
+    <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;hexagonal&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;directional_modulus&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/6620e0a68d61e7c611ffbea9d682cf74600c89611bd5ba03a88f8117a685063f.png" src="../_images/6620e0a68d61e7c611ffbea9d682cf74600c89611bd5ba03a88f8117a685063f.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;max_schmid_factor&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/30d57d3daccc76d07c9c572b8d46a1919a015030d3f2cc0dda7c6351519d46f0.png" src="../_images/30d57d3daccc76d07c9c572b8d46a1919a015030d3f2cc0dda7c6351519d46f0.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;ipf_color&quot;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;ipf_map&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/67e855fdc961fa86a97b33ee7dfae601cdcdc238e2085cbd5c83c725f7542b46.png" src="../_images/67e855fdc961fa86a97b33ee7dfae601cdcdc238e2085cbd5c83c725f7542b46.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ipf_legend</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;ipf_example/ipf_map_legend_hcp.png&quot;</span><span class="p">))</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ipf_legend</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.5), np.float64(2637.5), np.float64(1565.5), np.float64(-0.5))
+</pre></div>
+</div>
+<img alt="../_images/e58862bfd901d147a3f0f44e31dcaa1abc890c6f37706f087bbcd824ab5a4dca.png" src="../_images/e58862bfd901d147a3f0f44e31dcaa1abc890c6f37706f087bbcd824ab5a4dca.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ipf_points</span><span class="p">,</span> <span class="n">ipf_boundary</span> <span class="o">=</span> <span class="n">get_ipf</span><span class="p">(</span>
+    <span class="n">specimen_frame_direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
+    <span class="n">orientations</span><span class="o">=</span><span class="n">orientations</span><span class="p">,</span>
+    <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;hexagonal&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ipf_boundary</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">ipf_boundary</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;k&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ipf_points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">ipf_points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+    <span class="o">-</span><span class="mf">0.15</span><span class="p">,</span>
+    <span class="o">-</span><span class="mf">0.02</span><span class="p">,</span>
+    <span class="s2">&quot;$[0001]$&quot;</span><span class="p">,</span>
+    <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+    <span class="mf">0.8</span><span class="p">,</span>
+    <span class="o">-</span><span class="mf">0.02</span><span class="p">,</span>
+    <span class="s2">&quot;$[2</span><span class="se">\\</span><span class="s2">bar</span><span class="si">{1}</span><span class="se">\\</span><span class="s2">bar</span><span class="si">{1}</span><span class="s2">0]$&quot;</span><span class="p">,</span>
+    <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+    <span class="mf">0.65</span><span class="p">,</span>
+    <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">&quot;$[10</span><span class="se">\\</span><span class="s2">bar</span><span class="si">{1}</span><span class="s2">0]$&quot;</span><span class="p">,</span>
+    <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.05), np.float64(1.05), np.float64(-0.025), np.float64(0.525))
+</pre></div>
+</div>
+<img alt="../_images/188d177f5e208051b809fd7d5d4a6909348ac1c78400075de83f2c88eae43dcc.png" src="../_images/188d177f5e208051b809fd7d5d4a6909348ac1c78400075de83f2c88eae43dcc.png" />
+</div>
+</div>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./demos"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="tensors.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Tensors</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="ipf_example.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">IPF Coloring</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By NASA
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
