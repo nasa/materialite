@@ -11,7 +11,6 @@ ut_*
 *.pkl
 
 # Build artifacts from jupyter book
-docs/_*
 _build/
 _build_*
 .jupyter_cache/
