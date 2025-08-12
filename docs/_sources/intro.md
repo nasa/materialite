@@ -40,13 +40,16 @@ cd materialite
 # Create and activate conda environment
 conda env create -f environment.yml
 conda activate materialite
+
+# Optional: run the install script to add materialite to PYTHONPATH
+python install.py
 ```
 
 *Future releases will be available on conda-forge and PyPI.*
 
 ## Getting Started
 
-Check out a [Simple Example](demos/simple_example) and the [Material Basics Demo](demos/material_basics) to get started or browse the other demos for examples of common workflows. Additionally, runnable Jupyter notebook source code for all the demos is [here](https://github.com/nasa/materialite/edit/main/docs/_sources/demos).
+Check out a [Simple Example](demos/simple_example) and the [Material Basics Demo](demos/material_basics) to get started or browse the other demos for examples of common workflows. Additionally, runnable Jupyter notebook source code for all the demos is located [here](https://github.com/nasa/materialite/edit/main/docs/_sources/demos).
 
 ## Development Status & Feedback
 
