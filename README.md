@@ -85,7 +85,7 @@ Plot the grain ID values.
 material.plot("grain")
 ```
 
-![png](docs/demos/resources/simple_example_grain.png)
+![png](docs/resources/simple_example_grain.png)
 
 Create a model that will simulate uniaxial tension (`SmallStrainFFT` is an FFT-based full-field mechanical simulation).
 
@@ -111,7 +111,7 @@ Plot the stress field in the loading direction.
 material.plot("stress", component=0)
 ```
 
-![png](docs/demos/resources/simple_example_stress_xx.png)
+![png](docs/resources/simple_example_stress_xx.png)
 
 ## Development Status
 
