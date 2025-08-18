@@ -32,17 +32,22 @@ Documentation, demos, and examples are available at [https://nasa.github.io/mate
 
 > **⚠️ ALPHA RELEASE:** This package is under active development. APIs and interfaces are subject to breaking changes without notice. Not recommended for production use.
 
+*Clone and cd into the repository*
 ```bash
-# Clone the repository
 git clone https://github.com/nasa/materialite.git
+```
+
+```bash
 cd materialite
+```
 
-# Create and activate conda environment
+*Create and activate conda environment*
+```bash
 conda env create -f environment.yml
-conda activate materialite
+```
 
-# Optional: run the install script to add materialite to PYTHONPATH
-python install.py
+```bash
+conda activate materialite
 ```
 
 *Future releases will be available on conda-forge and PyPI.*

@@ -9,6 +9,7 @@ notebooks
 ut_*
 .ipynb_checkpoints
 *.pkl
+*.egg-info
 
 # Build artifacts from jupyter book
 _build/

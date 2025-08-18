@@ -21,4 +21,7 @@ dependencies:
   - numba
   - tqdm
   - cupy
+  - pip
+  - pip:
+    - -e .
 prefix: ~/.conda/envs/materialite
