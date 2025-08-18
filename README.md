@@ -14,7 +14,7 @@ Materialite is a Python package that aims to integrate the fragmented landscape 
 Researchers in computational materials science currently rely on a patchwork of disconnected tools—MATLAB scripts, Fortran codes, C++ solvers, and various Python libraries—that are often not user-friendly and don't communicate well with each other. Entirely written in Python, Materialite provides:
 
 - **Unified data structure** that works across different modeling approaches
-- **Streamlined workflows** from manufacturing processes to microstructure formation to mechanical properties  
+- **Streamlined workflows** from manufacturing processes to microstructure formation to mechanical properties
 - **Simplified interfaces** for complex operations like tensor math and crystallography
 - **Data exchange** with established tools (e.g. DREAM.3D, EVP-FFT)
 
