@@ -10,6 +10,7 @@ ut_*
 .ipynb_checkpoints
 *.pkl
 *.egg-info
+*.DS_Store
 
 # Build artifacts from jupyter book
 _build/
