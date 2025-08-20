@@ -1,3 +1,47 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "materialite"
+version = "0.1.0"
+description = "Streamlined microstructure modeling - A unified Python framework for materials science and mechanics research"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "NASA Langley Research Center"}
+]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "matplotlib",
+    "h5py",
+    "pyvista",
+    "trame",
+    "trame-vtk",
+    "trame-vuetify", 
+    "trame-components",
+    "vtk",
+    "numba",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+gpu = ["cupy"]
+dev = [
+    "pytest",
+    "pytest-mock",
+    "jupyter",
+    "jupyter-book",
+]
+
+[project.urls]
+Homepage = "https://github.com/nasa/materialite"
+Repository = "https://github.com/nasa/materialite"
+Issues = "https://github.com/nasa/materialite/issues"
