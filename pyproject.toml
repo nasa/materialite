@@ -42,6 +42,6 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/nasa/materialite"
+Homepage = "https://nasa.github.io/materialite"
 Repository = "https://github.com/nasa/materialite"
 Issues = "https://github.com/nasa/materialite/issues"
