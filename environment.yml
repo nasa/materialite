@@ -11,7 +11,7 @@ dependencies:
   - matplotlib
   - h5py
   - pytest-mock
-  - pyvista
+  - pyvista>=0.45
   - jupyter-book
   - trame
   - trame-vtk

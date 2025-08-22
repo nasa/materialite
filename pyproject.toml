@@ -22,7 +22,7 @@ dependencies = [
     "scipy",
     "matplotlib",
     "h5py",
-    "pyvista",
+    "pyvista>=0.45",
     "trame",
     "trame-vtk",
     "trame-vuetify", 
