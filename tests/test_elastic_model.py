@@ -106,7 +106,7 @@ def material_with_defect(elastic_model):
     sizes = [3, 3, 3]
     midpoint = sizes[2] / 2
     phases = [1, 2]
-    elastic_models = [elastic_model, Elastic(elastic_model.stiffness / 10**6)]
+    elastic_models = [elastic_model, Elastic(elastic_model.stiffness * 0.0)]
 
     regional_fields = pd.DataFrame(
         columns=["phase", "constitutive_model"],
@@ -168,13 +168,14 @@ def test_stress_bc(material_with_defect):
 
 def test_elasticity_with_defect(material_with_defect):
     # evpfft mean stress norm: 4.472936630
-    expected_mean_stress_norm = 4.520173836
+    expected_mean_stress_norm = 4.547568053
     load_schedule = LoadSchedule.from_constant_uniaxial_strain_rate(direction="z")
     model = SmallStrainFFT(
         load_schedule=load_schedule, end_time=5.0e-5, initial_time_increment=5.0e-5
     )
     material = model(material_with_defect, phase_label="phase")
     mean_stress_norm = material.extract("stress").mean().norm.components
+    print(mean_stress_norm)
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
 
 

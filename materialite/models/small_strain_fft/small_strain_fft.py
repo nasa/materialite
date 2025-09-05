@@ -119,7 +119,7 @@ class SmallStrainFFT(Model):
             MAX_ITERATIONS = 100
             converged = False
             iteration = 0
-            cgtol = 1.0e-3
+            cgtol = 1.0e-2
             all_constit_iters = []
             while not converged:
                 iteration += 1
@@ -169,12 +169,13 @@ class SmallStrainFFT(Model):
                     converged = True
 
                 max_err = np.max([stress_err, strain_err])
-                if max_err < 5.0e-7:
-                    cgtol = 1.0e-12
-                elif max_err < 1.0e-6:
-                    cgtol = 1.0e-9
-                elif max_err < 1.0e-2:
+                max_err = stress_err
+                if max_err < 1.0e-1:
                     cgtol = 1.0e-5
+                elif max_err < 1.0e-5:
+                    cgtol = 1.0e-7
+                elif max_err < 1.0e-7:
+                    cgtol = 1.0e-9
                 else:
                     cgtol = 1.0e-3
 
@@ -250,9 +251,8 @@ class SmallStrainFFT(Model):
             cg_iters += 1
 
         Ax = lambda deps: self._left_hand_side(deps, tangent)
-        deps_vector, _ = sp.cg(
+        deps_vector, _ = sp.minres(
             rtol=cgtol,
-            atol=1.0e-10,
             A=sp.LinearOperator(shape=(ndof, ndof), matvec=Ax, dtype="float"),
             b=b,
             callback=count_iters,
@@ -269,21 +269,53 @@ class SmallStrainFFT(Model):
         qy = fftfreq(Ny)
         qz = fftfreq(Nz)
         frequencies = np.array(np.meshgrid(qx, qy, qz, indexing="ij"))
-        frequency_norms = np.linalg.norm(frequencies, axis=0)
-        normalized_frequencies = np.divide(
-            frequencies,
-            frequency_norms,
-            out=np.zeros_like(frequencies),
-            where=frequency_norms != 0,
+        f = lambda x: 1 + np.exp(2 * np.pi * 1j * x)
+        const = (
+            f(frequencies[0, :, :, :])
+            * f(frequencies[1, :, :, :])
+            * f(frequencies[2, :, :, :])
         )
-        q = normalized_frequencies
-        A = np.einsum("im, jxyz, lxyz -> xyzijlm", np.eye(3), q, q, optimize=True)
-        Ghat4 = 0.5 * (
-            A
-            + np.einsum("xyzijlm -> xyzijml", A, optimize=True)
-            + np.einsum("xyzijlm -> xyzjilm", A, optimize=True)
-            + np.einsum("xyzijlm -> xyzjiml", A, optimize=True)
-        ) - np.einsum("ixyz, jxyz, lxyz, mxyz -> xyzijlm", q, q, q, q, optimize=True)
+        g = lambda x: 1j / 4 * np.tan(np.pi * x) * const
+        rotated_frequencies = np.array(
+            [
+                g(frequencies[0, :, :, :]),
+                g(frequencies[1, :, :, :]),
+                g(frequencies[2, :, :, :]),
+            ]
+        )
+        rotated_frequency_norms = np.linalg.norm(rotated_frequencies, axis=0)
+        normalized_rotated_frequencies = np.divide(
+            rotated_frequencies,
+            rotated_frequency_norms,
+            out=np.zeros_like(rotated_frequencies),
+            where=rotated_frequency_norms != 0,
+        )
+        q = normalized_rotated_frequencies
+        A = np.real(
+            np.einsum(
+                "im, jxyz, lxyz -> xyzijlm", np.eye(3), q, np.conj(q), optimize=True
+            )
+        )
+        B = np.real(
+            np.einsum(
+                "ixyz, jxyz, lxyz, mxyz -> xyzijlm",
+                q,
+                q,
+                np.conj(q),
+                np.conj(q),
+                optimize=True,
+            )
+        )
+        Ghat4 = (
+            0.5
+            * (
+                A
+                + np.einsum("xyzijlm -> xyzijml", A, optimize=True)
+                + np.einsum("xyzijlm -> xyzjilm", A, optimize=True)
+                + np.einsum("xyzijlm -> xyzjiml", A, optimize=True)
+            )
+            - B
+        )
         if Nx % 2 == 0:
             Ghat4[Nx // 2, :, :, :, :, :, :] = 0.0
         if Ny % 2 == 0:

@@ -119,7 +119,7 @@ def load_schedule():
 
 def assign_constitutive_models(material, evp_model):
     phases = [1, 2]
-    pore_model = Elastic(evp_model.stiffness / 10**4)
+    pore_model = Elastic(evp_model.stiffness * 0.0)
     models = [evp_model, pore_model]
     regional_fields = pd.DataFrame({"phase": phases, "constitutive_model": models})
     return material.create_regional_fields("phase", regional_fields)
@@ -129,7 +129,7 @@ def test_evp_with_linear_hardening_defect(
     material_with_defect, evp_linear, load_schedule
 ):
     # evpfft mean stress norm: 354.8037
-    expected_mean_stress_norm = 360.106144
+    expected_mean_stress_norm = 361.276725
     material_linear = assign_constitutive_models(material_with_defect, evp_linear)
 
     model = SmallStrainFFT(
@@ -146,7 +146,7 @@ def test_evp_with_linear_hardening_defect(
 
 def test_evp_with_voce_hardening(material_no_defect, evp_voce, load_schedule):
     # evpfft mean stress norm: 540.14502
-    expected_mean_stress_norm = 540.961606
+    expected_mean_stress_norm = 541.043871
 
     model = SmallStrainFFT(
         load_schedule=load_schedule,
@@ -162,7 +162,7 @@ def test_evp_with_voce_hardening(material_no_defect, evp_voce, load_schedule):
 
 
 def test_evp_with_af_hardening(material_no_defect, evp_af, load_schedule):
-    expected_mean_stress_norm = 539.249832
+    expected_mean_stress_norm = 539.345343
 
     model = SmallStrainFFT(
         load_schedule=load_schedule,
@@ -179,7 +179,7 @@ def test_evp_with_af_hardening(material_no_defect, evp_af, load_schedule):
 
 def test_evp_with_no_hardening(material_no_defect, evp_pp, load_schedule):
     # evpfft mean stress norm: 441.6827
-    expected_mean_stress_norm = 442.562119
+    expected_mean_stress_norm = 442.608112
 
     model = SmallStrainFFT(
         load_schedule=load_schedule,
@@ -196,8 +196,8 @@ def test_evp_with_no_hardening(material_no_defect, evp_pp, load_schedule):
 
 def test_strain_bcs(material_no_defect, evp_pp):
     # evpfft S33: 426.2354431
-    expected_S33 = 426.887462
-    expected_mean_stress_norm = 428.291309
+    expected_S33 = 426.923816
+    expected_mean_stress_norm = 428.328875
     velocity_gradient = Order2SymmetricTensor.from_strain_voigt(
         np.array([-0.35, -0.35, 1.0, 0, 0, 0])
     )
