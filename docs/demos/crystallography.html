@@ -16,33 +16,30 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!--
-    this give us a css class that will be invisible only if js is disabled
-  -->
-  <noscript>
-    <style>
-      .pst-js-only { display: none !important; }
-
-    </style>
-  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
-  <!-- So that users can add custom icons -->
-  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
@@ -69,7 +66,6 @@
     <link rel="prev" title="Tensors" href="tensors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -85,8 +81,19 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <dialog id="pst-search-dialog">
-    
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
 <form class="bd-search d-flex align-items-center"
       action="../search.html"
       method="get">
@@ -94,6 +101,7 @@
   <input type="search"
          class="form-control"
          name="q"
+         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -101,8 +109,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form>
-  </dialog>
+</form></div>
+  </div>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -118,8 +126,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
-      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+      <div class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -149,17 +156,21 @@
     
     
     <img src="../_static/logo.png" class="logo__image only-light" alt="Materialite - Home"/>
-    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="Materialite - Home"/>
+    <script>document.write(`<img src="../_static/logo.png" class="logo__image only-dark" alt="Materialite - Home"/>`);</script>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
- <i class="fa-solid fa-magnifying-glass"></i>
- <span class="search-button__default-text">Search</span>
- <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-</button></div>
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -203,14 +214,9 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
-      <div class="sidebar-primary-item">
-<div id="ethical-ad-placement"
-      class="flat"
-      data-ea-publisher="readthedocs"
-      data-ea-type="readthedocs-sidebar"
-      data-ea-manual="true">
-</div></div>
   </div>
+  
+  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -371,16 +377,24 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
 
 
-<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-</button>
+  </button>
+`);
+</script>
 
 </div></div>
       
@@ -443,7 +457,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/c273ef6fd265544a222a5b26eca9a097f71cd0172d874c12c975a2d5aeadfdfa.png" src="../_images/c273ef6fd265544a222a5b26eca9a097f71cd0172d874c12c975a2d5aeadfdfa.png" />
+<img alt="../_images/741dd31b5d44eaaf4e84e325464b0b77d82f2519865cab40e3e402a77d2860cc.png" src="../_images/741dd31b5d44eaaf4e84e325464b0b77d82f2519865cab40e3e402a77d2860cc.png" />
 </div>
 </div>
 <p>Create orientations using the pointwise Euler angles imported from DREAM.3D, and add them as a field to the <code class="docutils literal notranslate"><span class="pre">Material</span></code>. Materialite uses the same Euler angle convention as DREAM.3D, specifically the Bunge Euler angles representing a basis transformation from the specimen reference frame to the crystal reference frame.</p>
@@ -544,7 +558,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/d249578b288be41fbaf88b4a20ba22ccb16bec9bc39c99db9f0edc31d9c78177.png" src="../_images/d249578b288be41fbaf88b4a20ba22ccb16bec9bc39c99db9f0edc31d9c78177.png" />
+<img alt="../_images/874247c8236112d1889ebf3d78939fc3371ccae32f58d183452392f70718fbe6.png" src="../_images/874247c8236112d1889ebf3d78939fc3371ccae32f58d183452392f70718fbe6.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -554,7 +568,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/8d9fa2f3e183780e3a70fca1e731c94888de7b6fbcc98aee5f80320ab208e353.png" src="../_images/8d9fa2f3e183780e3a70fca1e731c94888de7b6fbcc98aee5f80320ab208e353.png" />
+<img alt="../_images/b338e8c12451ad91c86da1789d7c314ee9430476b7c8fbe13de0f2f0cf2508ee.png" src="../_images/b338e8c12451ad91c86da1789d7c314ee9430476b7c8fbe13de0f2f0cf2508ee.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -564,7 +578,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/ad54c8c3e14dab7e07a90e90dae4e2bb4b48e57b8fab2d82a5d984879dcd7a63.png" src="../_images/ad54c8c3e14dab7e07a90e90dae4e2bb4b48e57b8fab2d82a5d984879dcd7a63.png" />
+<img alt="../_images/bcafe7def1ec1db37534df7e0663e11a27bdcb9a4985741875368ee1faeee546.png" src="../_images/bcafe7def1ec1db37534df7e0663e11a27bdcb9a4985741875368ee1faeee546.png" />
 </div>
 </div>
 <p>Here is the IPF map legend:</p>
@@ -584,7 +598,7 @@
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.5), np.float64(2693.5), np.float64(2365.5), np.float64(-0.5))
 </pre></div>
 </div>
-<img alt="../_images/ddd85e7a5b9de158072e87b26e6aa8355c844c5def69d2e817f2162a5a1ace3c.png" src="../_images/ddd85e7a5b9de158072e87b26e6aa8355c844c5def69d2e817f2162a5a1ace3c.png" />
+<img alt="../_images/323e71607138b41f859688a1d702d59839bdf7e3a60ae2a78702e4d728c0717b.png" src="../_images/323e71607138b41f859688a1d702d59839bdf7e3a60ae2a78702e4d728c0717b.png" />
 </div>
 </div>
 <p>Make an inverse pole figure on the standard stereographic triangle. The <code class="docutils literal notranslate"><span class="pre">get_ipf</span></code> function takes the same inputs as <code class="docutils literal notranslate"><span class="pre">add_ipf_colors_field</span></code>. It returns the point on the IPF for each point in the <code class="docutils literal notranslate"><span class="pre">Material</span></code> and the boundary of the SST so that we can make a scatterplot of the IPF.</p>
@@ -635,7 +649,7 @@
  np.float64(0.38432667397366066))
 </pre></div>
 </div>
-<img alt="../_images/981edf3552b12f532bfa6c38b0f011708be345054a8667b3cf1219cfbbca6be1.png" src="../_images/981edf3552b12f532bfa6c38b0f011708be345054a8667b3cf1219cfbbca6be1.png" />
+<img alt="../_images/c29299aa7a1f8b25667029d595cc7c0a8fd17e548d56a8b1cdb37df451335556.png" src="../_images/c29299aa7a1f8b25667029d595cc7c0a8fd17e548d56a8b1cdb37df451335556.png" />
 </div>
 </div>
 <p>Do the same thing but with a hexagonal unit cell and the basal and prismatic slip systems</p>
@@ -687,7 +701,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/6620e0a68d61e7c611ffbea9d682cf74600c89611bd5ba03a88f8117a685063f.png" src="../_images/6620e0a68d61e7c611ffbea9d682cf74600c89611bd5ba03a88f8117a685063f.png" />
+<img alt="../_images/7091733c7052ef83b89470f4ed606ff0ca1cc7241f01a8ccfddc694ff389c70b.png" src="../_images/7091733c7052ef83b89470f4ed606ff0ca1cc7241f01a8ccfddc694ff389c70b.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -697,7 +711,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/30d57d3daccc76d07c9c572b8d46a1919a015030d3f2cc0dda7c6351519d46f0.png" src="../_images/30d57d3daccc76d07c9c572b8d46a1919a015030d3f2cc0dda7c6351519d46f0.png" />
+<img alt="../_images/6f5b719e658bd70912974ddf8795594eb2e1209e6a377108684bb35a9fb406cf.png" src="../_images/6f5b719e658bd70912974ddf8795594eb2e1209e6a377108684bb35a9fb406cf.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -707,7 +721,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/67e855fdc961fa86a97b33ee7dfae601cdcdc238e2085cbd5c83c725f7542b46.png" src="../_images/67e855fdc961fa86a97b33ee7dfae601cdcdc238e2085cbd5c83c725f7542b46.png" />
+<img alt="../_images/becd276151b09a88e1892405470904c9e55d30000cc8cb22b4915b82a0544b19.png" src="../_images/becd276151b09a88e1892405470904c9e55d30000cc8cb22b4915b82a0544b19.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -723,7 +737,7 @@
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.5), np.float64(2637.5), np.float64(1565.5), np.float64(-0.5))
 </pre></div>
 </div>
-<img alt="../_images/e58862bfd901d147a3f0f44e31dcaa1abc890c6f37706f087bbcd824ab5a4dca.png" src="../_images/e58862bfd901d147a3f0f44e31dcaa1abc890c6f37706f087bbcd824ab5a4dca.png" />
+<img alt="../_images/76c10beb52d1efd256cdf26b80e3220faccddf19f3be9a629f224ab6772d2390.png" src="../_images/76c10beb52d1efd256cdf26b80e3220faccddf19f3be9a629f224ab6772d2390.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -769,7 +783,7 @@
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.05), np.float64(1.05), np.float64(-0.025), np.float64(0.525))
 </pre></div>
 </div>
-<img alt="../_images/188d177f5e208051b809fd7d5d4a6909348ac1c78400075de83f2c88eae43dcc.png" src="../_images/188d177f5e208051b809fd7d5d4a6909348ac1c78400075de83f2c88eae43dcc.png" />
+<img alt="../_images/391e82a9f8a473ddd4ae35faa7c06316315ef668bc2c4e7aaa9b96ac311ba54f.png" src="../_images/391e82a9f8a473ddd4ae35faa7c06316315ef668bc2c4e7aaa9b96ac311ba54f.png" />
 </div>
 </div>
 </section>
@@ -872,8 +886,8 @@ By NASA
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>

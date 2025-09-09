@@ -16,33 +16,30 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!--
-    this give us a css class that will be invisible only if js is disabled
-  -->
-  <noscript>
-    <style>
-      .pst-js-only { display: none !important; }
-
-    </style>
-  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
-  <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
@@ -66,7 +63,6 @@
     <link rel="prev" title="Creating New Models" href="demos/model_making.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -82,8 +78,19 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <dialog id="pst-search-dialog">
-    
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
 <form class="bd-search d-flex align-items-center"
       action="search.html"
       method="get">
@@ -91,6 +98,7 @@
   <input type="search"
          class="form-control"
          name="q"
+         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -98,8 +106,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form>
-  </dialog>
+</form></div>
+  </div>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -115,8 +123,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
-      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+      <div class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -146,17 +153,21 @@
     
     
     <img src="_static/logo.png" class="logo__image only-light" alt="Materialite - Home"/>
-    <img src="_static/logo.png" class="logo__image only-dark pst-js-only" alt="Materialite - Home"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="Materialite - Home"/>`);</script>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
- <i class="fa-solid fa-magnifying-glass"></i>
- <span class="search-button__default-text">Search</span>
- <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-</button></div>
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -200,14 +211,9 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
-      <div class="sidebar-primary-item">
-<div id="ethical-ad-placement"
-      class="flat"
-      data-ea-publisher="readthedocs"
-      data-ea-type="readthedocs-sidebar"
-      data-ea-manual="true">
-</div></div>
   </div>
+  
+  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -368,16 +374,24 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
 
 
-<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-</button>
+  </button>
+`);
+</script>
 <button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
@@ -420,7 +434,6 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_regional_fields"><code class="docutils literal notranslate"><span class="pre">Material.create_regional_fields()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_uniform_field"><code class="docutils literal notranslate"><span class="pre">Material.create_uniform_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_voronoi"><code class="docutils literal notranslate"><span class="pre">Material.create_voronoi()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop"><code class="docutils literal notranslate"><span class="pre">Material.crop()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_id_range"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_id_range()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_range"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_range()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.dimensions"><code class="docutils literal notranslate"><span class="pre">Material.dimensions</span></code></a></li>
@@ -432,17 +445,14 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_region_indices"><code class="docutils literal notranslate"><span class="pre">Material.get_region_indices()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_region_volume_fractions"><code class="docutils literal notranslate"><span class="pre">Material.get_region_volume_fractions()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.insert_feature"><code class="docutils literal notranslate"><span class="pre">Material.insert_feature()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.load"><code class="docutils literal notranslate"><span class="pre">Material.load()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.num_points"><code class="docutils literal notranslate"><span class="pre">Material.num_points</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.origin"><code class="docutils literal notranslate"><span class="pre">Material.origin</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.plot"><code class="docutils literal notranslate"><span class="pre">Material.plot()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.remove_field"><code class="docutils literal notranslate"><span class="pre">Material.remove_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.run"><code class="docutils literal notranslate"><span class="pre">Material.run()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.save"><code class="docutils literal notranslate"><span class="pre">Material.save()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.segment"><code class="docutils literal notranslate"><span class="pre">Material.segment()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.sizes"><code class="docutils literal notranslate"><span class="pre">Material.sizes</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.spacing"><code class="docutils literal notranslate"><span class="pre">Material.spacing</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.subset"><code class="docutils literal notranslate"><span class="pre">Material.subset()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Sphere"><code class="docutils literal notranslate"><span class="pre">Sphere</span></code></a><ul class="nav section-nav flex-column">
@@ -687,7 +697,7 @@ tensorial fields.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.assign_random_orientations">
-<span class="sig-name descname"><span class="pre">assign_random_orientations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region_label='region'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation_label='orientation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x21AEEA40AC0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.assign_random_orientations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.assign_random_orientations" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">assign_random_orientations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region_label='region'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation_label='orientation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x25050E1E880</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.assign_random_orientations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.assign_random_orientations" title="Link to this definition">#</a></dt>
 <dd><p>Assign random crystallographic orientations to regions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -752,7 +762,7 @@ tensorial fields.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.create_random_integer_field">
-<span class="sig-name descname"><span class="pre">create_random_integer_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x21AED366CE0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.create_random_integer_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.create_random_integer_field" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">create_random_integer_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x25050E1CC80</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.create_random_integer_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.create_random_integer_field" title="Link to this definition">#</a></dt>
 <dd><p>Create a field with random integer values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -814,7 +824,7 @@ tensorial fields.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.create_voronoi">
-<span class="sig-name descname"><span class="pre">create_voronoi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_regions=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label='region'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x21AEE92CE40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periodic=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.create_voronoi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.create_voronoi" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">create_voronoi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_regions=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label='region'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x25050E1E7A0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periodic=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.create_voronoi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.create_voronoi" title="Link to this definition">#</a></dt>
 <dd><p>Create Voronoi regions in the material.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -827,23 +837,6 @@ tensorial fields.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>New material with Voronoi regions added.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#materialite.material.Material" title="materialite.material.Material">Material</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="materialite.material.Material.crop">
-<span class="sig-name descname"><span class="pre">crop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points_above</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.crop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.crop" title="Link to this definition">#</a></dt>
-<dd><p>Crop the material by removing points above specified indices.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>points_above</strong> (<em>array-like</em>) – Maximum point indices [x, y, z] to keep.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Cropped material.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#materialite.material.Material" title="materialite.material.Material">Material</a></p>
@@ -1037,23 +1030,6 @@ endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="materialite.material.Material.load">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'material.pkl'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.load" title="Link to this definition">#</a></dt>
-<dd><p>Load a material from a pickle file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em><em>, </em><em>default &quot;material.pkl&quot;</em>) – File path to load from.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Loaded material object.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#materialite.material.Material" title="materialite.material.Material">Material</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="materialite.material.Material.num_points">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_points</span></span><a class="headerlink" href="#materialite.material.Material.num_points" title="Link to this definition">#</a></dt>
@@ -1124,17 +1100,6 @@ endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="materialite.material.Material.save">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'material.pkl'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.save" title="Link to this definition">#</a></dt>
-<dd><p>Save the material fields to a pickle file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em><em>, </em><em>default &quot;material.pkl&quot;</em>) – File path for saving.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.segment">
 <span class="sig-name descname"><span class="pre">segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.segment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.segment" title="Link to this definition">#</a></dt>
 <dd><p>Create a binary segmentation of a field based on a threshold.</p>
@@ -1167,16 +1132,6 @@ endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 <dt class="sig sig-object py" id="materialite.material.Material.spacing">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spacing</span></span><a class="headerlink" href="#materialite.material.Material.spacing" title="Link to this definition">#</a></dt>
 <dd><p>Spacing between points in each direction.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="materialite.material.Material.subset">
-<span class="sig-name descname"><span class="pre">subset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.subset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.subset" title="Link to this definition">#</a></dt>
-<dd><p>Returns a subset of the material that falls within given coordinate ranges.</p>
-<dl class="simple">
-<dt>x_range, y_range, z_range<span class="classifier">tuple (min, max)</span></dt><dd><p>The ranges to select along the x, y, and z axes.</p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1350,7 +1305,7 @@ endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Order2SymmetricTensor.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x21AECEDE420</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2SymmetricTensor.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2SymmetricTensor.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x25050E1E0A0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2SymmetricTensor.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2SymmetricTensor.random" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1441,7 +1396,7 @@ endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Order2Tensor.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x21AECEDE260</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2Tensor.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2Tensor.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x25050E1DEE0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2Tensor.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2Tensor.random" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1653,7 +1608,7 @@ of specimen basis <em>vectors</em> (e_i).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Orientation.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num=100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x21AECEDDC40</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num=100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x25050E1D540</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.random" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1705,7 +1660,7 @@ of specimen basis <em>vectors</em> (e_i).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Scalar.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x21AECEDDE00</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Scalar.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Scalar.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x25050E1DA80</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Scalar.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Scalar.random" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1783,12 +1738,12 @@ of specimen basis <em>vectors</em> (e_i).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Vector.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x21AECEDDFC0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x25050E1DC40</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.random" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Vector.random_unit">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x21AECEDE0A0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.random_unit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.random_unit" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x25050E1DD20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.random_unit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.random_unit" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1901,8 +1856,7 @@ of specimen basis <em>vectors</em> (e_i).</p>
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
-                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
   <div class="sidebar-secondary-item">
@@ -1930,7 +1884,6 @@ of specimen basis <em>vectors</em> (e_i).</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_regional_fields"><code class="docutils literal notranslate"><span class="pre">Material.create_regional_fields()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_uniform_field"><code class="docutils literal notranslate"><span class="pre">Material.create_uniform_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_voronoi"><code class="docutils literal notranslate"><span class="pre">Material.create_voronoi()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop"><code class="docutils literal notranslate"><span class="pre">Material.crop()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_id_range"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_id_range()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_range"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_range()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.dimensions"><code class="docutils literal notranslate"><span class="pre">Material.dimensions</span></code></a></li>
@@ -1942,17 +1895,14 @@ of specimen basis <em>vectors</em> (e_i).</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_region_indices"><code class="docutils literal notranslate"><span class="pre">Material.get_region_indices()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_region_volume_fractions"><code class="docutils literal notranslate"><span class="pre">Material.get_region_volume_fractions()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.insert_feature"><code class="docutils literal notranslate"><span class="pre">Material.insert_feature()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.load"><code class="docutils literal notranslate"><span class="pre">Material.load()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.num_points"><code class="docutils literal notranslate"><span class="pre">Material.num_points</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.origin"><code class="docutils literal notranslate"><span class="pre">Material.origin</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.plot"><code class="docutils literal notranslate"><span class="pre">Material.plot()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.remove_field"><code class="docutils literal notranslate"><span class="pre">Material.remove_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.run"><code class="docutils literal notranslate"><span class="pre">Material.run()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.save"><code class="docutils literal notranslate"><span class="pre">Material.save()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.segment"><code class="docutils literal notranslate"><span class="pre">Material.segment()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.sizes"><code class="docutils literal notranslate"><span class="pre">Material.sizes</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.spacing"><code class="docutils literal notranslate"><span class="pre">Material.spacing</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.subset"><code class="docutils literal notranslate"><span class="pre">Material.subset()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Sphere"><code class="docutils literal notranslate"><span class="pre">Sphere</span></code></a><ul class="nav section-nav flex-column">
@@ -2146,8 +2096,8 @@ By NASA
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>
