@@ -90,7 +90,7 @@ Plot the grain ID values.
 material.plot("grain")
 ```
 
-![png](https://github.com/nasa/materialite/blob/main/docs/resources/simple_example_grain.png)
+![png](https://raw.githubusercontent.com/nasa/materialite/refs/heads/main/docs/resources/simple_example_grain.png)
 
 Create a model that will simulate uniaxial tension (`SmallStrainFFT` is an FFT-based full-field mechanical simulation).
 
@@ -116,7 +116,7 @@ Plot the stress field in the loading direction.
 material.plot("stress", component=0)
 ```
 
-![png](https://github.com/nasa/materialite/blob/main/docs/resources/simple_example_stress_xx.png)
+![png](https://raw.githubusercontent.com/nasa/materialite/refs/heads/main/docs/resources/simple_example_stress_xx.png)
 
 ## Development Status
 
