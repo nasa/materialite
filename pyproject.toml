@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "materialite"
-version = "0.1.1"
+version = "0.1.2"
 description = "Streamlined microstructure modeling - A unified Python framework for materials science and mechanics research"
 readme = "README.md"
 license = {file = "LICENSE"}
