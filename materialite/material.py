@@ -390,6 +390,8 @@ class Material:
         unique_regions = self.fields[region_label].unique()
         num_regions = len(unique_regions)
         orientations = Orientation.random(num=num_regions, rng=rng)
+        if num_regions == 1:
+            orientations = Orientation([orientations.rotation_matrix], dims="p")
         regional_field = {region_label: unique_regions, orientation_label: orientations}
         return self.create_regional_fields(
             region_label,

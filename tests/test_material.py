@@ -653,6 +653,24 @@ def test_assign_random_orientations(small_material, seeded_rng):
     assert_allclose(eulers, expected_eulers)
 
 
+def test_assign_one_random_orientation(small_material, seeded_rng):
+    material = small_material.create_uniform_field("grain", 1)
+    expected_eulers = np.array(
+        [
+            2 * np.pi * 0.22733602,
+            np.arccos(2 * 0.31675834 - 1),
+            2 * np.pi * (0.79736546 - 1),
+        ]
+    )
+    expected_eulers = np.tile(expected_eulers, (material.num_points, 1))
+    eulers = (
+        material.assign_random_orientations(region_label="grain", rng=seeded_rng)
+        .extract("orientation")
+        .euler_angles
+    )
+    assert_allclose(eulers, expected_eulers)
+
+
 # def test_plot_detects_nonnumeric_data(material):
 #     material.create_uniform_field('text', 'text')
 #     with pytest.raises(TypeError):
