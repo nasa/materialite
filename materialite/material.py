@@ -20,10 +20,9 @@ try:
     import pyvista as pv
 except ImportError:
     pv = None
-from scipy import spatial
-
 from materialite.tensor import Order2SymmetricTensor, Orientation, Scalar, Vector
 from materialite.util import cartesian_grid, power_of_two_below, repeat_data
+from scipy import spatial
 
 
 class Material:
@@ -389,7 +388,7 @@ class Material:
         """
         unique_regions = self.fields[region_label].unique()
         num_regions = len(unique_regions)
-        orientations = Orientation.random(num=num_regions, rng=rng)
+        orientations = Orientation.random(num_regions, rng=rng)
         regional_field = {region_label: unique_regions, orientation_label: orientations}
         return self.create_regional_fields(
             region_label,

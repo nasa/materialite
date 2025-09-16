@@ -1,8 +1,9 @@
 import numpy as np
 import pytest  # Includes: tmp_path, mocker
-from materialite import Orientation, Vector
 from numpy import array, pi
 from numpy.testing import assert_allclose, assert_array_equal
+
+from materialite import Orientation, Vector
 
 
 @pytest.fixture
@@ -99,7 +100,7 @@ def test_initialize_with_orientations():
 
 
 def test_get_random_orientation(seeded_rng):
-    orientation = Orientation.random(num=1, rng=seeded_rng)
+    orientation = Orientation.random(1, rng=seeded_rng)
     expected_euler_angles = np.array([1.42839436, 1.94602287, 5.00999493 - 2 * np.pi])
     assert_allclose(orientation.euler_angles, expected_euler_angles)
 
@@ -122,7 +123,7 @@ def test_get_orientations_from_euler_angles_with_s_dimension():
 
 def test_consistent_rotation_matrices_with_extracted_euler_angles(seeded_rng):
     n = 10**3
-    orientations = Orientation.random(num=n, rng=seeded_rng)
+    orientations = Orientation.random(n, rng=seeded_rng)
     expected_rotation_matrices = orientations.rotation_matrix
     euler_angles = orientations.euler_angles
     rotation_matrices = Orientation.from_euler_angles(euler_angles).rotation_matrix
@@ -130,7 +131,7 @@ def test_consistent_rotation_matrices_with_extracted_euler_angles(seeded_rng):
 
 
 def test_get_random_orientations(seeded_rng):
-    orientations = Orientation.random(num=2, rng=seeded_rng)
+    orientations = Orientation.random(2, rng=seeded_rng)
     expected_euler_angles = np.array(
         [[1.42839436, 0.93386543, 2.45741378], [1.99025135, 1.2105451, 2.09113158]]
     )
@@ -239,7 +240,7 @@ def test_compose_orientations_with_burgers_orientation_relationship_s_dimension(
 ):
     euler_angles = [[135.0, 90.0, 324.74]] * 2
     orientation = Orientation.from_euler_angles(euler_angles, in_degrees=True, dims="s")
-    variants = orientation @ cubic_symmetry[:3]
+    variants = (orientation @ cubic_symmetry[:3]).reorder("ps")
     alpha_plane = Vector([0, 0, 1])
     beta_planes = np.array(
         [

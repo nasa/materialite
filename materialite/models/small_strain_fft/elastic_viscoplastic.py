@@ -13,6 +13,7 @@
 import logging
 
 import numpy as np
+
 from materialite import Order2SymmetricTensor, Order4SymmetricTensor, Scalar, Vector
 
 
@@ -63,10 +64,11 @@ class ElasticViscoplastic:
             )
         )
         slip_resistances = (
-            Scalar.zeros((num_points, num_slip_systems)) + self.initial_slip_resistance
+            Scalar.zero().repeat((num_points, num_slip_systems))
+            + self.initial_slip_resistance
         )
-        plastic_strains = Order2SymmetricTensor.zeros(num_points)
-        slip_system_shear_strains = Scalar.zeros((num_points, num_slip_systems))
+        plastic_strains = Order2SymmetricTensor.zero().repeat(num_points)
+        slip_system_shear_strains = Scalar.zero().repeat((num_points, num_slip_systems))
         self.state_variables["orientations"] = orientations
         self.state_variables["stiffnesses"] = self.stiffness
         self.state_variables["schmid_tensors"] = schmid_tensor
@@ -194,7 +196,7 @@ class ElasticViscoplastic:
         prev_stresses = stresses.copy()
 
         # Resolved shear stress
-        resolved_shear_stresses = schmid_tensors * stresses
+        resolved_shear_stresses = stresses * schmid_tensors
 
         # Plastic slip rate
         prefactor = (
@@ -203,6 +205,7 @@ class ElasticViscoplastic:
             ** (self.rate_exponent - 1)
             / slip_resistances
         )
+
         plastic_slip_rates = prefactor * resolved_shear_stresses
 
         # Plastic strain rate
@@ -232,6 +235,7 @@ class ElasticViscoplastic:
         )
         stress_diff = (stresses - prev_stresses).norm
         slip_increments = plastic_slip_rates * time_increment
+
         return (
             stresses,
             stress_diff,

@@ -10,13 +10,12 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
+import string
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from numbers import Number
 
 import numpy as np
-from numpy.linalg import inv
-
 from materialite.basis_operations import (
     mandel_basis,
     mandel_product_basis,
@@ -29,23 +28,28 @@ from materialite.basis_operations import (
     voigt_dual_product_basis,
     voigt_product_basis,
 )
+from numpy.linalg import inv
 
-# dimension descriptions:
-# p: points
-# s: slip systems (or other per-point stuff)
-# i, j: Cartesian indices
-# m, n: Mandel basis indices
 
-DIM_NAMES = {
-    "p": "points",
-    "s": "slip systems",
-    "i": "Cartesian components (i)",
-    "j": "Cartesian components (j)",
-    "m": "Mandel basis components (m)",
-    "n": "Mandel basis components (n)",
-}
-DIM_ORDER = {"p": 1, "s": 2, "i": 3, "j": 4, "m": 3, "n": 4}
-ORDER_FUNC = lambda x: DIM_ORDER[x]
+def DIM_NAMES(dim_char):
+
+    # Predefined dimension names
+    known_dims = {
+        "p": "points",
+        "s": "slip systems",
+        "i": "Cartesian components (i)",
+        "j": "Cartesian components (j)",
+        "m": "Mandel basis components (m)",
+        "n": "Mandel basis components (n)",
+    }
+
+    # Return predefined name if available
+    if dim_char in known_dims:
+        return known_dims[dim_char]
+
+    return dim_char
+
+
 INNER_PRODUCT_INDICES = {
     "j": "j",
     "n": "n",
@@ -56,8 +60,64 @@ INNER_PRODUCT_INDICES = {
 }
 
 
-def order_dims(dims):
-    return "".join(sorted(dims, key=ORDER_FUNC))
+ORDER_FUNC = lambda x: DIM_ORDER[x]
+DIM_ORDER = {"p": 1, "s": 2, "i": 3, "j": 4, "m": 3, "n": 4}
+
+
+def order_dims(left_dims=None, right_dims=None):
+    """
+    Combine two dimension iterables using left-is-always-right precedence.
+
+    The left dimensions maintain their exact order and act as "authorities"
+    that decide where new dimensions from the right should be placed.
+
+    Example: order_dims("ab", "bca") → "cab"
+    - Start with "ab"
+    - Authority 'a' sees 'c' comes before 'a' in "bca", so places 'c' before 'a'
+    """
+
+    # Handle edge cases: if either input is empty, return the other
+    if not right_dims:
+        return left_dims
+    if not left_dims:
+        return right_dims
+
+    # Start with left dimensions as the foundation - they never reorder relatively
+    result = list(left_dims)
+
+    # List of right_dims that are not in left_dims
+    only_right_dims = [dim for dim in right_dims if dim not in left_dims]
+
+    # Add each new "only in right" dimension one at a time in order
+    for new_dim in only_right_dims:
+
+        # Default: place new dimension at the end if no authority has an opinion
+        insert_index = len(result)
+
+        # Ask each left dimension (authority) where this new dimension should go
+        # Authorities are consulted left-to-right (leftmost = highest rank)
+        # Only left_dims that also appear in right_dims can give opinions as authorities
+        # (they need context about the new dimension's index relatively)
+        authority_left_dims = [dim for dim in left_dims if dim in right_dims]
+        for authority_dim in authority_left_dims:
+
+            authority_index = result.index(authority_dim)
+
+            if right_dims.index(new_dim) < right_dims.index(authority_dim):
+                # Authority says: "This dimension comes before me in right_dims,
+                # so place it directly before me in the intermediate result"
+                insert_index = authority_index
+                break  # Highest-ranking authority's "before" decision is final
+            else:
+                # Authority says: "This dimension comes after me in right_dims,
+                # so place it right after me (or further after if other authorities disagree)"
+                insert_index = max(insert_index, authority_index + 1)
+                # Continue asking other authorities - they might push it further right
+
+        # Place the new dimension at the determined index
+        result.insert(insert_index, new_dim)
+
+    return "".join(result)
 
 
 def cartesian_to_reduced(matrices, basis):
@@ -106,332 +166,155 @@ def convert_matrix_basis(matrix, from_basis, to_basis):
 
 def _check_consistent_dims(tensor):
     obj = type(tensor)
-    num_dims = len(tensor.indices_set)
     shape = tensor.components.shape
-    if num_dims != len(shape):
+    if tensor.num_indices != len(shape):
         raise ValueError(
             f"tried to create {obj} with dimensions {tensor.indices_str} but components have shape {shape}"
         )
 
 
-def _check_allowed_dims(dims, allowed_dims):
-    if not dims in allowed_dims:
-        raise ValueError(
-            f"dimensions passed to tensors must be points (p) and/or slip systems (s); provided dimensions were {dims}"
-        )
+def _broadcast_tensor_data(tensor1, tensor2, attr_name="components"):
+    """
+    Broadcast tensor data by aligning dimensions and transposing data as needed.
+
+    This ensures that tensors with different dimension orders (e.g., "ab" vs. "ba")
+    have their data properly aligned so operations work correctly.
+    """
+    # Use left-is-always-right precedence to determine final dimension ordering
+    final_dims = order_dims(tensor1.dims_str, tensor2.dims_str)
+
+    # Extract the data arrays we want to broadcast
+    data1 = getattr(tensor1, attr_name)  # e.g., tensor1.components
+    data2 = getattr(tensor2, attr_name)
+
+    # Transpose data so dimensions are in the same order
+    aligned_data1 = _transpose_to_match_dims(data1, tensor1.dims_str, final_dims)
+    aligned_data2 = _transpose_to_match_dims(data2, tensor2.dims_str, final_dims)
+
+    # Handle missing dimensions and broadcast to compatible shapes
+    result1, result2 = _add_missing_dims_and_broadcast(
+        aligned_data1, aligned_data2, tensor1.dims_str, tensor2.dims_str, final_dims
+    )
+
+    return result1, result2, final_dims
 
 
+def _transpose_to_match_dims(data, current_dims, target_dims):
+    """Transpose data so dimensions align with target order."""
+    if current_dims == target_dims:
+        return data  # No transpose needed
+
+    # Map target dimensions to their current axis positions
+    transpose_axes = [
+        current_dims.index(dim) for dim in target_dims if dim in current_dims
+    ]
+    # Preserve component dimensions at the end (e.g., vector [x,y,z] components)
+    transpose_axes.extend(range(len(current_dims), data.ndim))
+
+    return np.transpose(data, transpose_axes)
+
+
+def _add_missing_dims_and_broadcast(data1, data2, dims1, dims2, final_dims):
+    """Add missing dimensions as size-1 and broadcast to common shape."""
+
+    # Build target shapes for each tensor in the final dimension ordering
+    target_shape1 = []
+    target_shape2 = []
+
+    for i, dim in enumerate(final_dims):
+        if dim in dims1:
+            # Tensor1 has this dimension at position i in aligned data
+            target_shape1.append(data1.shape[i])
+        else:
+            # Tensor1 missing this dimension - add as size-1
+            target_shape1.append(1)
+
+        if dim in dims2:
+            # Tensor2 has this dimension at position i in aligned data
+            target_shape2.append(data2.shape[i])
+        else:
+            # Tensor2 missing this dimension - add as size-1
+            target_shape2.append(1)
+
+    num_dims1 = len([d for d in final_dims if d in dims1])
+    num_dims2 = len([d for d in final_dims if d in dims2])
+
+    comp_shape1 = data1.shape[num_dims1:]
+    comp_shape2 = data2.shape[num_dims2:]
+
+    # Combine batch dimensions with component dimensions
+    full_shape1 = tuple(target_shape1) + comp_shape1
+    full_shape2 = tuple(target_shape2) + comp_shape2
+
+    # Reshape to add missing dimensions and broadcast to common shape
+    reshaped1 = data1.reshape(full_shape1)
+    reshaped2 = data2.reshape(full_shape2)
+
+    # Calculate final broadcast shape (max size for each dimension)
+    final_dims_shape = tuple(
+        max(s1, s2) for s1, s2 in zip(target_shape1, target_shape2)
+    )
+    final_shape1 = final_dims_shape + comp_shape1
+    final_shape2 = final_dims_shape + comp_shape2
+
+    return np.broadcast_to(reshaped1, final_shape1), np.broadcast_to(
+        reshaped2, final_shape2
+    )
+
+
+# Broadcasting wrappers
 def _broadcast_components(tensor1, tensor2):
-    if tensor1.dims_str == "ps" and tensor2.dims_str == "p":
-        components1 = tensor1.components
-        components2 = tensor2.components[:, np.newaxis, ...]
-    elif tensor1.dims_str == "p" and tensor2.dims_str == "ps":
-        components1 = tensor1.components[:, np.newaxis, ...]
-        components2 = tensor2.components
-    else:
-        components1 = tensor1.components
-        components2 = tensor2.components
-    return components1, components2
+    return _broadcast_tensor_data(tensor1, tensor2, "components")
 
 
 def _broadcast_cartesian(tensor1, tensor2):
-    if tensor1.dims_str == "ps" and tensor2.dims_str == "p":
-        components1 = tensor1.cartesian
-        components2 = tensor2.cartesian[:, np.newaxis, ...]
-    elif tensor1.dims_str == "p" and tensor2.dims_str == "ps":
-        components1 = tensor1.cartesian[:, np.newaxis, ...]
-        components2 = tensor2.cartesian
+    return _broadcast_tensor_data(tensor1, tensor2, "cartesian")
+
+
+def _default_dims(num):
+    if num == 0:
+        return ""
+    elif num == 1:
+        return "p"
+    elif num == 2:
+        return "ps"
     else:
-        components1 = tensor1.cartesian
-        components2 = tensor2.cartesian
-    return components1, components2
-
-
-class Orientation:
-    _allowed_dims = ["ps", "p", "s", ""]
-    _dim_lookup = {0: "", 1: "p", 2: "ps"}
-    __array_ufunc__ = None
-
-    def __init__(self, rotation_matrix, dims=None):
-        if isinstance(rotation_matrix, Orientation):
-            self.rotation_matrix = rotation_matrix.rotation_matrix.copy()
-            self.indices_str = rotation_matrix.indices_str
-            self.dims_str = rotation_matrix.dims_str
-            self.indices_set = rotation_matrix.indices_set
-            self.dims_set = rotation_matrix.dims_set
-            return
-        self.rotation_matrix = np.asarray(rotation_matrix)
-        if dims is None:
-            num_indices = len(self.rotation_matrix.shape) - 2
-            dims = self._dim_lookup[num_indices]
-        self.dims_str = dims
-        self.indices_str = dims + "ij"
-        self.dims_set = set(self.dims_str)
-        self.indices_set = set(self.indices_str)
-        _check_allowed_dims(dims, self._allowed_dims)
-        matrix_shape = self.rotation_matrix.shape
-        if len(self.indices_set) != len(matrix_shape):
-            raise ValueError(
-                f"tried to create Orientation with dimensions {self.indices_str} but rotation matrix has shape {matrix_shape}"
-            )
-
-    @property
-    def rotation_matrix_mandel(self):
-        R_mandel = np.zeros((*self.shape, 6, 6))
-        R = self.rotation_matrix
-        r2 = np.sqrt(2)
-        R_mandel[..., :3, :3] = R**2
-        R_mandel[..., 0, 3] = r2 * R[..., 0, 1] * R[..., 0, 2]
-        R_mandel[..., 0, 4] = r2 * R[..., 0, 0] * R[..., 0, 2]
-        R_mandel[..., 0, 5] = r2 * R[..., 0, 0] * R[..., 0, 1]
-        R_mandel[..., 1, 3] = r2 * R[..., 1, 1] * R[..., 1, 2]
-        R_mandel[..., 1, 4] = r2 * R[..., 1, 0] * R[..., 1, 2]
-        R_mandel[..., 1, 5] = r2 * R[..., 1, 0] * R[..., 1, 1]
-        R_mandel[..., 2, 3] = r2 * R[..., 2, 1] * R[..., 2, 2]
-        R_mandel[..., 2, 4] = r2 * R[..., 2, 0] * R[..., 2, 2]
-        R_mandel[..., 2, 5] = r2 * R[..., 2, 0] * R[..., 2, 1]
-        R_mandel[..., 3, 0] = r2 * R[..., 1, 0] * R[..., 2, 0]
-        R_mandel[..., 3, 1] = r2 * R[..., 1, 1] * R[..., 2, 1]
-        R_mandel[..., 3, 2] = r2 * R[..., 1, 2] * R[..., 2, 2]
-        R_mandel[..., 4, 0] = r2 * R[..., 0, 0] * R[..., 2, 0]
-        R_mandel[..., 4, 1] = r2 * R[..., 0, 1] * R[..., 2, 1]
-        R_mandel[..., 4, 2] = r2 * R[..., 0, 2] * R[..., 2, 2]
-        R_mandel[..., 5, 0] = r2 * R[..., 0, 0] * R[..., 1, 0]
-        R_mandel[..., 5, 1] = r2 * R[..., 0, 1] * R[..., 1, 1]
-        R_mandel[..., 5, 2] = r2 * R[..., 0, 2] * R[..., 1, 2]
-        R_mandel[..., 3, 3] = R[..., 1, 1] * R[..., 2, 2] + R[..., 1, 2] * R[..., 2, 1]
-        R_mandel[..., 3, 4] = R[..., 1, 0] * R[..., 2, 2] + R[..., 1, 2] * R[..., 2, 0]
-        R_mandel[..., 3, 5] = R[..., 1, 0] * R[..., 2, 1] + R[..., 1, 1] * R[..., 2, 0]
-        R_mandel[..., 4, 3] = R[..., 0, 1] * R[..., 2, 2] + R[..., 0, 2] * R[..., 2, 1]
-        R_mandel[..., 4, 4] = R[..., 0, 0] * R[..., 2, 2] + R[..., 0, 2] * R[..., 2, 0]
-        R_mandel[..., 4, 5] = R[..., 0, 0] * R[..., 2, 1] + R[..., 0, 1] * R[..., 2, 0]
-        R_mandel[..., 5, 3] = R[..., 0, 1] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 1]
-        R_mandel[..., 5, 4] = R[..., 0, 0] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 0]
-        R_mandel[..., 5, 5] = R[..., 0, 0] * R[..., 1, 1] + R[..., 0, 1] * R[..., 1, 0]
-        return np.squeeze(R_mandel)
-
-    @property
-    def shape(self):
-        num_dims = len(self.dims_set)
-        if num_dims == 0:
-            return ()
-        return self.rotation_matrix.shape[:num_dims]
-
-    def __len__(self):
-        if len(self.dims_set) == 0:
-            return None
-        else:
-            return len(self.rotation_matrix)
-
-    def __iter__(self):
-        return OrientationIterator(self.rotation_matrix)
-
-    def __getitem__(self, slice_):
-        if len(self.dims_str) is None:
-            raise ValueError("can't index")
-        return Orientation(self.rotation_matrix[slice_])
-
-    def __setitem__(self, key, item):
-        if not isinstance(item, Orientation):
-            raise ValueError(f"tried to set Orientation with {type(item)}")
-        self.rotation_matrix[key] = item.rotation_matrix
-
-    @classmethod
-    def identity(cls):
-        return cls(np.eye(3))
-
-    @classmethod
-    def from_miller_indices(cls, plane, direction, dims=None):
-        plane = np.asarray(plane)
-        plane = plane / np.linalg.norm(plane, axis=-1)[..., np.newaxis]
-        direction = np.asarray(direction)
-        direction = direction / np.linalg.norm(direction, axis=-1)[..., np.newaxis]
-        td = np.cross(plane, direction)
-        rotation_matrix = np.array([direction, td, plane])
-        rotation_matrix = np.moveaxis(rotation_matrix, 0, -1)
-        return cls(rotation_matrix, dims)
-
-    @classmethod
-    def from_rotation_matrix(cls, rotation_matrix, dims=None):
-        return cls(rotation_matrix, dims)
-
-    @classmethod
-    def from_euler_angles(cls, euler_angles, in_degrees=False, dims=None):
-        """
-        Bunge Euler Angle Convention
-
-        The rotation matrix R formed from these Euler angles is used to take a vector's
-        components relative to a specimen reference frame (v_i) and transform them to that same
-        vector's components relative to the crystal reference frame (v'_i).
-
-        v'_i = R_ij * v_j
-
-        R can also be used to construct the crystal basis *vectors* (e'_i) as a linear combination
-        of specimen basis *vectors* (e_i).
-
-        e'_i = R_ij * e_j
-
-        R can equivalently be written in terms of dot products of the basis vectors.
-
-        R_ij = e'_i . e_j
-
-        """
-        euler_angles = np.asarray(euler_angles, dtype=np.float64)
-        if in_degrees:
-            euler_angles *= np.pi / 180.0
-
-        z1 = euler_angles[..., 0]
-        x2 = euler_angles[..., 1]
-        z3 = euler_angles[..., 2]
-        c1, c2, c3 = np.cos(z1), np.cos(x2), np.cos(z3)
-        s1, s2, s3 = np.sin(z1), np.sin(x2), np.sin(z3)
-
-        rotation_matrix = np.zeros((*euler_angles.shape[:-1], 3, 3))
-        rotation_matrix[..., 0, 0] = c1 * c3 - c2 * s1 * s3
-        rotation_matrix[..., 0, 1] = c3 * s1 + c1 * c2 * s3
-        rotation_matrix[..., 0, 2] = s2 * s3
-        rotation_matrix[..., 1, 0] = -c1 * s3 - c2 * c3 * s1
-        rotation_matrix[..., 1, 1] = c1 * c2 * c3 - s1 * s3
-        rotation_matrix[..., 1, 2] = c3 * s2
-        rotation_matrix[..., 2, 0] = s1 * s2
-        rotation_matrix[..., 2, 1] = -c1 * s2
-        rotation_matrix[..., 2, 2] = c2
-
-        return cls(np.squeeze(rotation_matrix), dims)
-
-    @classmethod
-    def random(cls, num=100, rng=np.random.default_rng()):
-        z1 = rng.random(num) * 2.0 * np.pi
-        cos_x2 = rng.random(num) * 2.0 - 1.0
-        x2 = np.arccos(cos_x2)
-        z3 = rng.random(num) * 2.0 * np.pi
-        return cls.from_euler_angles(np.c_[z1, x2, z3])
-
-    @classmethod
-    def from_list(cls, orientations):
-        rotation_matrices = [o.rotation_matrix for o in orientations]
-        return cls(rotation_matrices)
-
-    @property
-    def euler_angles(self):
-        # Source: "Euler Angle Formulas", David Eberly
-        R = self.rotation_matrix
-        n = self.shape
-
-        R22_less_than_one = R[..., 2, 2] < 1.0
-        R22_equals_one = np.logical_not(R22_less_than_one)
-
-        R22_greater_than_negative_one = R[..., 2, 2] > -1.0
-        R22_equals_negative_one = np.logical_not(R22_greater_than_negative_one)
-
-        R22_default = np.logical_and(R22_less_than_one, R22_greater_than_negative_one)
-        z1 = np.arctan2(R[..., 2, 0], -R[..., 2, 1])
-        x2 = np.arccos(R[..., 2, 2])
-        z3 = np.arctan2(R[..., 0, 2], R[..., 1, 2])
-        eulers_default = np.moveaxis(np.array([z1, x2, z3]), 0, -1)
-
-        if np.all(R22_default):
-            return np.squeeze(eulers_default)
-
-        eulers_negative_one = np.array(
-            [np.arctan2(R[..., 1, 0], R[..., 0, 0]), np.pi * np.ones(n), np.zeros(n)]
-        )
-        eulers_negative_one = np.moveaxis(eulers_negative_one, 0, -1)
-        eulers_one = np.array(
-            [np.arctan2(-R[..., 1, 0], R[..., 0, 0]), np.zeros(n), np.zeros(n)]
-        )
-        eulers_one = np.moveaxis(eulers_one, 0, -1)
-
-        # Three conditions rolled into a messy operation
-        return np.squeeze(
-            np.einsum("..., ...j -> ...j", R22_default, eulers_default)
-            + np.einsum(
-                "..., ...j -> ...j", R22_equals_negative_one, eulers_negative_one
-            )
-            + np.einsum("..., ...j -> ...j", R22_equals_one, eulers_one)
-        )
-
-    @property
-    def euler_angles_in_degrees(self):
-        return self.euler_angles * 180.0 / np.pi
-
-    @property
-    def trace(self):
-        return Scalar(np.einsum("...ii -> ...", self.rotation_matrix), self.dims_str)
-
-    def __repr__(self):
-        dimensions = ", ".join([DIM_NAMES[i] for i in self.dims_str])
-        return (
-            f"{type(self).__name__}("
-            + str(np.round(self.euler_angles, 3))
-            + f", dims: ({dimensions}), Euler angles shape: {self.euler_angles.shape})"
-        )
-
-    def __matmul__(self, orientation):
-        if not isinstance(orientation, Orientation):
-            return NotImplemented
-        u = order_dims(self.dims_set.union(orientation.dims_set))
-        other_indices = orientation.dims_str + "jk"
-        output_indices = u + "ik"
-        return Orientation(
-            np.einsum(
-                f"{self.indices_str}, {other_indices} -> {output_indices}",
-                self.rotation_matrix,
-                orientation.rotation_matrix,
-                optimize=True,
-            ),
-            u,
-        )
-
-
-class OrientationIterator:
-    def __init__(self, rotation_matrix):
-        self.idx = 0
-        self.rotation_matrix = rotation_matrix
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        self.idx += 1
-        try:
-            return Orientation(self.rotation_matrix[self.idx - 1])
-        except IndexError:
-            self.idx = 0
-            raise StopIteration
+        # For 3+ dimensions, exclude 'p' and 's' from the alphabet
+        available_letters = [
+            c for c in string.ascii_lowercase if c not in DIM_ORDER.keys()
+        ]
+        return "ps" + "".join(available_letters[: num - 2])
 
 
 class Tensor(ABC):
-    _allowed_dims = ["ps", "p", "s", ""]
-    _dim_lookup = {0: "", 1: "p", 2: "ps"}
     __array_ufunc__ = None
 
     def __init__(self, components, dims):
+
+        # If components is already a Tensor, copy it
         if isinstance(components, Tensor):
             self.components = components.components.copy()
             self.indices_str = components.indices_str
             self.dims_str = components.dims_str
-            self.indices_set = components.indices_set
-            self.dims_set = components.dims_set
-            self.axis_dict = components.axis_dict
             return
+
         self.components = np.asarray(components)
+
+        # Choose default dims from components if dims are not provided
         if dims is None:
             num_indices = len(self.components.shape) - self._component_dims
-            dims = self._dim_lookup[num_indices]
+            dims = _default_dims(num_indices)
+
         self.indices_str = dims + self._component_indices
         self.dims_str = dims
-        self.indices_set = set(self.indices_str)
-        self.dims_set = set(dims)
-        self.axis_dict = dict(zip(dims, [0, 1]))
-        _check_allowed_dims(dims, self._allowed_dims)
+
         _check_consistent_dims(self)
 
     def copy(self):
         return deepcopy(self)
 
     def __repr__(self):
-        dimensions = ", ".join([DIM_NAMES[i] for i in self.dims_str])
+        dimensions = ", ".join([DIM_NAMES(i) for i in self.dims_str])
         return (
             f"{type(self).__name__}("
             + str(self.components)
@@ -439,10 +322,9 @@ class Tensor(ABC):
         )
 
     def __len__(self):
-        if len(self.dims_set) == 0:
-            return None
-        else:
-            return len(self.components)
+        if not self.dims_str:
+            raise TypeError(f"{type(self).__name__} with no dimensions has no length")
+        return len(self.components)
 
     def __iter__(self):
         return TensorIterator(self)
@@ -451,69 +333,150 @@ class Tensor(ABC):
         return type(self)(-self.components, self.dims_str)
 
     def __getitem__(self, slice_):
+
         self._check_valid_slice(slice_)
         components = self.components[slice_]
-        num_components = len(components.shape)
-        if num_components == self._component_dims:
-            dims = ""
-        elif num_components == len(self.indices_set):
-            dims = self.dims_str
-        else:
-            dims = (
-                "s"
-                if (isinstance(slice_, Number) or isinstance(slice_[0], Number))
-                else "p"
-            )
+
+        # Figure out which dimensions remain after slicing
+        dims = self._get_remaining_dims(slice_)
+
         return type(self)(components, dims)
 
-    def _check_valid_slice(self, slice_):
-        if len(self.dims_set) == 0:
-            raise ValueError(f"Tried to index {type(self).__name__} with no dimensions")
-        elif (
-            isinstance(slice_, Number)
-            or isinstance(slice_, slice)
-            or isinstance(slice_, list)
-            or isinstance(slice_, np.ndarray)
-        ):
-            return
-        elif len(slice_) > len(self.dims_set):
-            dimensions = ", ".join([DIM_NAMES[i] for i in self.dims_str])
-            raise ValueError(
-                f"Provided {len(slice_)} indices to {type(self).__name__} with dimensions ({dimensions})"
-            )
-        elif slice_[0] == ...:
-            raise ValueError(
-                f"Tried to index {type(self).__name__} with ellipses and an index"
-            )
-        return
+    def _get_remaining_dims(self, slice_):
+        """
+        Determine which dimensions survive the slicing operation.
 
-    def sum(self, dim=None):
-        axis, str_dims = self._dims_for_max_sum_mean(dim, "sum")
-        return type(self)(np.sum(self.components, axis=axis), str_dims)
+        Rules: Integer indices remove dimensions, slices/lists/arrays keep them.
+        """
+        if isinstance(slice_, (int, np.integer)):
+            # Single integer removes the first dimension
+            return self.dims_str[1:]
+        elif isinstance(slice_, slice):
+            # Slice notation (e.g., [:]) keeps all dimensions
+            return self.dims_str
+        elif isinstance(slice_, (list, np.ndarray)):
+            # Fancy indexing keeps the dimension structure
+            return self.dims_str
+        elif isinstance(slice_, tuple):
+            # Multiple indices - check each one individually
+            remaining_dims = []
+            for i, s in enumerate(slice_):
+                if i >= len(self.dims_str):
+                    break  # Don't go beyond our named dimensions
+
+                # Determine if this index removes or keeps the dimension
+                if isinstance(s, (int, np.integer)):
+                    # Integer removes the dimension (skip it)
+                    pass
+                elif isinstance(s, (slice, list, np.ndarray)):
+                    # Slice/fancy indexing keeps the dimension
+                    remaining_dims.append(self.dims_str[i])
+
+            return "".join(remaining_dims)
+        else:
+            # Unknown slice type - assume it keeps dimensions
+            return self.dims_str
+
+    def _check_valid_slice(self, slice_):
+
+        # Tensors with no dimensions can't be indexed
+        if not self.dims_str:
+            raise ValueError(f"Cannot index {type(self).__name__} with no dimensions")
+
+        # Simple slice types are always valid
+        if isinstance(slice_, (Number, slice, list, np.ndarray)):
+            return
+
+        # For tuple slices, check bounds
+        if isinstance(slice_, tuple) and len(slice_) > len(self.dims_str):
+            dims_desc = ", ".join([DIM_NAMES(d) for d in self.dims_str])
+            raise ValueError(
+                f"Provided {len(slice_)} indices to {type(self).__name__} "
+                f"with only {len(self.dims_str)} dimensions ({dims_desc})"
+            )
+
+        # Ellipsis is not supported (would complicate dimension tracking)
+        if slice_ is ...:
+            raise ValueError(
+                f"Ellipsis indexing is not supported for {type(self).__name__}"
+            )
+
+        # Check for ellipsis in tuple slices
+        if isinstance(slice_, tuple):
+            for element in slice_:
+                if element is ...:
+                    raise ValueError(
+                        f"Ellipsis indexing is not supported for {type(self).__name__}"
+                    )
+
+        return
 
     def mean(self, dim=None):
         if dim is None and self.dims_str == "":
             return self
-        axis, str_dims = self._dims_for_max_sum_mean(dim, "mean")
+        axis, str_dims = self._dims_for_reduction(dim, "mean")
         return type(self)(np.mean(self.components, axis=axis), str_dims)
 
-    def _dims_for_max_sum_mean(self, dim, sum_or_mean):
+    def sum(self, dim=None):
+        if dim is None and self.dims_str == "":
+            return self
+        axis, str_dims = self._dims_for_reduction(dim, "sum")
+        return type(self)(np.sum(self.components, axis=axis), str_dims)
+
+    def _dims_for_reduction(self, dim, reduction_type):
         if dim is None:
-            dim = "s" if "s" in self.dims_str else "p"
-        axis = self.axis_dict.get(dim, None)
-        if axis is None:
+            # Default to first dimension if it exists
+            if not self.dims_str:
+                raise ValueError(
+                    f"cannot {reduction_type} over tensor with no dimensions"
+                )
+            dim = self.dims_str[0]
+
+        try:
+            axis = self.dims_str.index(dim)
+        except ValueError:
             raise ValueError(
-                f"tried to take {sum_or_mean} over {dim} dim in {type(self).__name__} with dims {self.dims_str}"
+                f"dimension '{dim}' not found in {type(self).__name__} with dims '{self.dims_str}'"
             )
-        str_dims = order_dims(self.dims_set - {dim})
+
+        str_dims = self.dims_str.replace(dim, "")
         return axis, str_dims
 
     @property
+    def num_dims(self):
+        return len(self.dims_str)
+
+    @property
+    def num_indices(self):
+        return len(self.indices_str)
+
+    @property
     def shape(self):
-        num_dims = len(self.dims_set)
-        if num_dims == 0:
+        if self.num_dims == 0:
             return ()
-        return self.components.shape[:num_dims]
+        return self.components.shape[: self.num_dims]
+
+    def reorder(self, dims):
+
+        # If order is already correct, just return the tensor
+        if dims == self.dims_str:
+            return self
+
+        # Confirm that the new dims are a permutation of the original
+        if set(dims) != set(self.dims_str):
+            raise ValueError(
+                f"New dimension order '{dims}' must contain the same dimensions as "
+                f"the original tensor's '{self.dims_str}'"
+            )
+
+        permutation = [self.dims_str.index(dim) for dim in dims]
+
+        # Add component dimensions to the permutation
+        permutation.extend(range(len(self.dims_str), self.components.ndim))
+
+        new_components = np.transpose(self.components, permutation)
+
+        return type(self)(new_components, dims)
 
     @classmethod
     def from_list(cls, tensor, dims=None):
@@ -531,6 +494,33 @@ class Tensor(ABC):
     @abstractmethod
     def __matmul__(self, *args, **kwargs):
         raise NotImplementedError
+
+    def repeat(self, shape, dims=None):
+
+        # Only allow repeat on tensors with no dimensions
+        if self.dims_str:
+            raise ValueError(
+                f"Cannot repeat {type(self).__name__} that already has dimensions '{self.dims_str}'. "
+                f"Repeat only works on tensors with no existing dimensions."
+            )
+
+        # Check if iterable to allow the user to pass in an int
+        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
+
+        if dims is None:
+            dims = _default_dims(len(shape))
+
+        # Add singleton dimensions at the front
+        expanded = self.components[(np.newaxis,) * len(shape)]
+
+        # Broadcast to final shape
+        final_shape = shape + self.components.shape
+
+        # A copy of the broadcasted array is needed to avoid setitem issues for a view
+        # There are ways to avoid this, but it's the simplest solution
+        repeated_components = np.broadcast_to(expanded, final_shape).copy()
+
+        return type(self)(repeated_components, dims)
 
 
 class TensorIterator:
@@ -558,17 +548,13 @@ class Scalar(Tensor):
         super().__init__(components, dims)
 
     @classmethod
-    def random(cls, num, rng=np.random.default_rng()):
-        components = rng.random(num)
-        return cls(components)
+    def random(cls, shape, rng=np.random.default_rng(), dims=None):
+        components = rng.random(shape)
+        return cls(components, dims)
 
     @classmethod
     def zero(cls):
         return cls(0)
-
-    @classmethod
-    def zeros(cls, shape, dims=None):
-        return cls(np.zeros(shape), dims)
 
     @property
     def abs(self):
@@ -583,7 +569,9 @@ class Scalar(Tensor):
         return Scalar(np.cosh(self.components), self.dims_str)
 
     def max(self, dim=None):
-        axis, str_dims = self._dims_for_max_sum_mean(dim, "max")
+        if dim is None and self.dims_str == "":
+            return self
+        axis, str_dims = self._dims_for_reduction(dim, "max")
         return Scalar(np.max(self.components, axis=axis), str_dims)
 
     def apply(self, function):
@@ -593,7 +581,7 @@ class Scalar(Tensor):
         if isinstance(item, Number):
             self.components[key] = item
         elif not isinstance(item, Scalar):
-            raise ValueError(f"tried to set Scalar with {type(item)}")
+            raise ValueError(f"cannot set Scalar with {type(item)}")
         else:
             self.components[key] = item.components
 
@@ -601,30 +589,23 @@ class Scalar(Tensor):
         if isinstance(tensor, Number):
             return Scalar(self.components**tensor, self.dims_str)
         elif isinstance(tensor, Scalar):
-            components1, components2 = _broadcast_components(self, tensor)
-            return Scalar(components1**components2, self.dims_str)
+            components1, components2, new_dims = _broadcast_components(self, tensor)
+            return Scalar(components1**components2, new_dims)
         return NotImplemented
 
     def __add__(self, tensor):
         if isinstance(tensor, Number):
             return Scalar(self.components + tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
         if isinstance(tensor, Scalar):
-            components1, components2 = _broadcast_components(self, tensor)
-            return Scalar(components1 + components2, dims)
+            components1, components2, new_dims = _broadcast_components(self, tensor)
+            return Scalar(components1 + components2, new_dims)
         return NotImplemented
 
     def __radd__(self, tensor):
         return self.__add__(tensor)
 
     def __sub__(self, tensor):
-        if isinstance(tensor, Number):
-            return Scalar(self.components - tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
-        if isinstance(tensor, Scalar):
-            components1, components2 = _broadcast_components(self, tensor)
-            return Scalar(components1 - components2, dims)
-        return NotImplemented
+        return self + -tensor
 
     def __rsub__(self, tensor):
         return -self + tensor
@@ -633,8 +614,8 @@ class Scalar(Tensor):
         if isinstance(tensor, Number):
             return Scalar(self.components / tensor, self.indices_str)
         elif isinstance(tensor, Scalar):
-            components1, components2 = _broadcast_components(self, tensor)
-            return Scalar(components1 / components2, self.indices_str)
+            components1, components2, new_dims = _broadcast_components(self, tensor)
+            return Scalar(components1 / components2, new_dims)
         return NotImplemented
 
     def __rtruediv__(self, scalar):
@@ -646,9 +627,10 @@ class Scalar(Tensor):
         if isinstance(tensor, Number):
             return Scalar(tensor * self.components, self.indices_str)
 
-        u = order_dims(self.dims_set.union(tensor.dims_set))
+        u = order_dims(self.dims_str, tensor.dims_str)
         output_indices = u + tensor._component_indices
         new_type = type(tensor)
+
         return new_type(
             np.einsum(
                 f"{self.indices_str}, {tensor.indices_str} -> {output_indices}",
@@ -677,25 +659,24 @@ class Vector(Tensor):
         super().__init__(components, dims)
 
     @classmethod
-    def random(cls, num, rng=np.random.default_rng()):
-        components = np.squeeze(rng.random((num, 3)))
-        return cls(components)
+    def random(cls, shape=1, rng=np.random.default_rng(), dims=None):
+        # Check if iterable to allow the user to pass in an int
+        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
+        components = np.squeeze(rng.random((*shape, 3)))
+
+        return cls(components, dims)
 
     @classmethod
-    def random_unit(cls, num=1, rng=np.random.default_rng()):
-        components = np.squeeze(rng.normal(size=(num, 3)))
-        return cls(components).unit
+    def random_unit(cls, shape=1, rng=np.random.default_rng(), dims=None):
+        # Check if iterable to allow the user to pass in an int
+        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
+        components = np.squeeze(rng.normal(size=(*shape, 3)))
+
+        return cls(components, dims).unit
 
     @classmethod
     def zero(cls):
         return cls(np.zeros(3))
-
-    @classmethod
-    def zeros(cls, shape, dims=None):
-        if isinstance(shape, Number):
-            return cls(np.zeros((shape, 3)), dims)
-        else:
-            return cls(np.zeros((*shape, 3)), dims)
 
     @property
     def cartesian(self):
@@ -714,46 +695,49 @@ class Vector(Tensor):
         if isinstance(item, Number):
             self.components[key] = item
         elif not isinstance(item, Vector):
-            raise ValueError(f"tried to set Vector with {type(item)}")
+            raise ValueError(f"cannot set Vector with {type(item)}")
         else:
             self.components[key] = item.components
 
     def __add__(self, tensor):
         if isinstance(tensor, Number):
             return Vector(self.components + tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
         if isinstance(tensor, Vector):
-            components1, components2 = _broadcast_components(self, tensor)
-            return Vector(components1 + components2, dims)
+            components1, components2, new_dims = _broadcast_components(self, tensor)
+            return Vector(components1 + components2, new_dims)
         return NotImplemented
 
     def __sub__(self, tensor):
-        if isinstance(tensor, Number):
-            return Vector(self.components - tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
-        if isinstance(tensor, Vector):
-            components1, components2 = _broadcast_components(self, tensor)
-            return Vector(components1 - components2, dims)
-        return NotImplemented
+        return self + -tensor
 
     def __truediv__(self, tensor):
-        if isinstance(tensor, Scalar):
-            return Vector(
-                self.components / tensor.components[..., np.newaxis],
-                self.dims_str,
-            )
-        elif isinstance(tensor, Number):
+        if isinstance(tensor, Number):
             return Vector(self.components / tensor, self.dims_str)
+        elif isinstance(tensor, Scalar):
+            components1, components2, new_dims = _broadcast_components(self, tensor)
+            return Vector(components1 / components2[..., np.newaxis], new_dims)
         return NotImplemented
 
     def __mul__(self, tensor):
         if isinstance(tensor, Number):
             return Vector(tensor * self.components, self.dims_str)
 
-        u = self.dims_set.union(tensor.dims_set)
+        u = order_dims(self.dims_str, tensor.dims_str)
+
+        if isinstance(tensor, Scalar):
+            output_indices = u + self._component_indices
+            return Scalar(
+                np.einsum(
+                    f"{self.indices_str}, {tensor.indices_str} -> {output_indices}",
+                    self.components,
+                    tensor.components,
+                    optimize=True,
+                ),
+                u,
+            )
 
         if isinstance(tensor, Vector):
-            output_indices = order_dims(u)
+            output_indices = u
             return Scalar(
                 np.einsum(
                     f"{self.indices_str}, {tensor.indices_str} -> {output_indices}",
@@ -778,7 +762,7 @@ class Vector(Tensor):
                 f"tried to do outer product of Vector with {type(tensor).__name__}"
             )
         self_dims = self.dims_str + "i"
-        output_indices = order_dims(self.dims_set.union(tensor.dims_set)) + "ij"
+        output_indices = order_dims(self.dims_str, tensor.dims_str) + "ij"
         return Order2Tensor(
             np.einsum(
                 f"{self_dims}, {tensor.indices_str} -> {output_indices}",
@@ -812,7 +796,7 @@ class Vector(Tensor):
         return Vector(components, output_dims)
 
     def _get_transformation_indices(self, orientations):
-        output_dims = order_dims(self.dims_set.union(orientations.dims_set))
+        output_dims = order_dims(self.dims_str, orientations.dims_str)
         output_indices = output_dims + "m"
         return output_dims, output_indices
 
@@ -835,20 +819,15 @@ class Order2Tensor(Tensor):
         return cls(np.zeros((3, 3)))
 
     @classmethod
-    def zeros(cls, shape, dims=None):
-        if isinstance(shape, Number):
-            return cls(np.zeros((shape, 3, 3)), dims)
-        else:
-            return cls(np.zeros((*shape, 3, 3)), dims)
-
-    @classmethod
-    def random(cls, num, rng=np.random.default_rng()):
-        components = np.squeeze(rng.random((num, 3, 3)))
-        return cls(components)
+    def random(cls, shape=1, rng=np.random.default_rng(), dims=None):
+        # Check if iterable to allow the user to pass in an int
+        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
+        components = np.squeeze(rng.random((*shape, 3, 3)))
+        return cls(components, dims)
 
     @classmethod
     def from_tensor_product(cls, vector1, vector2):
-        dims = order_dims(vector1.dims_set.union(vector2.dims_set))
+        dims = order_dims(vector1.dims_str, vector2.dims_str)
         op = np.einsum(
             f"{vector1.dims_str + 'i'}, {vector2.dims_str + 'j'} -> {dims + 'ij'}",
             vector1.components,
@@ -880,7 +859,7 @@ class Order2Tensor(Tensor):
     @property
     def sym(self):
         return Order2SymmetricTensor.from_cartesian(
-            0.5 * (self.components + self.T.components), self.dims_str
+            0.5 * (self + self.T).components, self.dims_str
         )
 
     @property
@@ -908,30 +887,23 @@ class Order2Tensor(Tensor):
     def __add__(self, tensor):
         if isinstance(tensor, Number):
             return Order2Tensor(self.components + tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
         if isinstance(tensor, Order2Tensor) or isinstance(
             tensor, Order2SymmetricTensor
         ):
-            components1, components2 = _broadcast_cartesian(self, tensor)
-            return Order2Tensor(components1 + components2, dims)
+            components1, components2, new_dims = _broadcast_cartesian(self, tensor)
+            return Order2Tensor(components1 + components2, new_dims)
         return NotImplemented
 
     def __sub__(self, tensor):
-        if isinstance(tensor, Number):
-            return Order2Tensor(self.components - tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
-        if isinstance(tensor, Order2Tensor) or isinstance(
-            tensor, Order2SymmetricTensor
-        ):
-            components1, components2 = _broadcast_cartesian(self, tensor)
-            return Order2Tensor(components1 - components2, dims)
-        return NotImplemented
+        return self + -tensor
 
     def __truediv__(self, tensor):
         if isinstance(tensor, Scalar):
+            # Broadcast components
+            components1, components2, new_dims = _broadcast_components(self, tensor)
             return Order2Tensor(
-                self.components / tensor.components[..., np.newaxis, np.newaxis],
-                self.dims_str,
+                components1 / components2[..., np.newaxis, np.newaxis],
+                new_dims,
             )
         elif isinstance(tensor, Number):
             return Order2Tensor(self.components / tensor, self.dims_str)
@@ -941,7 +913,7 @@ class Order2Tensor(Tensor):
         if isinstance(tensor, Number):
             return Order2Tensor(tensor * self.components, self.dims_str)
 
-        output_indices = order_dims(self.dims_set.union(tensor.dims_set))
+        output_indices = order_dims(self.dims_str, tensor.dims_str)
         other_indices = self._mul_lookup.get(tensor._component_indices)
         if other_indices is None:
             return NotImplemented
@@ -959,7 +931,7 @@ class Order2Tensor(Tensor):
         return self.__mul__(tensor)
 
     def __matmul__(self, tensor):
-        u = order_dims(self.dims_set.union(tensor.dims_set))
+        u = order_dims(self.dims_str, tensor.dims_str)
         other_indices, output_indices = self._matmul_lookup.get(
             tensor._component_indices
         )
@@ -1005,7 +977,7 @@ class Order2Tensor(Tensor):
         return Order2Tensor(components, output_dims)
 
     def _get_transformation_indices(self, orientations):
-        output_dims = order_dims(self.dims_set.union(orientations.dims_set))
+        output_dims = order_dims(self.dims_str, orientations.dims_str)
         output_indices = output_dims + "mn"
         return output_dims, output_indices
 
@@ -1029,16 +1001,12 @@ class Order2SymmetricTensor(Tensor):
         return cls(np.zeros(6))
 
     @classmethod
-    def zeros(cls, shape, dims=None):
-        if isinstance(shape, Number):
-            return cls(np.zeros((shape, 6)), dims)
-        else:
-            return cls(np.zeros((*shape, 6)), dims)
+    def random(cls, shape=1, rng=np.random.default_rng(), dims=None):
+        # Check if iterable to allow the user to pass in an int
+        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
+        components = np.squeeze(rng.random((*shape, 6)))
 
-    @classmethod
-    def random(cls, num, rng=np.random.default_rng()):
-        components = np.squeeze(rng.random((num, 6)))
-        return cls(components)
+        return cls(components, dims)
 
     @classmethod
     def from_tensor_product(cls, vector1, vector2):
@@ -1143,32 +1111,24 @@ class Order2SymmetricTensor(Tensor):
     def __add__(self, tensor):
         if isinstance(tensor, Number):
             return Order2SymmetricTensor(self.components + tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
         if isinstance(tensor, Order2Tensor):
-            components1, components2 = _broadcast_cartesian(self, tensor)
-            return Order2Tensor(components1 + components2, dims)
+            components1, components2, new_dims = _broadcast_cartesian(self, tensor)
+            return Order2Tensor(components1 + components2, new_dims)
         elif isinstance(tensor, Order2SymmetricTensor):
-            components1, components2 = _broadcast_components(self, tensor)
-            return Order2SymmetricTensor(components1 + components2, dims)
+            components1, components2, new_dims = _broadcast_components(self, tensor)
+            return Order2SymmetricTensor(components1 + components2, new_dims)
         return NotImplemented
 
     def __sub__(self, tensor):
-        if isinstance(tensor, Number):
-            return Order2SymmetricTensor(self.components - tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
-        if isinstance(tensor, Order2Tensor):
-            components1, components2 = _broadcast_cartesian(self, tensor)
-            return Order2Tensor(components1 - components2, dims)
-        elif isinstance(tensor, Order2SymmetricTensor):
-            components1, components2 = _broadcast_components(self, tensor)
-            return Order2SymmetricTensor(components1 - components2, dims)
-        return NotImplemented
+        return self + -tensor
 
     def __truediv__(self, tensor):
         if isinstance(tensor, Scalar):
+            # Broadcast components
+            components1, components2, new_dims = _broadcast_components(self, tensor)
             return Order2SymmetricTensor(
-                self.components / tensor.components[..., np.newaxis],
-                self.dims_str,
+                components1 / components2[..., np.newaxis],
+                new_dims,
             )
         elif isinstance(tensor, Number):
             return Order2SymmetricTensor(self.components / tensor, self.dims_str)
@@ -1178,7 +1138,7 @@ class Order2SymmetricTensor(Tensor):
         if isinstance(tensor, Number):
             return Order2SymmetricTensor(tensor * self.components, self.dims_str)
 
-        output_indices = order_dims(self.dims_set.union(tensor.dims_set))
+        output_indices = order_dims(self.dims_str, tensor.dims_str)
         indices = self._mul_lookup.get(tensor._component_indices)
         if indices is None:
             return NotImplemented
@@ -1201,7 +1161,7 @@ class Order2SymmetricTensor(Tensor):
         return self.__mul__(tensor)
 
     def __matmul__(self, tensor):
-        u = order_dims(self.dims_set.union(tensor.dims_set))
+        u = order_dims(self.dims_str, tensor.dims_str)
         other_indices, output_indices = self._matmul_lookup.get(
             tensor._component_indices
         )
@@ -1230,7 +1190,7 @@ class Order2SymmetricTensor(Tensor):
                 f"tried to do outer product of Order2SymmetricTensor with {type(tensor).__name__}"
             )
         self_dims = self.dims_str + "m"
-        output_indices = order_dims(self.dims_set.union(tensor.dims_set)) + "mn"
+        output_indices = order_dims(self.dims_str, tensor.dims_str) + "mn"
         return Order4SymmetricTensor(
             np.einsum(
                 f"{self_dims}, {tensor.indices_str} -> {output_indices}",
@@ -1272,7 +1232,7 @@ class Order2SymmetricTensor(Tensor):
         return Order2SymmetricTensor.from_cartesian(components, output_dims)
 
     def _get_transformation_indices(self, orientations):
-        output_dims = order_dims(self.dims_set.union(orientations.dims_set))
+        output_dims = order_dims(self.dims_str, orientations.dims_str)
         output_indices = output_dims + "mn"
         self_indices = self.dims_str + "ij"
         return output_dims, output_indices, self_indices
@@ -1299,13 +1259,6 @@ class Order4SymmetricTensor(Tensor):
     @classmethod
     def zero(cls):
         return cls(np.zeros((6, 6)))
-
-    @classmethod
-    def zeros(cls, shape, dims=None):
-        if isinstance(shape, Number):
-            return cls(np.zeros((shape, 6, 6)), dims)
-        else:
-            return cls(np.zeros((*shape, 6, 6)), dims)
 
     @classmethod
     def from_voigt(cls, matrix, dims=None):
@@ -1409,18 +1362,13 @@ class Order4SymmetricTensor(Tensor):
     def __add__(self, tensor):
         if isinstance(tensor, Number):
             return Order4SymmetricTensor(self.components + tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
         if isinstance(tensor, Order4SymmetricTensor):
+            dims = order_dims(self.dims_str, tensor.dims_str)
             return Order4SymmetricTensor(self.components + tensor.components, dims)
         return NotImplemented
 
     def __sub__(self, tensor):
-        if isinstance(tensor, Number):
-            return Order4SymmetricTensor(self.components - tensor, self.dims_str)
-        dims = order_dims(self.dims_set.union(tensor.dims_set))
-        if isinstance(tensor, Order4SymmetricTensor):
-            return Order4SymmetricTensor(self.components - tensor.components, dims)
-        return NotImplemented
+        return self + -tensor
 
     def __truediv__(self, scalar):
         if isinstance(scalar, Number):
@@ -1431,7 +1379,7 @@ class Order4SymmetricTensor(Tensor):
         if isinstance(tensor, Number):
             return Order4SymmetricTensor(tensor * self.components, self.dims_str)
 
-        output_indices = order_dims(self.dims_set.union(tensor.dims_set))
+        output_indices = order_dims(self.dims_str, tensor.dims_str)
         indices = self._mul_lookup.get(tensor._component_indices)
         if indices is None:
             return NotImplemented
@@ -1441,6 +1389,7 @@ class Order4SymmetricTensor(Tensor):
                 f"{self.indices_str}, {other_indices} -> {output_indices}",
                 self.components,
                 tensor.components,
+                optimize=True,
             ),
             output_indices,
         )
@@ -1449,7 +1398,7 @@ class Order4SymmetricTensor(Tensor):
         return self.__mul__(tensor)
 
     def __matmul__(self, tensor):
-        u = order_dims(self.dims_set.union(tensor.dims_set))
+        u = order_dims(self.dims_str, tensor.dims_str)
         self_indices, other_indices, output_indices, output_type = (
             self._matmul_lookup.get(tensor._component_indices, [None] * 4)
         )
@@ -1477,18 +1426,18 @@ class Order4SymmetricTensor(Tensor):
         return Scalar(np.sqrt(components), self.dims_str)
 
     def directional_modulus(self, direction):
-        direction = direction / direction.norm
+        direction = direction.unit
         direction_tensor = direction.outer(direction).sym
         return 1.0 / (direction_tensor * (self.inv @ direction_tensor))
 
     def directional_bulk_modulus(self, direction):
-        direction = direction / direction.norm
+        direction = direction.unit
         direction_tensor = direction.outer(direction).sym
         return 1.0 / (3 * (self.inv @ direction_tensor).trace)
 
     def directional_shear_modulus(self, normal, direction):
-        direction = direction / direction.norm
-        normal = normal / normal.norm
+        direction = direction.unit
+        normal = normal.unit
         if not np.allclose((direction * normal).components, 0.0):
             raise ValueError(
                 "tried to get directional shear moduli with directions that are not perpendicular"
@@ -1497,8 +1446,8 @@ class Order4SymmetricTensor(Tensor):
         return 1.0 / (4.0 * (direction_tensor * (self.inv @ direction_tensor)))
 
     def directional_poissons_ratio(self, transverse_direction, axial_direction):
-        axial = axial_direction / axial_direction.norm
-        transverse = transverse_direction / transverse_direction.norm
+        axial = axial_direction.unit
+        transverse = transverse_direction.unit
         axial_tensor = axial.outer(axial).sym
         transverse_tensor = transverse.outer(transverse).sym
         if not np.allclose((axial * transverse).components, 0.0):
@@ -1542,16 +1491,291 @@ class Order4SymmetricTensor(Tensor):
         return Order4SymmetricTensor(components, output_dims)
 
     def _get_transformation_indices(self, orientations):
-        output_dims = order_dims(self.dims_set.union(orientations.dims_set))
+        output_dims = order_dims(self.dims_str, orientations.dims_str)
         output_indices = output_dims + "ab"
         self_indices = self.dims_str + "ij"
         return output_dims, output_indices, self_indices
 
-    def repeat(self, num_points):
-        if "p" in self.indices_set:
+
+class Orientation:
+    __array_ufunc__ = None
+
+    def __init__(self, rotation_matrix, dims=None):
+        if isinstance(rotation_matrix, Orientation):
+            self.rotation_matrix = rotation_matrix.rotation_matrix.copy()
+            self.indices_str = rotation_matrix.indices_str
+            self.dims_str = rotation_matrix.dims_str
+            return
+        self.rotation_matrix = np.asarray(rotation_matrix)
+        if dims is None:
+            num_indices = len(self.rotation_matrix.shape) - 2
+            dims = _default_dims(num_indices)
+        self.dims_str = dims
+        self.indices_str = dims + "ij"
+        matrix_shape = self.rotation_matrix.shape
+        if self.num_indices != len(matrix_shape):
             raise ValueError(
-                "cannot repeat Order4SymmetricTensor that already has points dimension"
+                f"tried to create Orientation with dimensions {self.indices_str} but rotation matrix has shape {matrix_shape}"
             )
-        num_dims = len(self.indices_set)
-        components = np.tile(self.components, [num_points] + [1] * num_dims)
-        return Order4SymmetricTensor(components, "p")
+
+    @property
+    def rotation_matrix_mandel(self):
+        R_mandel = np.zeros((*self.shape, 6, 6))
+        R = self.rotation_matrix
+        r2 = np.sqrt(2)
+        R_mandel[..., :3, :3] = R**2
+        R_mandel[..., 0, 3] = r2 * R[..., 0, 1] * R[..., 0, 2]
+        R_mandel[..., 0, 4] = r2 * R[..., 0, 0] * R[..., 0, 2]
+        R_mandel[..., 0, 5] = r2 * R[..., 0, 0] * R[..., 0, 1]
+        R_mandel[..., 1, 3] = r2 * R[..., 1, 1] * R[..., 1, 2]
+        R_mandel[..., 1, 4] = r2 * R[..., 1, 0] * R[..., 1, 2]
+        R_mandel[..., 1, 5] = r2 * R[..., 1, 0] * R[..., 1, 1]
+        R_mandel[..., 2, 3] = r2 * R[..., 2, 1] * R[..., 2, 2]
+        R_mandel[..., 2, 4] = r2 * R[..., 2, 0] * R[..., 2, 2]
+        R_mandel[..., 2, 5] = r2 * R[..., 2, 0] * R[..., 2, 1]
+        R_mandel[..., 3, 0] = r2 * R[..., 1, 0] * R[..., 2, 0]
+        R_mandel[..., 3, 1] = r2 * R[..., 1, 1] * R[..., 2, 1]
+        R_mandel[..., 3, 2] = r2 * R[..., 1, 2] * R[..., 2, 2]
+        R_mandel[..., 4, 0] = r2 * R[..., 0, 0] * R[..., 2, 0]
+        R_mandel[..., 4, 1] = r2 * R[..., 0, 1] * R[..., 2, 1]
+        R_mandel[..., 4, 2] = r2 * R[..., 0, 2] * R[..., 2, 2]
+        R_mandel[..., 5, 0] = r2 * R[..., 0, 0] * R[..., 1, 0]
+        R_mandel[..., 5, 1] = r2 * R[..., 0, 1] * R[..., 1, 1]
+        R_mandel[..., 5, 2] = r2 * R[..., 0, 2] * R[..., 1, 2]
+        R_mandel[..., 3, 3] = R[..., 1, 1] * R[..., 2, 2] + R[..., 1, 2] * R[..., 2, 1]
+        R_mandel[..., 3, 4] = R[..., 1, 0] * R[..., 2, 2] + R[..., 1, 2] * R[..., 2, 0]
+        R_mandel[..., 3, 5] = R[..., 1, 0] * R[..., 2, 1] + R[..., 1, 1] * R[..., 2, 0]
+        R_mandel[..., 4, 3] = R[..., 0, 1] * R[..., 2, 2] + R[..., 0, 2] * R[..., 2, 1]
+        R_mandel[..., 4, 4] = R[..., 0, 0] * R[..., 2, 2] + R[..., 0, 2] * R[..., 2, 0]
+        R_mandel[..., 4, 5] = R[..., 0, 0] * R[..., 2, 1] + R[..., 0, 1] * R[..., 2, 0]
+        R_mandel[..., 5, 3] = R[..., 0, 1] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 1]
+        R_mandel[..., 5, 4] = R[..., 0, 0] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 0]
+        R_mandel[..., 5, 5] = R[..., 0, 0] * R[..., 1, 1] + R[..., 0, 1] * R[..., 1, 0]
+        return np.squeeze(R_mandel)
+
+    @property
+    def num_dims(self):
+        return len(self.dims_str)
+
+    @property
+    def num_indices(self):
+        return len(self.indices_str)
+
+    @property
+    def shape(self):
+        if self.num_dims == 0:
+            return ()
+        return self.rotation_matrix.shape[: self.num_dims]
+
+    def reorder(self, dims):
+
+        # If order is already correct, just return the orientation
+        if dims == self.dims_str:
+            return self
+
+        # Confirm that the new dims are a permutation of the original
+        if set(dims) != set(self.dims_str):
+            raise ValueError(
+                f"New dimension order '{dims}' must contain the same dimensions as "
+                f"the original orientation's '{self.dims_str}'"
+            )
+
+        permutation = [self.dims_str.index(dim) for dim in dims]
+
+        # Add component dimensions to the permutation
+        permutation.extend(range(len(self.dims_str), self.rotation_matrix.ndim))
+
+        new_components = np.transpose(self.rotation_matrix, permutation)
+
+        return type(self)(new_components, dims)
+
+    def __len__(self):
+        if self.num_dims == 0:
+            return None
+        else:
+            return len(self.rotation_matrix)
+
+    def __iter__(self):
+        return OrientationIterator(self.rotation_matrix)
+
+    def __getitem__(self, slice_):
+        if len(self.dims_str) is None:
+            raise ValueError("can't index")
+        return Orientation(self.rotation_matrix[slice_])
+
+    def __setitem__(self, key, item):
+        if not isinstance(item, Orientation):
+            raise ValueError(f"tried to set Orientation with {type(item)}")
+        self.rotation_matrix[key] = item.rotation_matrix
+
+    @classmethod
+    def identity(cls):
+        return cls(np.eye(3))
+
+    @classmethod
+    def from_miller_indices(cls, plane, direction, dims=None):
+        plane = np.asarray(plane)
+        plane = plane / np.linalg.norm(plane, axis=-1)[..., np.newaxis]
+        direction = np.asarray(direction)
+        direction = direction / np.linalg.norm(direction, axis=-1)[..., np.newaxis]
+        td = np.cross(plane, direction)
+        rotation_matrix = np.array([direction, td, plane])
+        rotation_matrix = np.moveaxis(rotation_matrix, 0, -1)
+        return cls(rotation_matrix, dims)
+
+    @classmethod
+    def from_rotation_matrix(cls, rotation_matrix, dims=None):
+        return cls(rotation_matrix, dims)
+
+    @classmethod
+    def from_euler_angles(cls, euler_angles, in_degrees=False, dims=None):
+        """
+        Bunge Euler Angle Convention
+
+        The rotation matrix R formed from these Euler angles is used to take a vector's
+        components relative to a specimen reference frame (v_i) and transform them to that same
+        vector's components relative to the crystal reference frame (v'_i).
+
+        v'_i = R_ij * v_j
+
+        R can also be used to construct the crystal basis *vectors* (e'_i) as a linear combination
+        of specimen basis *vectors* (e_i).
+
+        e'_i = R_ij * e_j
+
+        R can equivalently be written in terms of dot products of the basis vectors.
+
+        R_ij = e'_i . e_j
+
+        """
+        euler_angles = np.asarray(euler_angles, dtype=np.float64)
+        if in_degrees:
+            euler_angles *= np.pi / 180.0
+
+        z1 = euler_angles[..., 0]
+        x2 = euler_angles[..., 1]
+        z3 = euler_angles[..., 2]
+        c1, c2, c3 = np.cos(z1), np.cos(x2), np.cos(z3)
+        s1, s2, s3 = np.sin(z1), np.sin(x2), np.sin(z3)
+
+        rotation_matrix = np.zeros((*euler_angles.shape[:-1], 3, 3))
+        rotation_matrix[..., 0, 0] = c1 * c3 - c2 * s1 * s3
+        rotation_matrix[..., 0, 1] = c3 * s1 + c1 * c2 * s3
+        rotation_matrix[..., 0, 2] = s2 * s3
+        rotation_matrix[..., 1, 0] = -c1 * s3 - c2 * c3 * s1
+        rotation_matrix[..., 1, 1] = c1 * c2 * c3 - s1 * s3
+        rotation_matrix[..., 1, 2] = c3 * s2
+        rotation_matrix[..., 2, 0] = s1 * s2
+        rotation_matrix[..., 2, 1] = -c1 * s2
+        rotation_matrix[..., 2, 2] = c2
+
+        return cls(np.squeeze(rotation_matrix), dims)
+
+    @classmethod
+    def random(cls, shape=100, rng=np.random.default_rng(), dims=None):
+        # Check if iterable to allow the user to pass in an int
+        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
+
+        # Generate random Euler angles using uniform distribution on SO(3)
+        z1 = rng.random(shape) * 2.0 * np.pi
+        cos_x2 = rng.random(shape) * 2.0 - 1.0
+        x2 = np.arccos(cos_x2)
+        z3 = rng.random(shape) * 2.0 * np.pi
+
+        # Stack Euler angles and create orientations
+        euler_angles = np.stack([z1, x2, z3], axis=-1)
+
+        return cls.from_euler_angles(euler_angles, dims=dims)
+
+    @classmethod
+    def from_list(cls, orientations):
+        rotation_matrices = [o.rotation_matrix for o in orientations]
+        return cls(rotation_matrices)
+
+    @property
+    def euler_angles(self):
+        # Source: "Euler Angle Formulas", David Eberly
+        R = self.rotation_matrix
+        n = self.shape
+
+        R22_less_than_one = R[..., 2, 2] < 1.0
+        R22_equals_one = np.logical_not(R22_less_than_one)
+
+        R22_greater_than_negative_one = R[..., 2, 2] > -1.0
+        R22_equals_negative_one = np.logical_not(R22_greater_than_negative_one)
+
+        R22_default = np.logical_and(R22_less_than_one, R22_greater_than_negative_one)
+        z1 = np.arctan2(R[..., 2, 0], -R[..., 2, 1])
+        x2 = np.arccos(R[..., 2, 2])
+        z3 = np.arctan2(R[..., 0, 2], R[..., 1, 2])
+        eulers_default = np.moveaxis(np.array([z1, x2, z3]), 0, -1)
+
+        if np.all(R22_default):
+            return np.squeeze(eulers_default)
+
+        eulers_negative_one = np.array(
+            [np.arctan2(R[..., 1, 0], R[..., 0, 0]), np.pi * np.ones(n), np.zeros(n)]
+        )
+        eulers_negative_one = np.moveaxis(eulers_negative_one, 0, -1)
+        eulers_one = np.array(
+            [np.arctan2(-R[..., 1, 0], R[..., 0, 0]), np.zeros(n), np.zeros(n)]
+        )
+        eulers_one = np.moveaxis(eulers_one, 0, -1)
+
+        # Three conditions rolled into a messy operation
+        return np.squeeze(
+            np.einsum("..., ...j -> ...j", R22_default, eulers_default)
+            + np.einsum(
+                "..., ...j -> ...j", R22_equals_negative_one, eulers_negative_one
+            )
+            + np.einsum("..., ...j -> ...j", R22_equals_one, eulers_one)
+        )
+
+    @property
+    def euler_angles_in_degrees(self):
+        return self.euler_angles * 180.0 / np.pi
+
+    @property
+    def trace(self):
+        return Scalar(np.einsum("...ii -> ...", self.rotation_matrix), self.dims_str)
+
+    def __repr__(self):
+        dimensions = ", ".join([DIM_NAMES(i) for i in self.dims_str])
+        return (
+            f"{type(self).__name__}("
+            + str(np.round(self.euler_angles, 3))
+            + f", dims: ({dimensions}), Euler angles shape: {self.euler_angles.shape})"
+        )
+
+    def __matmul__(self, orientation):
+        if not isinstance(orientation, Orientation):
+            return NotImplemented
+        u = order_dims(self.dims_str, orientation.dims_str)
+        other_indices = orientation.dims_str + "jk"
+        output_indices = u + "ik"
+        return Orientation(
+            np.einsum(
+                f"{self.indices_str}, {other_indices} -> {output_indices}",
+                self.rotation_matrix,
+                orientation.rotation_matrix,
+                optimize=True,
+            ),
+            u,
+        )
+
+
+class OrientationIterator:
+    def __init__(self, rotation_matrix):
+        self.idx = 0
+        self.rotation_matrix = rotation_matrix
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self.idx += 1
+        try:
+            return Orientation(self.rotation_matrix[self.idx - 1])
+        except IndexError:
+            self.idx = 0
+            raise StopIteration

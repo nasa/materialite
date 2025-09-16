@@ -89,11 +89,11 @@ class SmallStrainFFT(Model):
 
         # Initialize
         tangent = constitutive_model.initialize(orientations)
-        stress = Order2SymmetricTensor.zeros(self._num_points)
-        strain = Order2SymmetricTensor.zeros(self._num_points)
+        stress = Order2SymmetricTensor.zero().repeat(self._num_points)
+        strain = Order2SymmetricTensor.zero().repeat(self._num_points)
         old_tangent = tangent.copy()
-        old_strain = Order2SymmetricTensor.zeros(self._num_points)
-        old_stress = Order2SymmetricTensor.zeros(self._num_points)
+        old_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
+        old_stress = Order2SymmetricTensor.zero().repeat(self._num_points)
         mean_strain = Order2SymmetricTensor.zero()
         mean_applied_stress = Order2SymmetricTensor.zero()
         time_step_id = 0

@@ -11,6 +11,7 @@
 # specific language governing permissions and limitations under the License.
 
 import numpy as np
+
 from materialite import Order2SymmetricTensor, Order4SymmetricTensor
 
 
@@ -28,15 +29,15 @@ class Multiphase:
         self._output_variable_info = None
 
     def initialize(self, orientations):
-        tangent = Order4SymmetricTensor.zeros(self.num_points)
+        tangent = Order4SymmetricTensor.zero().repeat(self.num_points)
         for m, i in zip(self.models, self.indices):
             tangent_i = m.initialize(orientations[i])
             tangent[i] = tangent_i
         return tangent
 
     def calculate_stress_and_tangent(self, strain, guess_stress, time_increment):
-        stress = Order2SymmetricTensor.zeros(self.num_points)
-        tangent = Order4SymmetricTensor.zeros(self.num_points)
+        stress = Order2SymmetricTensor.zero().repeat(self.num_points)
+        tangent = Order4SymmetricTensor.zero().repeat(self.num_points)
         iterations = []
         for m, i in zip(self.models, self.indices):
             stress_i, tangent_i, converged = m.calculate_stress_and_tangent(
@@ -67,7 +68,9 @@ class Multiphase:
             self._output_variable_info = dict()
             for v in output_variables:
                 if v not in self.available_state_variables:
-                    raise ValueError(f"output variable {v} is not available in any constitutive models in this simulation")
+                    raise ValueError(
+                        f"output variable {v} is not available in any constitutive models in this simulation"
+                    )
                 shape_v = 0
                 for m in self.models:
                     type_vm, shape_vm = m._state_variable_info.get(v, (None, None))
@@ -79,7 +82,7 @@ class Multiphase:
                 self._output_variable_info[v] = (type_v, shape_v)
         for v in output_variables:
             type_v, shape_v = self._output_variable_info[v]
-            data_v = type_v.zeros(shape_v)
+            data_v = type_v.zero().repeat(shape_v)
             for m, i in zip(self.models, self.indices):
                 data_vm = m.state_variables.get(v, None)
                 if data_vm is None:
@@ -87,6 +90,6 @@ class Multiphase:
                 try:
                     data_v[i] = data_vm
                 except ValueError:
-                    data_v[i, :data_vm.shape[-1]] = data_vm
+                    data_v[i, : data_vm.shape[-1]] = data_vm
             outputs[v] = data_v
         return outputs

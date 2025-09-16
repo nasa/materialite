@@ -1,5 +1,8 @@
 import numpy as np
 import pytest
+from numpy.linalg import inv
+from numpy.testing import assert_allclose, assert_array_equal
+
 from materialite import (
     Order2SymmetricTensor,
     Order2Tensor,
@@ -8,8 +11,6 @@ from materialite import (
     Scalar,
     Vector,
 )
-from numpy.linalg import inv
-from numpy.testing import assert_allclose, assert_array_equal
 
 NUM_POINTS = 2
 NUM_SLIP_SYSTEMS = 4
@@ -123,22 +124,22 @@ def sym_tensor(symmetric_matrices):
 
 
 @pytest.fixture
-def r2_tensors(matrices):
+def o2_tensors(matrices):
     return Order2Tensor(matrices, "ps")
 
 
 @pytest.fixture
-def r2_tensors_p(matrices):
+def o2_tensors_p(matrices):
     return Order2Tensor(matrices[:, 0, :, :], "p")
 
 
 @pytest.fixture
-def r2_tensors_s(matrices):
+def o2_tensors_s(matrices):
     return Order2Tensor(matrices[0, :, :, :], "s")
 
 
 @pytest.fixture
-def r2_tensor(matrices):
+def o2_tensor(matrices):
     return Order2Tensor(matrices[0, 0, :, :])
 
 
@@ -253,25 +254,6 @@ def scalar():
     return Scalar(0)
 
 
-def test_error_if_bad_dimensions(
-    matrices, symmetric_matrices, stiffness_matrices, all_vectors
-):
-    with pytest.raises(ValueError):
-        _ = Order2Tensor(matrices, "sp")
-
-    with pytest.raises(ValueError):
-        _ = Order2SymmetricTensor.from_cartesian(symmetric_matrices, "sp")
-
-    with pytest.raises(ValueError):
-        _ = Scalar(np.arange(8).reshape((2, 4)), "sp")
-
-    with pytest.raises(ValueError):
-        _ = Order4SymmetricTensor(stiffness_matrices, "sp")
-
-    with pytest.raises(ValueError):
-        _ = Vector(all_vectors, "sp")
-
-
 def test_error_if_inconsistent_dimensions(matrices, symmetric_matrices):
     with pytest.raises(ValueError):
         _ = Order2Tensor(matrices, "p")
@@ -289,36 +271,33 @@ def test_error_if_inconsistent_dimensions(matrices, symmetric_matrices):
         _ = Vector(np.arange(12).reshape((2, 2, 3)), "p")
 
 
-def test_idempotence(scalars, vectors, sym_tensors, r2_tensors, minor_sym_tensors):
+def test_idempotence(scalars, vectors, sym_tensors, o2_tensors, minor_sym_tensors):
     def check_equal(t1, t2):
         assert isinstance(t1, type(t2))
         assert t1.dims_str == t2.dims_str
-        assert t1.dims_set == t2.dims_set
         assert t1.indices_str == t2.indices_str
-        assert t1.indices_set == t2.indices_set
         assert_allclose(t1.components, t2.components)
 
     scalars1 = Scalar(scalars)
     vectors1 = Vector(vectors)
-    r2_tensors1 = Order2Tensor(r2_tensors)
+    o2_tensors1 = Order2Tensor(o2_tensors)
     sym_tensors1 = Order2SymmetricTensor(sym_tensors)
     minor_sym_tensors1 = Order4SymmetricTensor(minor_sym_tensors)
+
     check_equal(scalars1, scalars)
     check_equal(vectors1, vectors)
-    check_equal(r2_tensors1, r2_tensors)
+    check_equal(o2_tensors1, o2_tensors)
     check_equal(sym_tensors1, sym_tensors)
     check_equal(minor_sym_tensors1, minor_sym_tensors)
 
 
 def test_init_vector_ps(vectors, all_vectors):
     assert vectors.indices_str == "psj"
-    assert vectors.indices_set == {"p", "s", "j"}
     assert_allclose(vectors.components, all_vectors)
 
 
 def test_init_vector(vector, all_vectors):
     assert vector.indices_str == "j"
-    assert vector.indices_set == {"j"}
     assert_allclose(vector.components, all_vectors[0, 0, :])
 
 
@@ -330,13 +309,11 @@ def test_init_vector_defaults(all_vectors):
 
 def test_init_symmetric_tensor_ps(sym_tensors, symmetric_matrices):
     assert sym_tensors.indices_str == "psn"
-    assert sym_tensors.indices_set == {"p", "s", "n"}
     assert_allclose(sym_tensors.cartesian, symmetric_matrices)
 
 
 def test_init_symmetric_tensor(sym_tensor, symmetric_matrices):
     assert sym_tensor.indices_str == "n"
-    assert sym_tensor.indices_set == {"n"}
     assert_allclose(sym_tensor.cartesian, symmetric_matrices[0, 0, :, :])
 
 
@@ -351,19 +328,17 @@ def test_init_symmetric_tensor_defaults(symmetric_matrices):
     )
 
 
-def test_init_rank2_tensor_ps(r2_tensors, matrices):
-    assert r2_tensors.indices_str == "psij"
-    assert r2_tensors.indices_set == {"p", "s", "i", "j"}
-    assert_allclose(r2_tensors.cartesian, matrices)
+def test_init_order2_tensor_ps(o2_tensors, matrices):
+    assert o2_tensors.indices_str == "psij"
+    assert_allclose(o2_tensors.cartesian, matrices)
 
 
-def test_init_rank2_tensor(r2_tensor, matrices):
-    assert r2_tensor.indices_str == "ij"
-    assert r2_tensor.indices_set == {"i", "j"}
-    assert_allclose(r2_tensor.cartesian, matrices[0, 0, :, :])
+def test_init_order2_tensor(o2_tensor, matrices):
+    assert o2_tensor.indices_str == "ij"
+    assert_allclose(o2_tensor.cartesian, matrices[0, 0, :, :])
 
 
-def test_init_rank2_tensor_defaults(matrices):
+def test_init_order2_tensor_defaults(matrices):
     assert Order2Tensor(matrices).dims_str == "ps"
     assert Order2Tensor(matrices[0, ...]).dims_str == "p"
     assert Order2Tensor(matrices[0, 0, ...]).dims_str == ""
@@ -371,7 +346,6 @@ def test_init_rank2_tensor_defaults(matrices):
 
 def test_init_scalar_ps(scalars):
     assert scalars.indices_str == "ps"
-    assert scalars.indices_set == {"p", "s"}
     assert_allclose(
         scalars.components,
         np.arange(NUM_POINTS * NUM_SLIP_SYSTEMS).reshape((NUM_POINTS, NUM_SLIP_SYSTEMS))
@@ -381,7 +355,6 @@ def test_init_scalar_ps(scalars):
 
 def test_init_scalar(scalar):
     assert scalar.indices_str == ""
-    assert scalar.indices_set == set()
     assert_allclose(scalar.components, 0)
 
 
@@ -401,13 +374,11 @@ def test_init_minor_sym_tensors(
     stiffness_matrices,
 ):
     assert minor_sym_tensors_p.indices_str == "pmn"
-    assert minor_sym_tensors_p.indices_set == {"p", "m", "n"}
     assert_allclose(
         minor_sym_tensors_p.voigt, [transversely_isotropic_stiffness_matrix] * 2
     )
 
     assert minor_sym_tensors.indices_str == "psmn"
-    assert minor_sym_tensors.indices_set == {"p", "s", "m", "n"}
     assert_allclose(minor_sym_tensors.voigt, stiffness_matrices)
 
 
@@ -419,7 +390,6 @@ def test_init_minor_sym_tensor(
     isotropic_stiffness_matrix,
 ):
     assert minor_sym_tensor.indices_str == "mn"
-    assert minor_sym_tensor.indices_set == {"m", "n"}
     mandel = transversely_isotropic_stiffness_matrix.copy()
     mandel[3:, 3:] = mandel[3:, 3:] * 2
     assert_allclose(minor_sym_tensor.voigt, transversely_isotropic_stiffness_matrix)
@@ -453,8 +423,20 @@ def test_from_list(vectors_p, vectors_s):
     assert vectors_s_new.dims_str == "s"
 
 
-def test_get_item(scalars, r2_tensors, sym_tensors, minor_sym_tensors, vectors):
-    for t in [scalars, r2_tensors, sym_tensors, minor_sym_tensors, vectors]:
+def test_get_item(
+    scalars,
+    o2_tensors,
+    sym_tensors,
+    minor_sym_tensors,
+    vectors,
+):
+    for t in [
+        scalars,
+        o2_tensors,
+        sym_tensors,
+        minor_sym_tensors,
+        vectors,
+    ]:
         t0 = t[1:, 1:]
         assert_array_equal(t0.components, t.components[1:, 1:])
         assert t0.dims_str == "ps"
@@ -520,16 +502,16 @@ def test_get_item(scalars, r2_tensors, sym_tensors, minor_sym_tensors, vectors):
 def test_add(
     sym_tensors,
     sym_tensor,
-    r2_tensors,
-    r2_tensor,
+    o2_tensors,
+    o2_tensor,
     scalars,
     vectors,
 ):
     r2_sym = [
         sym_tensors,
         sym_tensor,
-        r2_tensors,
-        r2_tensor,
+        o2_tensors,
+        o2_tensor,
     ]
     for t1 in r2_sym:
         for t2 in r2_sym:
@@ -546,7 +528,7 @@ def test_add(
     with pytest.raises(TypeError):
         _ = sym_tensors + scalars
     with pytest.raises(TypeError):
-        _ = r2_tensors + scalars
+        _ = o2_tensors + scalars
     with pytest.raises(TypeError):
         _ = scalars + sym_tensors
     with pytest.raises(TypeError):
@@ -558,8 +540,8 @@ def test_add_broadcast(
     scalars_p,
     sym_tensors,
     sym_tensors_p,
-    r2_tensors,
-    r2_tensors_p,
+    o2_tensors,
+    o2_tensors_p,
     vectors,
     vectors_p,
 ):
@@ -570,25 +552,32 @@ def test_add_broadcast(
     result_sym = sym_tensors.cartesian + sym_tensors_p.cartesian[:, np.newaxis, :, :]
     assert_allclose((sym_tensors + sym_tensors_p).cartesian, result_sym)
 
-    result_r2 = r2_tensors.components + r2_tensors_p.components[:, np.newaxis, :, :]
-    assert_allclose((r2_tensors + r2_tensors_p).cartesian, result_r2)
+    result_r2 = o2_tensors.components + o2_tensors_p.components[:, np.newaxis, :, :]
+    assert_allclose((o2_tensors + o2_tensors_p).cartesian, result_r2)
 
-    result_r2_sym = r2_tensors.components + sym_tensors_p.cartesian[:, np.newaxis, :, :]
-    assert_allclose((r2_tensors + sym_tensors_p).components, result_r2_sym)
+    result_r2_sym = o2_tensors.components + sym_tensors_p.cartesian[:, np.newaxis, :, :]
+    assert_allclose((o2_tensors + sym_tensors_p).components, result_r2_sym)
 
-    result_sym_r2 = sym_tensors.cartesian + r2_tensors_p.components[:, np.newaxis, :, :]
-    assert_allclose((sym_tensors + r2_tensors_p).components, result_sym_r2)
+    result_sym_r2 = sym_tensors.cartesian + o2_tensors_p.components[:, np.newaxis, :, :]
+    assert_allclose((sym_tensors + o2_tensors_p).components, result_sym_r2)
 
     result_vector = vectors.components + vectors_p.components[:, np.newaxis, :]
     assert_allclose((vectors + vectors_p).components, result_vector)
 
 
-def test_sub(sym_tensors, sym_tensor, r2_tensors, r2_tensor, scalars, vectors):
+def test_sub(
+    sym_tensors,
+    sym_tensor,
+    o2_tensors,
+    o2_tensor,
+    scalars,
+    vectors,
+):
     r2_sym = [
         sym_tensors,
         sym_tensor,
-        r2_tensors,
-        r2_tensor,
+        o2_tensors,
+        o2_tensor,
     ]
     for t1 in r2_sym:
         for t2 in r2_sym:
@@ -600,7 +589,7 @@ def test_sub(sym_tensors, sym_tensor, r2_tensors, r2_tensor, scalars, vectors):
     with pytest.raises(TypeError):
         _ = sym_tensors - scalars
     with pytest.raises(TypeError):
-        _ = r2_tensors - scalars
+        _ = o2_tensors - scalars
     with pytest.raises(TypeError):
         _ = scalars - sym_tensors
     with pytest.raises(TypeError):
@@ -612,8 +601,8 @@ def test_sub_broadcast(
     scalars_p,
     sym_tensors,
     sym_tensors_p,
-    r2_tensors,
-    r2_tensors_p,
+    o2_tensors,
+    o2_tensors_p,
     vectors,
     vectors_p,
 ):
@@ -624,14 +613,14 @@ def test_sub_broadcast(
     result_sym = sym_tensors.cartesian - sym_tensors_p.cartesian[:, np.newaxis, :, :]
     assert_allclose((sym_tensors - sym_tensors_p).cartesian, result_sym, atol=1e-14)
 
-    result_r2 = r2_tensors.components - r2_tensors_p.components[:, np.newaxis, :, :]
-    assert_allclose((r2_tensors - r2_tensors_p).cartesian, result_r2, atol=1e-14)
+    result_r2 = o2_tensors.components - o2_tensors_p.components[:, np.newaxis, :, :]
+    assert_allclose((o2_tensors - o2_tensors_p).cartesian, result_r2, atol=1e-14)
 
-    result_r2_sym = r2_tensors.components - sym_tensors_p.cartesian[:, np.newaxis, :, :]
-    assert_allclose((r2_tensors - sym_tensors_p).components, result_r2_sym, atol=1e-14)
+    result_r2_sym = o2_tensors.components - sym_tensors_p.cartesian[:, np.newaxis, :, :]
+    assert_allclose((o2_tensors - sym_tensors_p).components, result_r2_sym, atol=1e-14)
 
-    result_sym_r2 = sym_tensors.cartesian - r2_tensors_p.components[:, np.newaxis, :, :]
-    assert_allclose((sym_tensors - r2_tensors_p).components, result_sym_r2, atol=1e-14)
+    result_sym_r2 = sym_tensors.cartesian - o2_tensors_p.components[:, np.newaxis, :, :]
+    assert_allclose((sym_tensors - o2_tensors_p).components, result_sym_r2, atol=1e-14)
 
     result_vector = vectors.components + vectors_p.components[:, np.newaxis, :]
     assert_allclose((vectors + vectors_p).components, result_vector, atol=1e-14)
@@ -661,19 +650,19 @@ def test_mul_symmetric_symmetric(sym_tensors, sym_tensors_p, sym_tensors_s, sym_
     check_mul(sym_tensors, sym_tensor, Scalar, "ps", "psn, n -> ps")
 
 
-def test_mul_symmetric_rank2(
+def test_mul_symmetric_order2(
     sym_tensors,
     sym_tensor,
-    r2_tensors,
-    r2_tensors_p,
-    r2_tensors_s,
-    r2_tensor,
+    o2_tensors,
+    o2_tensors_p,
+    o2_tensors_s,
+    o2_tensor,
 ):
-    check_mul_cartesian(sym_tensors, r2_tensors, Scalar, "ps", "psij, psij -> ps")
-    check_mul_cartesian(sym_tensors, r2_tensors_p, Scalar, "ps", "psij, pij -> ps")
-    check_mul_cartesian(sym_tensors, r2_tensors_s, Scalar, "ps", "psij, sij -> ps")
-    check_mul_cartesian(r2_tensors_s, sym_tensors, Scalar, "ps", "sij, psij -> ps")
-    check_mul_cartesian(sym_tensors, r2_tensor, Scalar, "ps", "psij, ij -> ps")
+    check_mul_cartesian(sym_tensors, o2_tensors, Scalar, "ps", "psij, psij -> ps")
+    check_mul_cartesian(sym_tensors, o2_tensors_p, Scalar, "ps", "psij, pij -> ps")
+    check_mul_cartesian(sym_tensors, o2_tensors_s, Scalar, "ps", "psij, sij -> ps")
+    check_mul_cartesian(o2_tensors_s, sym_tensors, Scalar, "ps", "sij, psij -> ps")
+    check_mul_cartesian(sym_tensors, o2_tensor, Scalar, "ps", "psij, ij -> ps")
 
 
 def test_mul_symmetric_scalar(sym_tensors, sym_tensors_p, sym_tensor, scalars):
@@ -682,33 +671,33 @@ def test_mul_symmetric_scalar(sym_tensors, sym_tensors_p, sym_tensor, scalars):
     check_mul(sym_tensor, scalars, Order2SymmetricTensor, "psn", "n, ps -> psn")
 
 
-def test_mul_rank2_rank2(r2_tensors, r2_tensors_p, r2_tensors_s, r2_tensor):
-    check_mul(r2_tensors, r2_tensors, Scalar, "ps", "psij, psij -> ps")
-    check_mul(r2_tensors, r2_tensors_p, Scalar, "ps", "psij, pij -> ps")
-    check_mul(r2_tensors, r2_tensors_s, Scalar, "ps", "psij, sij -> ps")
-    check_mul(r2_tensors_s, r2_tensors, Scalar, "ps", "sij, psij -> ps")
-    check_mul(r2_tensors, r2_tensor, Scalar, "ps", "psij, ij -> ps")
+def test_mul_order2_order2(o2_tensors, o2_tensors_p, o2_tensors_s, o2_tensor):
+    check_mul(o2_tensors, o2_tensors, Scalar, "ps", "psij, psij -> ps")
+    check_mul(o2_tensors, o2_tensors_p, Scalar, "ps", "psij, pij -> ps")
+    check_mul(o2_tensors, o2_tensors_s, Scalar, "ps", "psij, sij -> ps")
+    check_mul(o2_tensors_s, o2_tensors, Scalar, "ps", "sij, psij -> ps")
+    check_mul(o2_tensors, o2_tensor, Scalar, "ps", "psij, ij -> ps")
 
 
-def test_mul_rank2_scalar(r2_tensors, r2_tensors_p, r2_tensor, scalars):
-    check_mul(r2_tensors, scalars, Order2Tensor, "psij", "psij, ps -> psij")
-    check_mul(r2_tensors_p, scalars, Order2Tensor, "psij", "pij, ps -> psij")
-    check_mul(r2_tensor, scalars, Order2Tensor, "psij", "ij, ps -> psij")
+def test_mul_order2_scalar(o2_tensors, o2_tensors_p, o2_tensor, scalars):
+    check_mul(o2_tensors, scalars, Order2Tensor, "psij", "psij, ps -> psij")
+    check_mul(o2_tensors_p, scalars, Order2Tensor, "psij", "pij, ps -> psij")
+    check_mul(o2_tensor, scalars, Order2Tensor, "psij", "ij, ps -> psij")
 
 
 def test_mul_minor_sym(
     scalars,
     scalar,
-    r2_tensor,
+    o2_tensor,
     sym_tensor,
     minor_sym_tensors,
     minor_sym_tensors_p,
     minor_sym_tensor,
 ):
     with pytest.raises(TypeError):
-        _ = r2_tensor * minor_sym_tensor
+        _ = o2_tensor * minor_sym_tensor
     with pytest.raises(TypeError):
-        _ = minor_sym_tensor * r2_tensor
+        _ = minor_sym_tensor * o2_tensor
     with pytest.raises(TypeError):
         _ = sym_tensor * minor_sym_tensor
     with pytest.raises(TypeError):
@@ -739,9 +728,9 @@ def test_matmul_minor_sym(
     sym_tensors,
     sym_tensors_p,
     sym_tensor,
-    r2_tensors,
-    r2_tensors_p,
-    r2_tensor,
+    o2_tensors,
+    o2_tensors_p,
+    o2_tensor,
 ):
     check_matmul_cartesian(
         minor_sym_tensors_p,
@@ -775,36 +764,42 @@ def test_matmul_minor_sym(
 
     check_matmul_cartesian(
         minor_sym_tensors_p,
-        r2_tensors,
+        o2_tensors,
         Order2SymmetricTensor,
         "psn",
         "pijkl, pskl -> psij",
     )
     check_matmul_cartesian(
         minor_sym_tensors_p,
-        r2_tensors_p,
+        o2_tensors_p,
         Order2SymmetricTensor,
         "pn",
         "pijkl, pkl -> pij",
     )
     check_matmul_cartesian(
-        minor_sym_tensors_p, r2_tensor, Order2SymmetricTensor, "pn", "pijkl, kl -> pij"
+        minor_sym_tensors_p, o2_tensor, Order2SymmetricTensor, "pn", "pijkl, kl -> pij"
     )
 
 
-def test_matmul_r2_sym(r2_tensors, r2_tensor, sym_tensors, sym_tensor, vectors, vector):
+def test_matmul_r2_sym(
+    o2_tensors,
+    o2_tensor,
+    sym_tensors,
+    sym_tensor,
+    vectors,
+    vector,
+):
     check_matmul_cartesian(
-        r2_tensors, r2_tensors, Order2Tensor, "psij", "psik, pskj -> psij"
+        o2_tensors, o2_tensors, Order2Tensor, "psij", "psik, pskj -> psij"
     )
     check_matmul_cartesian(
-        r2_tensors, r2_tensor, Order2Tensor, "psij", "psik, kj -> psij"
+        o2_tensors, o2_tensor, Order2Tensor, "psij", "psik, kj -> psij"
     )
     check_matmul_cartesian(
-        r2_tensors, sym_tensors, Order2Tensor, "psij", "psik, pskj -> psij"
+        o2_tensors, sym_tensors, Order2Tensor, "psij", "psik, pskj -> psij"
     )
-    check_matmul_cartesian(r2_tensors, vectors, Vector, "psj", "psij, psj -> psi")
-    check_matmul_cartesian(r2_tensors, vector, Vector, "psj", "psij, j -> psi")
-
+    check_matmul_cartesian(o2_tensors, vectors, Vector, "psj", "psij, psj -> psi")
+    check_matmul_cartesian(o2_tensors, vector, Vector, "psj", "psij, j -> psi")
     check_matmul_cartesian(
         sym_tensors, sym_tensors, Order2SymmetricTensor, "psn", "psik, pskj -> psij"
     )
@@ -815,19 +810,30 @@ def test_matmul_r2_sym(r2_tensors, r2_tensor, sym_tensors, sym_tensor, vectors, 
     check_matmul_cartesian(sym_tensors, vector, Vector, "psj", "psij, j -> psi")
 
 
-def test_scalar_mul_div(scalars, sym_tensors, r2_tensors, vectors):
+def test_scalar_mul_div(
+    scalars,
+    sym_tensors,
+    o2_tensors,
+    vectors,
+):
     c = 2.0
     assert_allclose((scalars * c).components, scalars.components * c)
     assert_allclose((scalars / c).components, scalars.components / c)
     assert_allclose((sym_tensors * c).components, sym_tensors.components * c)
     assert_allclose((sym_tensors / c).components, sym_tensors.components / c)
-    assert_allclose((r2_tensors * c).components, r2_tensors.components * c)
-    assert_allclose((r2_tensors / c).components, r2_tensors.components / c)
+    assert_allclose((o2_tensors * c).components, o2_tensors.components * c)
+    assert_allclose((o2_tensors / c).components, o2_tensors.components / c)
     assert_allclose((vectors * c).components, vectors.components * c)
     assert_allclose((vectors / c).components, vectors.components / c)
 
 
-def test_div(sym_tensors, r2_tensors, vectors, scalars):
+def test_div(
+    sym_tensors,
+    o2_tensors,
+    vectors,
+    scalars,
+):
+
     ones_scalar = np.ones((NUM_POINTS, NUM_SLIP_SYSTEMS))
     assert_allclose((scalars / scalars).components, ones_scalar)
     assert_allclose(
@@ -835,8 +841,8 @@ def test_div(sym_tensors, r2_tensors, vectors, scalars):
         sym_tensors.components / scalars.components[:, :, np.newaxis],
     )
     assert_allclose(
-        (r2_tensors / scalars).components,
-        r2_tensors.components / scalars.components[:, :, np.newaxis, np.newaxis],
+        (o2_tensors / scalars).components,
+        o2_tensors.components / scalars.components[:, :, np.newaxis, np.newaxis],
     )
     assert_allclose(
         (vectors / scalars).components,
@@ -848,10 +854,10 @@ def test_mean(
     scalars,
     vectors,
     vectors_p,
-    r2_tensors,
+    o2_tensors,
     sym_tensors,
     minor_sym_tensors,
-    r2_tensors_s,
+    o2_tensors_s,
     sym_tensors_s,
     minor_sym_tensor,
 ):
@@ -859,20 +865,22 @@ def test_mean(
     vectors_mn_p = np.mean(vectors.components, axis=0)
     vectors_mn_s = np.mean(vectors.components, axis=1)
     vectors_p_mn = np.mean(vectors_p.components, axis=0)
-    r2_mn_s = np.mean(r2_tensors.components, axis=1)
+    r2_mn_s = np.mean(o2_tensors.components, axis=1)
     sym_mn_s = np.mean(sym_tensors.cartesian, axis=1)
     minor_sym_mn_s = np.mean(minor_sym_tensors.cartesian, axis=1)
-    assert_allclose(scalars.mean().components, scalars_mn_s)
-    assert_allclose(vectors.mean().components, vectors_mn_s)
-    assert_allclose(r2_tensors.mean().components, r2_mn_s)
-    assert_allclose(sym_tensors.mean().cartesian, sym_mn_s)
-    assert_allclose(minor_sym_tensors.mean().cartesian, minor_sym_mn_s)
+
+    assert_allclose(scalars.mean("s").components, scalars_mn_s)
+    assert_allclose(vectors.mean("s").components, vectors_mn_s)
+    assert_allclose(o2_tensors.mean("s").components, r2_mn_s)
+    assert_allclose(sym_tensors.mean("s").cartesian, sym_mn_s)
+    assert_allclose(minor_sym_tensors.mean("s").cartesian, minor_sym_mn_s)
 
     assert_allclose(vectors.mean("p").components, vectors_mn_p)
     assert_allclose(vectors.mean("s").components, vectors_mn_s)
     assert_allclose(vectors_p.mean().components, vectors_p_mn)
+
     with pytest.raises(ValueError):
-        _ = r2_tensors_s.mean("p")
+        _ = o2_tensors_s.mean("p")
     with pytest.raises(ValueError):
         _ = sym_tensors_s.mean("p")
     with pytest.raises(ValueError):
@@ -880,16 +888,16 @@ def test_mean(
 
 
 def test_sum(vectors, vectors_p, vectors_s):
-    assert_allclose(vectors.sum().components, np.sum(vectors.components, axis=1))
+    assert_allclose(vectors.sum().components, np.sum(vectors.components, axis=0))
     assert_allclose(vectors.sum("p").components, np.sum(vectors.components, axis=0))
     assert_allclose(vectors_s.sum().components, np.sum(vectors_s.components, axis=0))
     assert_allclose(vectors_p.sum().components, np.sum(vectors_p.components, axis=0))
 
 
-def test_neg(scalars, vectors, r2_tensors, sym_tensors, minor_sym_tensors):
+def test_neg(scalars, vectors, o2_tensors, sym_tensors, minor_sym_tensors):
     assert_allclose((-scalars).components, -(scalars.components))
     assert_allclose((-vectors).components, -(vectors.components))
-    assert_allclose((-r2_tensors).components, -(r2_tensors.components))
+    assert_allclose((-o2_tensors).components, -(o2_tensors.components))
     assert_allclose((-sym_tensors).components, -(sym_tensors.components))
     assert_allclose((-minor_sym_tensors).components, -(minor_sym_tensors.components))
 
@@ -914,7 +922,8 @@ def test_cosh(scalars):
 
 
 def test_max(scalars):
-    assert_allclose(scalars.max().components, np.max(scalars.components, axis=1))
+    assert_allclose(scalars.max().components, np.max(scalars.components, axis=0))
+    assert_allclose(scalars.max("s").components, np.max(scalars.components, axis=1))
 
 
 def test_pow(scalars):
@@ -989,46 +998,74 @@ def test_zero():
     assert_allclose(Order4SymmetricTensor.zero().components, np.zeros((6, 6)))
 
 
-def test_zeros():
+def test_repeat():
     p_shape = 2
     s_shape = 3
     ps_shape = (p_shape, s_shape)
-    assert_allclose(Scalar.zeros(ps_shape).components, np.zeros(ps_shape))
-    assert_allclose(Scalar.zeros(p_shape).components, np.zeros(p_shape))
-    assert_allclose(Scalar.zeros(s_shape, "s").components, np.zeros(s_shape))
-    assert_allclose(Vector.zeros(ps_shape).components, np.zeros((*ps_shape, 3)))
-    assert_allclose(Vector.zeros(p_shape).components, np.zeros((p_shape, 3)))
-    assert_allclose(Vector.zeros(s_shape, "s").components, np.zeros((s_shape, 3)))
+
+    assert_allclose(Scalar.zero().repeat(ps_shape).components, np.zeros(ps_shape))
+    assert_allclose(Scalar.zero().repeat(p_shape).components, np.zeros(p_shape))
+    assert_allclose(Scalar.zero().repeat(s_shape, "s").components, np.zeros(s_shape))
+
+    assert_allclose(Vector.zero().repeat(ps_shape).components, np.zeros((*ps_shape, 3)))
+    assert_allclose(Vector.zero().repeat(p_shape).components, np.zeros((p_shape, 3)))
     assert_allclose(
-        Order2Tensor.zeros(ps_shape).components, np.zeros((*ps_shape, 3, 3))
+        Vector.zero().repeat(s_shape, "s").components, np.zeros((s_shape, 3))
     )
-    assert_allclose(Order2Tensor.zeros(p_shape).components, np.zeros((p_shape, 3, 3)))
+
     assert_allclose(
-        Order2Tensor.zeros(s_shape, "s").components, np.zeros((s_shape, 3, 3))
-    )
-    assert_allclose(
-        Order2SymmetricTensor.zeros(ps_shape).components, np.zeros((*ps_shape, 6))
+        Order2Tensor.zero().repeat(ps_shape).components, np.zeros((*ps_shape, 3, 3))
     )
     assert_allclose(
-        Order2SymmetricTensor.zeros(p_shape).components, np.zeros((p_shape, 6))
+        Order2Tensor.zero().repeat(p_shape).components, np.zeros((p_shape, 3, 3))
     )
     assert_allclose(
-        Order2SymmetricTensor.zeros(s_shape, "s").components, np.zeros((s_shape, 6))
+        Order2Tensor.zero().repeat(s_shape, "s").components, np.zeros((s_shape, 3, 3))
+    )
+
+    assert_allclose(
+        Order2SymmetricTensor.zero().repeat(ps_shape).components,
+        np.zeros((*ps_shape, 6)),
     )
     assert_allclose(
-        Order4SymmetricTensor.zeros(ps_shape).components, np.zeros((*ps_shape, 6, 6))
+        Order2SymmetricTensor.zero().repeat(p_shape).components, np.zeros((p_shape, 6))
     )
     assert_allclose(
-        Order4SymmetricTensor.zeros(p_shape).components, np.zeros((p_shape, 6, 6))
+        Order2SymmetricTensor.zero().repeat(s_shape, "s").components,
+        np.zeros((s_shape, 6)),
+    )
+
+    assert_allclose(
+        Order4SymmetricTensor.zero().repeat(ps_shape).components,
+        np.zeros((*ps_shape, 6, 6)),
     )
     assert_allclose(
-        Order4SymmetricTensor.zeros(s_shape, "s").components, np.zeros((s_shape, 6, 6))
+        Order4SymmetricTensor.zero().repeat(p_shape).components,
+        np.zeros((p_shape, 6, 6)),
     )
-    assert Scalar.zeros(s_shape, "s").dims_str == "s"
-    assert Vector.zeros(s_shape, "s").dims_str == "s"
-    assert Order2Tensor.zeros(s_shape, "s").dims_str == "s"
-    assert Order2SymmetricTensor.zeros(s_shape, "s").dims_str == "s"
-    assert Order4SymmetricTensor.zeros(s_shape, "s").dims_str == "s"
+    assert_allclose(
+        Order4SymmetricTensor.zero().repeat(s_shape, "s").components,
+        np.zeros((s_shape, 6, 6)),
+    )
+
+    assert Scalar.zero().repeat(s_shape, "s").dims_str == "s"
+    assert Vector.zero().repeat(s_shape, "s").dims_str == "s"
+    assert Order2Tensor.zero().repeat(s_shape, "s").dims_str == "s"
+    assert Order2SymmetricTensor.zero().repeat(s_shape, "s").dims_str == "s"
+    assert Order4SymmetricTensor.zero().repeat(s_shape, "s").dims_str == "s"
+
+
+def test_repeat_when_tensor_already_has_dimensions():
+    with pytest.raises(ValueError, match="Cannot repeat.*already has dimensions"):
+        Scalar.zero().repeat(2).repeat(2)
+    with pytest.raises(ValueError, match="Cannot repeat.*already has dimensions"):
+        Vector.zero().repeat(2).repeat(2)
+    with pytest.raises(ValueError, match="Cannot repeat.*already has dimensions"):
+        Order2Tensor.zero().repeat(2).repeat(2)
+    with pytest.raises(ValueError, match="Cannot repeat.*already has dimensions"):
+        Order2SymmetricTensor.zero().repeat(2).repeat(2)
+    with pytest.raises(ValueError, match="Cannot repeat.*already has dimensions"):
+        Order4SymmetricTensor.zero().repeat(2).repeat(2)
 
 
 def test_identity():
@@ -1044,19 +1081,18 @@ def test_random_unit(rng):
     expected_vectors = np.array(
         [[-0.32868482, -0.09555077, -0.93959371], [-0.87883624, 0.41692759, 0.23198761]]
     )
-    assert_allclose(Vector.random_unit(num=1, rng=rng).components, expected_vector)
-    assert_allclose(Vector.random_unit(num=2, rng=rng).components, expected_vectors)
+    assert_allclose(Vector.random_unit(rng=rng).components, expected_vector)
+    assert_allclose(Vector.random_unit(2, rng=rng).components, expected_vectors)
 
 
 def test_unit(vectors):
     norm = lambda x: np.sqrt(np.einsum("psi, psi -> ps", x, x))
-
     actual_norm = (vectors / vectors.norm).components
     expected_norm = vectors.components / norm(vectors.components)[:, :, np.newaxis]
     assert_allclose(actual_norm, expected_norm)
 
 
-def test_inverse(r2_tensors, r2_tensor, sym_tensors, sym_tensor, minor_sym_tensors):
+def test_inverse(o2_tensors, o2_tensor, sym_tensors, sym_tensor, minor_sym_tensors):
     def invert(x):
         inverses = np.zeros(x.shape)
         for i, xi in enumerate(x):
@@ -1064,46 +1100,47 @@ def test_inverse(r2_tensors, r2_tensor, sym_tensors, sym_tensor, minor_sym_tenso
                 inverses[i, j, :, :] = inv(xij)
         return inverses
 
-    r2_inverses = invert(r2_tensors.components)
-    r2_inverse = inv(r2_tensor.components)
+    r2_inverses = invert(o2_tensors.components)
+    r2_inverse = inv(o2_tensor.components)
     sym_inverses = invert(sym_tensors.cartesian)
     sym_inverse = inv(sym_tensor.cartesian)
     minor_inverses = invert(minor_sym_tensors.components)
-    assert_allclose(r2_tensors.inverse.components, r2_inverses)
-    assert_allclose(r2_tensor.inverse.components, r2_inverse)
+
+    assert_allclose(o2_tensors.inverse.components, r2_inverses)
+    assert_allclose(o2_tensor.inverse.components, r2_inverse)
     assert_allclose(sym_tensors.inverse.cartesian, sym_inverses)
     assert_allclose(sym_tensor.inverse.cartesian, sym_inverse)
     assert_allclose(minor_sym_tensors.inverse.components, minor_inverses)
 
 
-def test_transpose(r2_tensors, r2_tensor, sym_tensors, sym_tensor):
+def test_transpose(o2_tensors, o2_tensor, sym_tensors, sym_tensor):
     assert_allclose(
-        r2_tensors.T.components, np.einsum("psij -> psji", r2_tensors.components)
+        o2_tensors.T.components, np.einsum("psij -> psji", o2_tensors.components)
     )
-    assert_allclose(r2_tensor.T.components, np.einsum("ij -> ji", r2_tensor.components))
+    assert_allclose(o2_tensor.T.components, np.einsum("ij -> ji", o2_tensor.components))
     assert_allclose(sym_tensors.T.components, sym_tensors.components)
     assert_allclose(sym_tensor.T.components, sym_tensor.components)
 
 
-def test_sym(r2_tensors, sym_tensors):
-    assert_allclose(r2_tensors.sym.components, sym_tensors.components)
+def test_sym(o2_tensors, sym_tensors):
+    assert_allclose(o2_tensors.sym.components, sym_tensors.components)
 
 
-def test_norm(r2_tensors, sym_tensors, minor_sym_tensors):
+def test_norm(o2_tensors, sym_tensors, minor_sym_tensors):
     norm = lambda x: np.sqrt(np.einsum("psij, psij -> ps", x, x))
     norm4 = lambda x: np.sqrt(np.einsum("psijkl, psijkl -> ps", x, x))
-    r2_norm = r2_tensors.norm
+    r2_norm = o2_tensors.norm
     sym_norm = sym_tensors.norm
     minor_sym_norm = minor_sym_tensors.norm
     assert isinstance(r2_norm, Scalar)
     assert isinstance(sym_norm, Scalar)
     assert isinstance(minor_sym_norm, Scalar)
-    assert_allclose(r2_norm.components, norm(r2_tensors.components))
+    assert_allclose(r2_norm.components, norm(o2_tensors.components))
     assert_allclose(sym_norm.components, norm(sym_tensors.cartesian))
     assert_allclose(minor_sym_norm.components, norm4(minor_sym_tensors.cartesian))
 
 
-def test_trace(r2_tensors, sym_tensors):
+def test_trace(o2_tensors, sym_tensors):
     def trace(x):
         traces = np.zeros(x.shape[:2])
         for i, xi in enumerate(x):
@@ -1111,15 +1148,15 @@ def test_trace(r2_tensors, sym_tensors):
                 traces[i, j] = xij[0, 0] + xij[1, 1] + xij[2, 2]
         return traces
 
-    r2_traces = r2_tensors.trace
+    o2_traces = o2_tensors.trace
     sym_traces = sym_tensors.trace
-    assert isinstance(r2_traces, Scalar)
+    assert isinstance(o2_traces, Scalar)
     assert isinstance(sym_traces, Scalar)
-    assert_allclose(r2_traces.components, trace(r2_tensors.components))
+    assert_allclose(o2_traces.components, trace(o2_tensors.components))
     assert_allclose(sym_traces.components, trace(sym_tensors.cartesian))
 
 
-def test_dev(r2_tensors, sym_tensors):
+def test_dev(o2_tensors, sym_tensors):
     def dev(x):
         identity = np.identity(3)
         dev_part = np.zeros(x.shape)
@@ -1128,11 +1165,11 @@ def test_dev(r2_tensors, sym_tensors):
                 dev_part[i, j, :, :] = xij - np.trace(xij) * identity / 3.0
         return dev_part
 
-    r2_dev = r2_tensors.dev
+    r2_dev = o2_tensors.dev
     sym_dev = sym_tensors.dev
     assert isinstance(r2_dev, Order2Tensor)
     assert isinstance(sym_dev, Order2SymmetricTensor)
-    assert_allclose(r2_dev.components, dev(r2_tensors.components))
+    assert_allclose(r2_dev.components, dev(o2_tensors.components))
     assert_allclose(sym_dev.cartesian, dev(sym_tensors.cartesian))
 
 
@@ -1177,17 +1214,17 @@ def test_symmetric_tensor_voigt_mandel(sym_tensors, symmetric_matrices):
     )
 
 
-def test_rotations_identity(r2_tensors, sym_tensors, vectors, minor_sym_tensors):
-    o_identity = Orientation(np.identity(3))
-    r2_crystal = r2_tensors.to_crystal_frame(o_identity)
-    r2_specimen = r2_tensors.to_specimen_frame(o_identity)
+def test_rotations_identity(o2_tensors, sym_tensors, vectors, minor_sym_tensors):
+    o_identity = Orientation.identity()
+    r2_crystal = o2_tensors.to_crystal_frame(o_identity)
+    r2_specimen = o2_tensors.to_specimen_frame(o_identity)
     sym_crystal = sym_tensors.to_crystal_frame(o_identity)
     sym_specimen = sym_tensors.to_specimen_frame(o_identity)
     vec_crystal = vectors.to_crystal_frame(o_identity)
     vec_specimen = vectors.to_specimen_frame(o_identity)
     minor_specimen = minor_sym_tensors.to_specimen_frame(o_identity)
-    assert_allclose(r2_crystal.components, r2_tensors.components)
-    assert_allclose(r2_specimen.components, r2_tensors.components)
+    assert_allclose(r2_crystal.components, o2_tensors.components)
+    assert_allclose(r2_specimen.components, o2_tensors.components)
     assert_allclose(sym_crystal.components, sym_tensors.components)
     assert_allclose(sym_specimen.components, sym_tensors.components)
     assert_allclose(vec_crystal.components, vectors.components)
@@ -1197,23 +1234,23 @@ def test_rotations_identity(r2_tensors, sym_tensors, vectors, minor_sym_tensors)
 
 @pytest.mark.parametrize("num_orientations", [1, 2])
 def test_rotations_with_inverse(
-    r2_tensors,
+    o2_tensors,
     sym_tensors,
     vectors,
     minor_sym_tensors,
     rng,
     num_orientations,
-    r2_tensor,
+    o2_tensor,
     sym_tensor,
     vector,
     minor_sym_tensor,
 ):
     tensors = [
-        r2_tensors,
+        o2_tensors,
         sym_tensors,
         vectors,
         minor_sym_tensors,
-        r2_tensor,
+        o2_tensor,
         sym_tensor,
         vector,
         minor_sym_tensor,
@@ -1229,11 +1266,11 @@ def test_rotations_with_inverse(
 
 
 def test_rotations_with_inverse_s_dimension(
-    r2_tensors_p,
+    o2_tensors_p,
     sym_tensors_p,
     vectors_p,
     minor_sym_tensors_p,
-    r2_tensors,
+    o2_tensors,
     sym_tensors,
     vectors,
     minor_sym_tensors,
@@ -1242,13 +1279,13 @@ def test_rotations_with_inverse_s_dimension(
         NUM_POINTS * NUM_SLIP_SYSTEMS
     ).rotation_matrix.reshape((NUM_POINTS, NUM_SLIP_SYSTEMS, 3, 3))
     o = Orientation(orientations)
-    tensors_p = [r2_tensors_p, sym_tensors_p, vectors_p, minor_sym_tensors_p]
+    tensors_p = [o2_tensors_p, sym_tensors_p, vectors_p, minor_sym_tensors_p]
     for t in tensors_p:
         expected = np.repeat(t.components[:, np.newaxis, ...], NUM_SLIP_SYSTEMS, axis=1)
         t_rotated = t.to_crystal_frame(o).to_specimen_frame(o)
         assert_allclose(t_rotated.components, expected, atol=1e-12)
 
-    tensors = [r2_tensors, sym_tensors, vectors, minor_sym_tensors]
+    tensors = [o2_tensors, sym_tensors, vectors, minor_sym_tensors]
     for t in tensors:
         expected = t.components
         t_rotated = t.to_crystal_frame(o).to_specimen_frame(o)
