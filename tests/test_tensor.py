@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from materialite.tensor import _default_dims, order_dims
 from numpy.linalg import inv
 from numpy.testing import assert_allclose, assert_array_equal
 
@@ -14,6 +15,7 @@ from materialite import (
 
 NUM_POINTS = 2
 NUM_SLIP_SYSTEMS = 4
+NUM_TIME_INCREMENTS = 3
 
 
 def check_mul(tensors1, tensors2, output_type, dims, subscripts):
@@ -165,6 +167,22 @@ def scalars_s():
 
 
 @pytest.fixture
+def scalars_pst():
+    data = (
+        np.arange(NUM_POINTS * NUM_SLIP_SYSTEMS * NUM_TIME_INCREMENTS).reshape(
+            (NUM_POINTS, NUM_SLIP_SYSTEMS, NUM_TIME_INCREMENTS)
+        )
+        + 1
+    )
+    return Scalar(data, "pst")
+
+
+@pytest.fixture
+def scalars_stp(scalars_pst):
+    return scalars_pst.reorder("stp")
+
+
+@pytest.fixture
 def transversely_isotropic_stiffness_matrix():
     return np.array(
         [
@@ -269,6 +287,36 @@ def test_error_if_inconsistent_dimensions(matrices, symmetric_matrices):
 
     with pytest.raises(ValueError):
         _ = Vector(np.arange(12).reshape((2, 2, 3)), "p")
+
+
+def test_default_dims():
+    assert _default_dims(0) == ""
+    assert _default_dims(1) == "p"
+    assert _default_dims(2) == "ps"
+    assert _default_dims(3) == "psa"
+    assert _default_dims(4) == "psab"
+
+    # Ensure no duplicate characters (p and s don't reappear)
+    dims = _default_dims(20)
+    assert len(set(dims)) == len(dims)  # All unique
+
+
+def test_order_dims():
+
+    assert order_dims("ab", "bc") == "abc"
+    assert order_dims("ac", "b") == "acb"
+    assert order_dims("", "abc") == "abc"
+    assert order_dims("abc", "") == "abc"
+    assert order_dims("ps", "sp") == "ps"
+    assert order_dims("ps", "psa") == "psa"
+    assert order_dims("abc", "bcd") == "abcd"
+    assert order_dims("ab", "cd") == "abcd"
+    assert order_dims("abd", "dbc") == "abdc"
+    assert order_dims("abcd", "dcba") == "abcd"
+    assert order_dims("cab", "abc") == "cab"
+    assert order_dims("zyx", "abc") == "zyxabc"
+    assert order_dims("a", "bcd") == "abcd"
+    assert order_dims("abd", "c") == "abdc"
 
 
 def test_idempotence(scalars, vectors, sym_tensors, o2_tensors, minor_sym_tensors):
@@ -499,6 +547,42 @@ def test_get_item(
             _ = t[..., 0]
 
 
+def test_broadcast_with_different_dims(scalars, scalars_p):
+    scalars_sp = scalars.reorder("sp")
+
+    result = scalars + scalars_sp  # "ps" + "sp" -> "ps"
+
+    assert result.dims_str == "ps"
+    expected_components = scalars.components + scalars_sp.components.T
+    assert_allclose(result.components, expected_components)
+
+
+def test_repeat_and_writability(vectors):
+
+    repeated = Scalar.zero().repeat((NUM_POINTS, NUM_SLIP_SYSTEMS))
+    result = np.zeros((NUM_POINTS, NUM_SLIP_SYSTEMS))
+
+    assert_allclose(repeated.components, result)
+    assert repeated.dims_str == "ps"
+    assert repeated.components.flags.writeable == True
+
+    # Do not allow an already dimensioned tensor to be repeated
+    with pytest.raises(ValueError, match="Cannot repeat.*already has dimensions"):
+        vectors.repeat(5)
+
+
+def test_reorder_dims(scalars_pst):
+
+    reordered = scalars_pst.reorder("tps")
+
+    assert reordered.dims_str == "tps"
+    assert_allclose(reordered.components.transpose(1, 2, 0), scalars_pst.components)
+
+    # Test error for mismatched dimension naming
+    with pytest.raises(ValueError, match="must contain the same dimensions"):
+        scalars_pst.reorder("xyz")
+
+
 def test_add(
     sym_tensors,
     sym_tensor,
@@ -538,6 +622,8 @@ def test_add(
 def test_add_broadcast(
     scalars,
     scalars_p,
+    scalars_pst,
+    scalars_stp,
     sym_tensors,
     sym_tensors_p,
     o2_tensors,
@@ -548,6 +634,13 @@ def test_add_broadcast(
     result = scalars.components + scalars_p.components[:, np.newaxis]
     assert_allclose((scalars + scalars_p).components, result)
     assert_allclose((scalars_p + scalars).components, result)
+
+    expected = scalars_pst + scalars_stp
+    result = scalars_pst.components + scalars_stp.components.transpose(
+        2, 0, 1
+    )  # "pst" + "stp" -> "pst"
+    assert_allclose(expected.components, result)
+    assert expected.dims_str == "pst"
 
     result_sym = sym_tensors.cartesian + sym_tensors_p.cartesian[:, np.newaxis, :, :]
     assert_allclose((sym_tensors + sym_tensors_p).cartesian, result_sym)
