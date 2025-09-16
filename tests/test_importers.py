@@ -1,11 +1,62 @@
 import numpy as np
 import pandas as pd
 import pytest
-from materialite import import_dream3d, import_spparks, import_vgstudio
+from materialite import import_dream3d, import_spparks, import_vgstudio, import_evpfft
 from numpy.testing import assert_allclose, assert_array_equal
 from pandas.testing import assert_frame_equal
 
 UTIL_PATH = "materialite.util"
+
+
+def write_to_file(filename, data):
+    content = "\n".join([" ".join(map(str, d)) for d in data])
+    filename.write_text(content)
+
+
+@pytest.fixture
+def evpfft_file_contents():
+    return [
+        [99.80835, 66.40345, 28.98868, 1, 1, 1, 3, 1],
+        [99.80835, 66.40345, 28.98868, 2, 1, 1, 3, 1],
+        [99.80835, 66.40345, 28.98868, 1, 2, 1, 3, 1],
+        [99.80835, 66.40345, 28.98868, 2, 2, 1, 3, 1],
+        [-157.91174, 115.84247, -38.84106, 1, 1, 2, 5, 1],
+        [-157.91174, 115.84247, -38.84106, 2, 1, 2, 5, 1],
+        [149.57114, 93.98035, 66.88121, 1, 2, 2, 2, 1],
+        [149.57114, 93.98035, 66.88121, 2, 2, 2, 2, 1],
+        [124.95919, 77.12344, 3.69264, 1, 1, 3, 1, 1],
+        [14.56741, 69.05068, 44.11161, 2, 1, 3, 9, 1],
+        [124.95919, 77.12344, 3.69264, 1, 2, 3, 1, 1],
+        [36.92948, 123.74353, 9.99989, 2, 2, 3, 7, 1],
+        [124.95919, 77.12344, 3.69264, 1, 1, 4, 1, 1],
+        [14.56741, 69.05068, 44.11161, 2, 1, 4, 9, 1],
+        [149.27193, 113.16453, -52.42448, 1, 2, 4, 4, 1],
+        [149.27193, 113.16453, -52.42448, 2, 2, 4, 4, 1],
+    ]
+
+
+@pytest.fixture
+def spparks_file_contents():
+    return [
+        [1, 9026, 0, 0, 0],
+        [2, 9026, 1, 0, 0],
+        [3, 9026, 2, 0, 0],
+        [4, 9026, 0, 1, 0],
+        [5, 9026, 1, 1, 0],
+        [6, 9026, 2, 1, 0],
+        [7, 9026, 0, 2, 0],
+        [8, 9026, 1, 2, 0],
+        [9, 9026, 2, 2, 0],
+        [10, 9026, 0, 0, 1],
+        [11, 9026, 1, 0, 1],
+        [12, 9026, 2, 0, 1],
+        [13, 9026, 0, 1, 1],
+        [14, 9026, 1, 1, 1],
+        [15, 9026, 2, 1, 1],
+        [16, 9026, 0, 2, 1],
+        [17, 9026, 1, 2, 1],
+        [18, 743, 2, 2, 1],
+    ]
 
 
 @pytest.fixture
@@ -179,8 +230,47 @@ def test_import_vgstudio_ranges(mocker):
     assert_array_equal(material.fields[label], expected_field)
 
 
-def test_read_spparks_file():
-    material = import_spparks("tests/Coords_SPPARKS_AM_1.txt", skiprows=0)
-    assert_array_equal(material.dimensions, [180, 180, 50])
-    assert material.fields.feature.max() == 199558
-    assert len(material.fields.feature.unique()) == 2485
+def test_import_spparks(tmp_path, spparks_file_contents):
+    filename = tmp_path / "spparks.txt"
+    write_to_file(filename, spparks_file_contents)
+    material = import_spparks(
+        filename, skiprows=0, usecols=[1, 2, 3, 4], names=["grain", "x", "y", "z"]
+    )
+    expected_fields = np.array(spparks_file_contents)[:, 1:]
+    fields = (
+        material.get_fields()
+        .sort_values(by=["z", "y", "x"])[["grain", "x", "y", "z"]]
+        .to_numpy()
+    )
+    assert_array_equal(fields, expected_fields)
+
+
+def test_import_evpfft(tmp_path, evpfft_file_contents):
+    filename = tmp_path / "fields.txt"
+    write_to_file(filename, evpfft_file_contents)
+    material = import_evpfft(filename)
+    expected_fields = pd.DataFrame(
+        data=np.array(evpfft_file_contents),
+        columns=[
+            "euler_1",
+            "euler_2",
+            "euler_3",
+            "x_id",
+            "y_id",
+            "z_id",
+            "grain",
+            "phase",
+        ],
+    ).sort_values(by=["x_id", "y_id", "z_id"])
+    assert_allclose(
+        material.extract("orientation").euler_angles_in_degrees,
+        expected_fields[["euler_1", "euler_2", "euler_3"]].to_numpy(),
+    )
+    assert_array_equal(
+        material.extract(["x_id", "y_id", "z_id"]) + 1,
+        expected_fields[["x_id", "y_id", "z_id"]].to_numpy().astype(int),
+    )
+    assert_array_equal(
+        material.extract(["grain", "phase"]),
+        expected_fields[["grain", "phase"]].to_numpy().astype(int),
+    )

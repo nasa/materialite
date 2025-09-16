@@ -10,6 +10,8 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
+import warnings
+
 from abc import abstractmethod
 from copy import deepcopy
 
@@ -876,58 +878,60 @@ class Material:
 
     def export_to_evpfft(
         self,
-        euler_angles_labels=["euler_angles_1", "euler_angles_2", "euler_angles_3"],
-        feature_label="feature",
+        orientation_label="orientation",
+        grain_label="grain",
         phase_label="phase",
         output="fields.txt",
-        euler_angles_to_degrees=False,
+        euler_angles_to_degrees=True,
     ):
         """
         Export material data for EVP-FFT crystal plasticity solver.
 
         Parameters
         ----------
-        euler_angles_labels : list, default ["euler_angles_1", "euler_angles_2", "euler_angles_3"]
-            Names of fields containing Bunge Euler angles.
-        feature_label : str, default "feature"
-            Name of field containing feature/grain IDs.
+        orientation_label : string, default "orientation"
+            Name of field containing Materialite Orientations of the points.
+        grain_label : str, default "grain"
+            Name of field containing grain IDs.
         phase_label : str, default "phase"
             Name of field containing phase IDs.
         output : str, default "fields.txt"
             Output file path.
-        euler_angles_to_degrees : bool, default False
-            Whether to convert Euler angles from radians to degrees.
+        euler_angles_to_degrees : bool, default True
+            Whether to write Euler angles in degrees (True) or radians (False).
         """
+
         valid_dimensions = np.array(
             [power_of_two_below(dim) for dim in self.dimensions]
         )
-        fields = self.get_fields()
 
         if not np.array_equal(valid_dimensions, self.dimensions):
-            # Going to force a crop out of points above powers of two dimensions in a hidden way for now
-            fields = self._get_cropped_fields(fields, points_above=valid_dimensions - 1)
+            warnings.warn(
+                "Outputting to EVP-FFT with dimensions that are not powers of 2. Use Material.crop_by_range() or Material.crop_by_id_range() if the dimensions must be powers of 2."
+            )
+        if euler_angles_to_degrees:
+            euler_angles = self.extract(orientation_label).euler_angles_in_degrees
+        else:
+            euler_angles = self.extract(orientation_label).euler_angles
+        x_id = self.extract("x_id") + 1
+        y_id = self.extract("y_id") + 1
+        z_id = self.extract("z_id") + 1
+        grains = self.extract(grain_label)
+        phases = self.extract(phase_label)
 
-        unit_factor = 180.0 / np.pi if euler_angles_to_degrees else 1.0
-
-        export_labels = [
-            euler_angles_labels[0],
-            euler_angles_labels[1],
-            euler_angles_labels[2],
-            "x_id",
-            "y_id",
-            "z_id",
-            feature_label,
-            phase_label,
-        ]
-        fields.assign(
-            euler_angles_1=fields.euler_angles_1 * unit_factor,
-            euler_angles_2=fields.euler_angles_2 * unit_factor,
-            euler_angles_3=fields.euler_angles_3 * unit_factor,
-            x_id=fields.x_id + 1,
-            y_id=fields.y_id + 1,
-            z_id=fields.z_id + 1,
+        pd.DataFrame(
+            {
+                "euler_angle_1": euler_angles[:, 0],
+                "euler_angle_2": euler_angles[:, 1],
+                "euler_angle_3": euler_angles[:, 2],
+                "x": x_id,
+                "y": y_id,
+                "z": z_id,
+                "grain": grains,
+                "phase": phases,
+            }
         ).sort_values(by=["z", "y", "x"]).to_csv(
-            output, header=False, sep=" ", index=False, columns=export_labels
+            output, header=False, sep=" ", index=False, float_format="%.5f"
         )
 
 
