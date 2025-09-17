@@ -700,6 +700,85 @@ class Material:
         else:
             raise ValueError(f"{kind} is not a valid plot kind")
 
+    def apply(self, func, *func_args, out=None, **func_kwargs):
+        """
+        Apply function with automatic field extraction and optional field creation.
+
+        Parameters:
+        -----------
+        func : callable
+            Function to apply to the extracted fields
+        *func_args : str or any
+            Field labels (str) to extract or raw values to pass to function
+        out : str or iterable of str, optional
+            If provided, create field(s) with these labels containing the result(s)
+        **func_kwargs : str or any
+            Field labels (str) to extract or raw values to pass as keyword arguments
+
+        Returns:
+        --------
+        Material or result
+            New Material with added field(s) if `out` is specified, otherwise the raw result
+        """
+
+        field_labels = self.get_fields().columns
+
+        # Extract fields or use raw values
+        args = [
+            (self.extract(arg) if isinstance(arg, str) and arg in field_labels else arg)
+            for arg in func_args
+        ]
+        kwargs = {
+            k: self.extract(v) if isinstance(v, str) and v in field_labels else v
+            for k, v in func_kwargs.items()
+        }
+
+        result = func(*args, **kwargs)
+
+        if out is None:
+            return result
+
+        # Return new material with the new field if function only has a single output
+        if isinstance(out, str):
+            return self.create_fields({out: result})
+
+        # Create multiple fields if function has multiple outputs
+        try:
+            labels = list(out)
+            fields = (
+                dict(zip(labels, result))
+                if not len(labels) == 1
+                else {labels[0]: result}
+            )
+            return self.create_fields(fields)
+        except (TypeError, ValueError) as e:
+            raise ValueError(
+                f"Could not create fields from out={out} and result. "
+                f"If out is iterable, result must be iterable with matching length. "
+                f"Error: {e}"
+            )
+
+    def pipe(self, func, *args, **kwargs):
+        """
+        Apply a function that receives the material instance as its first argument.
+
+        Enables chaining of operations that need access to material attributes
+        or methods by passing the current material as the first argument to func.
+
+        Parameters
+        ----------
+        func : callable
+            Function that takes a Material instance as its first argument.
+        *args, **kwargs : any
+            Additional arguments passed to the function.
+
+        Returns
+        -------
+        any
+            Result of func(self, *args, **kwargs).
+        """
+        return func(self, *args, **kwargs)
+
     @staticmethod
     def _get_cropped_fields(fields, points_above):
         """Filter fields to keep only points below specified indices."""
