@@ -13,7 +13,7 @@
 import h5py
 import numpy as np
 import pandas as pd
-from materialite import Material
+from materialite import Material, Orientation
 from materialite.util import camel_to_snake
 
 
@@ -99,8 +99,8 @@ def import_spparks(
         sep=" ",
         header=None,
         skiprows=skiprows,
-        usecols=[1, 2, 3, 4],
-        names=["feature", "x", "y", "z"],
+        usecols=usecols,
+        names=names,
     )
     fields.sort_values(by=["z", "y", "x"], inplace=True)
 
@@ -152,6 +152,10 @@ def import_evpfft(
     file,
     spacing=[1, 1, 1],
     origin=[0, 0, 0],
+    grain_label="grain",
+    phase_label="phase",
+    orientation_label="orientation",
+    euler_angles_to_radians=True,
 ):
 
     fields = pd.read_csv(
@@ -165,14 +169,26 @@ def import_evpfft(
             "x_id",
             "y_id",
             "z_id",
-            "feature",
-            "phase",
+            grain_label,
+            phase_label,
         ],
     ).sort_values(by=["x_id", "y_id", "z_id"])
 
-    fields[["euler_angle_1", "euler_angle_2", "euler_angle_3"]] *= np.pi / 180
+    if euler_angles_to_radians:
+        orientations = Orientation.from_euler_angles(
+            fields[["euler_angle_1", "euler_angle_2", "euler_angle_3"]].to_numpy(),
+            in_degrees=True,
+        )
+    else:
+        orientations = Orientation.from_euler_angles(
+            fields[["euler_angle_1", "euler_angle_2", "euler_angle_3"]].to_numpy()
+        )
 
     dimensions = fields[["x_id", "y_id", "z_id"]].max().to_numpy()
+
+    fields = fields.assign(**{orientation_label: orientations}).drop(
+        labels=["euler_angle_1", "euler_angle_2", "euler_angle_3"], axis=1
+    )
 
     return Material(
         dimensions=dimensions,

@@ -4,7 +4,14 @@ import pytest  # Includes: tmp_path
 from numpy.testing import assert_allclose, assert_array_equal
 from pandas.testing import assert_frame_equal
 
-from materialite import Box, Material, Sphere, Superellipsoid, import_dream3d
+from materialite import (
+    Box,
+    Material,
+    Sphere,
+    Superellipsoid,
+    Orientation,
+    import_dream3d,
+)
 from materialite.util import power_of_two_below
 
 
@@ -80,22 +87,22 @@ def expected_initialized_fields():
 @pytest.fixture
 def expected_evpfft_file_contents():
     return (
-        "99.80835 66.40346 28.98868 1 1 1 3 1\n"
-        + "99.80835 66.40346 28.98868 2 1 1 3 1\n"
-        + "99.80835 66.40346 28.98868 1 2 1 3 1\n"
-        + "99.80835 66.40346 28.98868 2 2 1 3 1\n"
-        + "202.08827 115.84247 321.15894 1 1 2 5 1\n"
-        + "202.08827 115.84247 321.15894 2 1 2 5 1\n"
-        + "149.57115 93.980354 66.8812 1 2 2 2 1\n"
-        + "149.57115 93.980354 66.8812 2 2 2 2 1\n"
-        + "124.95919 77.123436 3.692635 1 1 3 1 1\n"
-        + "14.567412 69.05068 44.111614 2 1 3 9 1\n"
-        + "124.95919 77.123436 3.692635 1 2 3 1 1\n"
-        + "36.929478 123.74354 9.999895 2 2 3 7 1\n"
-        + "124.95919 77.123436 3.692635 1 1 4 1 1\n"
-        + "14.567412 69.05068 44.111614 2 1 4 9 1\n"
-        + "149.27193 113.16453 307.57553 1 2 4 4 1\n"
-        + "149.27193 113.16453 307.57553 2 2 4 4 1\n"
+        "99.80835 66.40345 28.98868 1 1 1 3 1\n"
+        + "99.80835 66.40345 28.98868 2 1 1 3 1\n"
+        + "99.80835 66.40345 28.98868 1 2 1 3 1\n"
+        + "99.80835 66.40345 28.98868 2 2 1 3 1\n"
+        + "-157.91174 115.84247 -38.84106 1 1 2 5 1\n"
+        + "-157.91174 115.84247 -38.84106 2 1 2 5 1\n"
+        + "149.57114 93.98035 66.88121 1 2 2 2 1\n"
+        + "149.57114 93.98035 66.88121 2 2 2 2 1\n"
+        + "124.95919 77.12344 3.69264 1 1 3 1 1\n"
+        + "14.56741 69.05068 44.11161 2 1 3 9 1\n"
+        + "124.95919 77.12344 3.69264 1 2 3 1 1\n"
+        + "36.92948 123.74353 9.99989 2 2 3 7 1\n"
+        + "124.95919 77.12344 3.69264 1 1 4 1 1\n"
+        + "14.56741 69.05068 44.11161 2 1 4 9 1\n"
+        + "149.27193 113.16453 -52.42448 1 2 4 4 1\n"
+        + "149.27193 113.16453 -52.42448 2 2 4 4 1\n"
     )
 
 
@@ -404,16 +411,46 @@ def test_export_to_evpfft(tmp_path, expected_evpfft_file_contents):
         region_id_path=f"{data_container}/CellData/FeatureIds",
         region_field_paths=[f"{data_container}/Grain Data/EulerAngles"],
     ).create_uniform_field("phase", 1)
+    orientations = Orientation.from_euler_angles(
+        material.extract(["euler_angles_1", "euler_angles_2", "euler_angles_3"]),
+    )
+    material = material.create_fields({"orientation": orientations}).crop_by_id_range(
+        x_id_range=(-np.inf, 1), y_id_range=(-np.inf, 1), z_id_range=(-np.inf, 3)
+    )
 
     output_filename = tmp_path / "fields.txt"
     material.export_to_evpfft(
-        feature_label="feature_ids",
+        grain_label="feature_ids",
         output=output_filename,
         euler_angles_to_degrees=True,
     )
     with open(output_filename) as output_file:
         contents = output_file.read()
     assert contents == expected_evpfft_file_contents
+
+
+def test_export_to_evpfft_without_dream3d(tmp_path):
+    sphere = Sphere(radius=1, centroid=[0, 0, 0])
+    orientation1 = Orientation.from_euler_angles([0, 0, 0])
+    orientation2 = Orientation.from_euler_angles([30, 45, 60], in_degrees=True)
+    material = (
+        Material(dimensions=[2, 2, 2])
+        .create_uniform_field("orientation", orientation1)
+        .create_uniform_field("grain", 1)
+        .create_uniform_field("phase", 1)
+        .insert_feature(
+            sphere,
+            fields={
+                "grain": 2,
+                "orientation": orientation2,
+            },
+        )
+    )
+    output_filename = tmp_path / "small_model_fields.txt"
+    material.export_to_evpfft(output=output_filename, euler_angles_to_degrees=True)
+    with open(output_filename) as output_file:
+        first_line = output_file.readline()
+    assert first_line == "30.00000 45.00000 60.00000 1 1 1 2 1\n"
 
 
 def test_insert_feature_with_phase(material):
@@ -423,36 +460,6 @@ def test_insert_feature_with_phase(material):
     )
     assert material.get_fields().phase.iloc[0] == 0
     assert material.get_fields().phase.iloc[-1] == 1
-
-
-def test_export_to_evpfft_without_dream3d(tmp_path):
-    sphere = Sphere(radius=1, centroid=[0, 0, 0])
-    material = (
-        Material(dimensions=[2, 2, 2])
-        .create_fields(
-            fields={
-                "feature": 1,
-                "phase": 1,
-                "euler_angles_1": 0,
-                "euler_angles_2": 0,
-                "euler_angles_3": 0,
-            }
-        )
-        .insert_feature(
-            sphere,
-            fields={
-                "feature": 2,
-                "euler_angles_1": 30,
-                "euler_angles_2": 45,
-                "euler_angles_3": 60,
-            },
-        )
-    )
-    output_filename = tmp_path / "small_model_fields.txt"
-    material.export_to_evpfft(output=output_filename)
-    with open(output_filename) as output_file:
-        first_line = output_file.readline()
-    assert "1 1 1 2 1" in first_line
 
 
 def test_power_of_two_below():
@@ -650,6 +657,24 @@ def test_assign_random_orientations(small_material, seeded_rng):
         region_label="z", rng=seeded_rng
     )
     eulers = new_material.extract("orientation").euler_angles
+    assert_allclose(eulers, expected_eulers)
+
+
+def test_assign_one_random_orientation(small_material, seeded_rng):
+    material = small_material.create_uniform_field("grain", 1)
+    expected_eulers = np.array(
+        [
+            2 * np.pi * 0.22733602,
+            np.arccos(2 * 0.31675834 - 1),
+            2 * np.pi * (0.79736546 - 1),
+        ]
+    )
+    expected_eulers = np.tile(expected_eulers, (material.num_points, 1))
+    eulers = (
+        material.assign_random_orientations(region_label="grain", rng=seeded_rng)
+        .extract("orientation")
+        .euler_angles
+    )
     assert_allclose(eulers, expected_eulers)
 
 

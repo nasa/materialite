@@ -1426,35 +1426,35 @@ class Order4SymmetricTensor(Tensor):
         return Scalar(np.sqrt(components), self.dims_str)
 
     def directional_modulus(self, direction):
-        direction = direction.unit
-        direction_tensor = direction.outer(direction).sym
+        unit_direction = Vector(direction).unit
+        direction_tensor = unit_direction.outer(unit_direction).sym
         return 1.0 / (direction_tensor * (self.inv @ direction_tensor))
 
     def directional_bulk_modulus(self, direction):
-        direction = direction.unit
-        direction_tensor = direction.outer(direction).sym
+        unit_direction = Vector(direction).unit
+        direction_tensor = unit_direction.outer(unit_direction).sym
         return 1.0 / (3 * (self.inv @ direction_tensor).trace)
 
     def directional_shear_modulus(self, normal, direction):
-        direction = direction.unit
-        normal = normal.unit
-        if not np.allclose((direction * normal).components, 0.0):
+        unit_normal = Vector(normal).unit
+        unit_direction = Vector(direction).unit
+        if not np.allclose((unit_direction * unit_normal).components, 0.0):
             raise ValueError(
                 "tried to get directional shear moduli with directions that are not perpendicular"
             )
-        direction_tensor = normal.outer(direction).sym
+        direction_tensor = unit_normal.outer(unit_direction).sym
         return 1.0 / (4.0 * (direction_tensor * (self.inv @ direction_tensor)))
 
     def directional_poissons_ratio(self, transverse_direction, axial_direction):
-        axial = axial_direction.unit
-        transverse = transverse_direction.unit
-        axial_tensor = axial.outer(axial).sym
-        transverse_tensor = transverse.outer(transverse).sym
-        if not np.allclose((axial * transverse).components, 0.0):
+        unit_transverse = Vector(transverse_direction).unit
+        unit_axial = Vector(axial_direction).unit
+        axial_tensor = unit_axial.outer(unit_axial).sym
+        transverse_tensor = unit_transverse.outer(unit_transverse).sym
+        if not np.allclose((unit_axial * unit_transverse).components, 0.0):
             raise ValueError(
                 "tried to get directional Poisson's ratio with axial and transverse directions that are not perpendicular"
             )
-        moduli = self.directional_modulus(axial)
+        moduli = self.directional_modulus(unit_axial)
 
         return -moduli * (axial_tensor * (self.inv @ transverse_tensor))
 
