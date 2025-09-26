@@ -88,6 +88,11 @@ class Material:
         """Total size of the domain in each direction."""
         return self._sizes.copy()
 
+    @property
+    def center(self):
+        """Center of the domain."""
+        return self.origin + self.sizes / 2
+
     def _get_spacing_and_sizes(self, spacing, sizes, dimensions):
         """Calculate spacing and sizes from given parameters."""
         if sizes is not None:

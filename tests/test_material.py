@@ -1,18 +1,18 @@
 import numpy as np
 import pandas as pd
 import pytest  # Includes: tmp_path
+from materialite.util import power_of_two_below
 from numpy.testing import assert_allclose, assert_array_equal
 from pandas.testing import assert_frame_equal
 
 from materialite import (
     Box,
     Material,
+    Orientation,
     Sphere,
     Superellipsoid,
-    Orientation,
     import_dream3d,
 )
-from materialite.util import power_of_two_below
 
 
 @pytest.fixture
@@ -170,6 +170,16 @@ def test_choose_sizes():
     assert material.fields.x.max() == 4
     assert material.fields.y.max() == 8
     assert material.fields.z.max() == 11
+
+
+def test_center_property(material, small_material, initialized_material):
+    default_center = material.origin + material.sizes / 2
+    small_center = small_material.origin + small_material.sizes / 2
+    initialized_center = initialized_material.origin + initialized_material.sizes / 2
+
+    assert_array_equal(material.center, default_center)
+    assert_array_equal(small_material.center, small_center)
+    assert_array_equal(initialized_material.center, initialized_center)
 
 
 def test_initial_material_feature(material):
