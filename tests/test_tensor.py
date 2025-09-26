@@ -758,6 +758,18 @@ def test_mul_symmetric_order2(
     check_mul_cartesian(sym_tensors, o2_tensor, Scalar, "ps", "psij, ij -> ps")
 
 
+def test_mul_scalar_vector(vectors, vectors_p, vectors_s, scalars):
+    check_mul(scalars, vectors, Vector, "psj", "ps, psj -> psj")
+    check_mul(scalars, vectors_p, Vector, "psj", "ps, pj -> psj")
+    check_mul(scalars, vectors_s, Vector, "psj", "ps, sj -> psj")
+
+
+def test_mul_vector_scalar(vectors, vectors_p, vectors_s, scalars):
+    check_mul(vectors, scalars, Vector, "psj", "psj, ps -> psj")
+    check_mul(vectors_p, scalars, Vector, "psj", "pj, ps -> psj")
+    check_mul(vectors_s, scalars, Vector, "psj", "sj, ps -> psj")
+
+
 def test_mul_symmetric_scalar(sym_tensors, sym_tensors_p, sym_tensor, scalars):
     check_mul(sym_tensors, scalars, Order2SymmetricTensor, "psn", "psn, ps -> psn")
     check_mul(sym_tensors_p, scalars, Order2SymmetricTensor, "psn", "pn, ps -> psn")

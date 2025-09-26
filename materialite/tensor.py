@@ -719,6 +719,7 @@ class Vector(Tensor):
         return NotImplemented
 
     def __mul__(self, tensor):
+
         if isinstance(tensor, Number):
             return Vector(tensor * self.components, self.dims_str)
 
@@ -726,7 +727,7 @@ class Vector(Tensor):
 
         if isinstance(tensor, Scalar):
             output_indices = u + self._component_indices
-            return Scalar(
+            return Vector(
                 np.einsum(
                     f"{self.indices_str}, {tensor.indices_str} -> {output_indices}",
                     self.components,
