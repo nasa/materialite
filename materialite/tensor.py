@@ -477,12 +477,8 @@ class Tensor(ABC):
                 f"the original tensor's '{self.dims_str}'"
             )
 
-        permutation = [self.dims_str.index(dim) for dim in dims]
-
-        # Add component dimensions to the permutation
-        permutation.extend(range(len(self.dims_str), self.components.ndim))
-
-        new_components = np.transpose(self.components, permutation)
+        # Use einsum to reorder (ending ellipsis for component dimensions)
+        new_components = np.einsum(f"{self.dims_str}... -> {dims}...", self.components)
 
         return type(self)(new_components, dims)
 
@@ -727,6 +723,7 @@ class Vector(Tensor):
         return NotImplemented
 
     def __mul__(self, tensor):
+
         if isinstance(tensor, Number):
             return Vector(tensor * self.components, self.dims_str)
 
@@ -734,7 +731,7 @@ class Vector(Tensor):
 
         if isinstance(tensor, Scalar):
             output_indices = u + self._component_indices
-            return Scalar(
+            return Vector(
                 np.einsum(
                     f"{self.indices_str}, {tensor.indices_str} -> {output_indices}",
                     self.components,
@@ -1588,12 +1585,10 @@ class Orientation:
                 f"the original orientation's '{self.dims_str}'"
             )
 
-        permutation = [self.dims_str.index(dim) for dim in dims]
-
-        # Add component dimensions to the permutation
-        permutation.extend(range(len(self.dims_str), self.rotation_matrix.ndim))
-
-        new_components = np.transpose(self.rotation_matrix, permutation)
+        # Use einsum to reorder (ending ellipsis for component dimensions)
+        new_components = np.einsum(
+            f"{self.dims_str}... -> {dims}...", self.rotation_matrix
+        )
 
         return type(self)(new_components, dims)
 
