@@ -53,14 +53,19 @@ class IsotropicElasticPlastic:
         )
 
     def initialize(self, orientations):
+        num_points = len(orientations)
         stiffnesses = Order4SymmetricTensor(
-            np.tile(self.stiffness.components, (len(orientations), 1, 1))
+            np.tile(self.stiffness.components, (num_points, 1, 1))
         )
         self.state_variables["stiffnesses"] = stiffnesses
-        self.state_variables["plastic_strains"] = Order2SymmetricTensor.zero()
-        self.state_variables["old_plastic_strains"] = Order2SymmetricTensor.zero()
-        self.state_variables["eq_plastic_strains"] = Scalar(0.0)
-        self.state_variables["old_eq_plastic_strains"] = Scalar(0.0)
+        self.state_variables["plastic_strains"] = Order2SymmetricTensor.zero().repeat(
+            num_points
+        )
+        self.state_variables["old_plastic_strains"] = (
+            Order2SymmetricTensor.zero().repeat(num_points)
+        )
+        self.state_variables["eq_plastic_strains"] = Scalar(0.0).repeat(num_points)
+        self.state_variables["old_eq_plastic_strains"] = Scalar(0.0).repeat(num_points)
         self.state_variables["yield_stresses"] = self.yield_stress
         self.state_variables["old_yield_stresses"] = self.yield_stress
         return stiffnesses

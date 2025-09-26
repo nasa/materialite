@@ -16,20 +16,11 @@ from materialite.models.small_strain_fft import (
 )
 
 
-def get_outputs(material, num_output_times):
-    results = defaultdict(list)
-    for i in range(num_output_times):
-        data = material.state[f"output_time_{i}"]
-        results["slip_system_shear_strains"].append(
-            data["slip_system_shear_strains"].mean("p").components
-        )
-        results["slip_resistances"].append(
-            data["slip_resistances"].mean("p").components
-        )
-        results["plastic_strains"].append(data["plastic_strains"].mean("p").components)
-    for k, v in results.items():
-        results[k] = np.array(v)
-    return results
+def extract_outputs(material):
+    slip_resistances = material.extract("slip_resistances").mean("p").mean("s").components
+    slip_system_shear_strains = material.extract("slip_system_shear_strains").mean("p").mean("s").components
+    plastic_strains = material.extract("plastic_strains").mean("p").components
+    return slip_resistances, slip_system_shear_strains, plastic_strains
 
 
 @pytest.fixture
@@ -92,9 +83,9 @@ def test_perfect_plasticity(
         output_times=output_times,
         output_variables=output_variables,
     )
-    outputs = get_outputs(material, len(output_times))
-    assert_allclose(outputs["slip_resistances"], parameters["slip_resistance"])
-    assert_allclose(np.sum(outputs["plastic_strains"][:, :3], axis=1), 0)
+    slip_resistances, _, plastic_strains = extract_outputs(material)
+    assert_allclose(slip_resistances, parameters["slip_resistance"])
+    assert_allclose(np.sum(plastic_strains[:, :3], axis=1), 0)
 
 
 def test_linear_hardening(
@@ -112,12 +103,12 @@ def test_linear_hardening(
         output_times=output_times,
         output_variables=output_variables,
     )
-    outputs = get_outputs(material, len(output_times))
+    slip_resistances, slip_system_shear_strains, plastic_strains = extract_outputs(material)
     output_hardening_rate = (
-        outputs["slip_resistances"][-1] - outputs["slip_resistances"][0]
-    ) / (outputs["slip_system_shear_strains"][-1])
+        slip_resistances[-1] - slip_resistances[0]
+    ) / (slip_system_shear_strains[-1])
     assert_allclose(output_hardening_rate, hardening_rate)
-    assert_allclose(np.sum(outputs["plastic_strains"][:, :3], axis=1), 0)
+    assert_allclose(np.sum(plastic_strains[:, :3], axis=1), 0)
 
 
 def test_voce_hardening(
@@ -137,16 +128,16 @@ def test_voce_hardening(
         output_times=output_times,
         output_variables=output_variables,
     )
-    outputs = get_outputs(material, len(output_times))
+    slip_resistances, slip_system_shear_strains, plastic_strains = extract_outputs(material)
     integrated_voce = lambda x: parameters["slip_resistance"] + (tau1 + theta1 * x) * (
         1 - np.exp(-x * np.abs(theta0 / tau1))
     )
-    idx = outputs["slip_system_shear_strains"] > 1.0e-10
+    idx = slip_system_shear_strains > 1.0e-10
     assert_allclose(
-        integrated_voce(outputs["slip_system_shear_strains"][idx]),
-        outputs["slip_resistances"][idx],
+        integrated_voce(slip_system_shear_strains[idx]),
+        slip_resistances[idx],
     )
-    assert_allclose(np.sum(outputs["plastic_strains"][:, :3], axis=1), 0)
+    assert_allclose(np.sum(plastic_strains[:, :3], axis=1), 0)
 
 
 def test_af_hardening(
@@ -168,12 +159,12 @@ def test_af_hardening(
         output_times=output_times,
         output_variables=output_variables,
     )
-    outputs = get_outputs(material, len(output_times))
-    idx = outputs["slip_system_shear_strains"] > 1.0e-10
-    nonzero_slips = outputs["slip_system_shear_strains"][idx]
-    nonzero_crss = outputs["slip_resistances"][idx]
+    slip_resistances, slip_system_shear_strains, plastic_strains = extract_outputs(material)
+    idx = slip_system_shear_strains > 1.0e-10
+    nonzero_slips = slip_system_shear_strains[idx]
+    nonzero_crss = slip_resistances[idx]
     expected_slip_increments = nonzero_slips[1:] - nonzero_slips[:-1]
     crss_increments = nonzero_crss[1:] - nonzero_crss[:-1]
     slip_increments = crss_increments / (hardening - recovery * nonzero_crss[1:])
     assert_allclose(slip_increments, expected_slip_increments)
-    assert_allclose(np.sum(outputs["plastic_strains"][:, :3], axis=1), 0)
+    assert_allclose(np.sum(plastic_strains[:, :3], axis=1), 0)

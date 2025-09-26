@@ -56,8 +56,7 @@ def test_with_linear_hardening(material):
         output_variables=["eq_plastic_strains"],
         phase_label="phase",
     )
-    for i in range(len(output_times)):
-        state = material.state[f"output_time_{i}"]
-        eq_plastic_strains_i = state["eq_plastic_strains"]
-        mean_eq_plastic_strains_i = eq_plastic_strains_i.mean().components
-        assert_allclose(eq_plastic_strains_i.components, mean_eq_plastic_strains_i)
+    eq_plastic_strains = material.extract("eq_plastic_strains")
+    mean_eq_plastic_strains = eq_plastic_strains.mean("p").components
+    mean_eq_plastic_strains = np.tile(mean_eq_plastic_strains, (len(eq_plastic_strains), 1))
+    assert_allclose(eq_plastic_strains.components, mean_eq_plastic_strains)

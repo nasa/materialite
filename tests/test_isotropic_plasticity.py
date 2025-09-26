@@ -50,15 +50,9 @@ def test_with_perfect_plasticity(material, load_schedule):
         output_times=output_times,
     )
     stress = material.extract("stress")
-    mean_stress_norm = stress.mean().norm.components
-    axial_stresses = np.array(
-        [
-            material.state[f"output_time_{i}"]["stress"].mean().components[2]
-            for i in range(len(output_times))
-        ]
-    )
+    mean_stress_norm = stress[:, -1].mean().norm.components
+    axial_stresses = stress.mean("p").components[:, 2]
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
-    assert_allclose(stress.components[:, 2], axial_stresses[-1])
     assert_allclose(axial_stresses[9:], expected_mean_stress_norm)
 
 
@@ -87,21 +81,11 @@ def test_with_linear_hardening(material, load_schedule):
         output_variables=["eq_plastic_strains"],
     )
     stress = material.extract("stress")
-    mean_stress_norm = stress.mean().norm.components
-    axial_stresses = np.array(
-        [
-            material.state[f"output_time_{i}"]["stress"].mean().components[2]
-            for i in range(len(output_times))
-        ]
-    )
-    plastic_strains = np.array(
-        [
-            material.state[f"output_time_{i}"]["eq_plastic_strains"].mean().components
-            for i in range(len(output_times))
-        ]
-    )
+    mean_stress_norm = stress[:, -1].mean().norm.components
+    axial_stresses = stress.mean("p").components[:, 2]
+    plastic_strains = material.extract("eq_plastic_strains").mean("p").components
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
-    assert_allclose(stress.components[:, 2], axial_stresses[-1])
+    assert_allclose(stress[:, -1].components[:, 2], axial_stresses[-1])
     assert_allclose(
         axial_stresses[12:], hardening_rate * plastic_strains[11:-1] + yield_stress
     )
@@ -135,22 +119,12 @@ def test_with_voce_hardening(material, load_schedule):
         output_variables=["eq_plastic_strains"],
     )
     stress = material.extract("stress")
-    mean_stress_norm = stress.mean().norm.components
-    axial_stresses = np.array(
-        [
-            material.state[f"output_time_{i}"]["stress"].mean().components[2]
-            for i in range(len(output_times))
-        ]
-    )
-    plastic_strains = np.array(
-        [
-            material.state[f"output_time_{i}"]["eq_plastic_strains"].mean().components
-            for i in range(len(output_times))
-        ]
-    )
+    mean_stress_norm = stress[:, -1].mean().norm.components
+    axial_stresses = stress.mean("p").components[:, 2]
+    plastic_strains = material.extract("eq_plastic_strains").mean("p").components
     integrated_voce = lambda x: yield_stress + (tau1 + theta1 * x) * (
         1 - np.exp(-x * np.abs(theta0 / tau1))
     )
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
-    assert_allclose(stress.components[:, 2], axial_stresses[-1])
+    assert_allclose(stress[:, -1].components[:, 2], axial_stresses[-1])
     assert_allclose(axial_stresses[11:], integrated_voce(plastic_strains[10:-1]))
