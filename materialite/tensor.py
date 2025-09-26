@@ -483,7 +483,10 @@ class Tensor(ABC):
         return type(self)(new_components, dims)
 
     @classmethod
-    def from_list(cls, tensor, dims=None):
+    def from_list(cls, tensor):
+        if "p" in tensor[0].dims_str:
+            raise ValueError("Cannot create list from tensors that already have a points dimension")
+        dims = "p" + tensor[0].dims_str
         components = np.array([t.components for t in tensor])
         return cls(components, dims)
 

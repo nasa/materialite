@@ -455,9 +455,10 @@ def test_init_minor_sym_tensor_defaults(stiffness_matrices):
     )
 
 
-def test_from_list(vectors_p, vectors_s):
+def test_from_list(vectors_p, vectors_s, vectors):
     vectors_p_list = [Vector(c) for c in vectors_p.components]
     vectors_s_list = [Vector(c) for c in vectors_s.components]
+    vectors_list = [Vector(c, "s") for c in vectors.components]
     vectors_p_new = vectors_p.from_list(vectors_p_list)
     assert_array_equal(vectors_p_new.components, vectors_p.components)
     assert vectors_p_new.dims_str == "p"
@@ -468,8 +469,9 @@ def test_from_list(vectors_p, vectors_s):
     assert vectors_s_to_p.dims_str == "p"
     assert isinstance(vectors_s_to_p, Vector)
 
-    vectors_s_new = Vector.from_list(vectors_s_list, "s")
-    assert vectors_s_new.dims_str == "s"
+    vectors_new = Vector.from_list(vectors_list)
+    assert_array_equal(vectors_new.components, vectors.components)
+    assert vectors_new.dims_str == "ps"
 
 
 def test_get_item(
