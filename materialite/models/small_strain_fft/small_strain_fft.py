@@ -16,6 +16,7 @@
 # [3]: T.W.J. de Geus, J. Vondrejc. FFT-based non-linear solvers made simple (v0.1.0). Zenodo, 2019. doi:10.5281/zenodo.3550748. url:https://github.com/tdegeus/GooseFFT
 
 import logging
+from collections import defaultdict
 
 import numpy as np
 import scipy.sparse.linalg as sp
@@ -77,7 +78,7 @@ class SmallStrainFFT(Model):
             next_output_time = output_times[time_idx]
         else:
             next_output_time = np.inf
-        new_state = dict()
+        new_state = defaultdict(list)
 
         # Values that stay constant
         orientations = material.extract(orientation_label)
@@ -196,10 +197,11 @@ class SmallStrainFFT(Model):
                 time += time_increment
                 if time >= (next_output_time - time_tolerance):
                     outputs = constitutive_model.generate_outputs(output_variables)
-                    outputs.update({"stress": stress, "strain": strain, "time": time})
+                    outputs.update({"stress": stress, "strain": strain})
                     if postprocessor is not None:
                         outputs = postprocessor(outputs)
-                    new_state[f"output_time_{time_idx}"] = outputs
+                    for k, v in outputs.items():
+                        new_state[k].append(v)
                     time_idx += 1
                     next_output_time = output_times[time_idx]
                 max_constit_iters = np.max(all_constit_iters)
@@ -221,8 +223,23 @@ class SmallStrainFFT(Model):
 
         outputs = constitutive_model.postprocess(output_variables)
         outputs.update({"stress": stress, "strain": strain})
-        new_material = material.create_fields(outputs)
-        new_material.state.update(new_state)
+        if output_times is None:
+            # get final values of output variables and create fields
+            new_material = material.create_fields(outputs)
+        elif postprocessor is None:
+            # collect values of output variables into one tensor
+            for k, v in new_state.items():
+                tensor_type = type(v[0])
+                tensor_dims = v[0].dims_str
+                num_tensor_dims = len(tensor_dims)
+                components = np.array([t.components for t in v])
+                components = np.moveaxis(components, 0, num_tensor_dims)
+                new_state[k] = tensor_type(components, dims=tensor_dims + "t")
+            new_material = material.create_fields(new_state)
+        else:
+            new_material = material.create_fields(outputs)
+            new_material.state.update(new_state)
+
         return new_material
 
     def _get_new_time_increment(
