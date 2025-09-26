@@ -218,7 +218,7 @@ def test_strain_bcs(material_no_defect, evp_pp):
     material = model(material_no_defect, global_tolerance=1.0e-7)
     mean_stress_norm = material.extract("stress").mean().norm.components
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
-    S33 = mean_stress_norm = material.extract("stress").mean().components[2]
+    S33 = material.extract("stress").mean().components[2]
     assert_allclose(S33, expected_S33)
     mean_strain = material.extract("strain").mean().components
     assert_allclose(mean_strain, velocity_gradient.components * 0.004, atol=1e-14)
