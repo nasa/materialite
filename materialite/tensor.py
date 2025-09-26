@@ -37,6 +37,7 @@ def DIM_NAMES(dim_char):
     known_dims = {
         "p": "points",
         "s": "slip systems",
+        "t": "time",
         "i": "Cartesian components (i)",
         "j": "Cartesian components (j)",
         "m": "Mandel basis components (m)",
@@ -60,8 +61,7 @@ INNER_PRODUCT_INDICES = {
 }
 
 
-ORDER_FUNC = lambda x: DIM_ORDER[x]
-DIM_ORDER = {"p": 1, "s": 2, "i": 3, "j": 4, "m": 3, "n": 4}
+RESERVED_DIMS_AND_INDICES = "pstijmn"
 
 
 def order_dims(left_dims=None, right_dims=None):
@@ -278,16 +278,19 @@ def _default_dims(num):
         return "p"
     elif num == 2:
         return "ps"
+    elif num == 3:
+        return "pst"
     else:
-        # For 3+ dimensions, exclude 'p' and 's' from the alphabet
+        # For 4+ dimensions, exclude reserved letters from the alphabet
         available_letters = [
-            c for c in string.ascii_lowercase if c not in DIM_ORDER.keys()
+            c for c in string.ascii_lowercase if c not in RESERVED_DIMS_AND_INDICES
         ]
-        return "ps" + "".join(available_letters[: num - 2])
+        return "pst" + "".join(available_letters[: num - 3])
 
 
 class Tensor(ABC):
     __array_ufunc__ = None
+    _reserved_indices = "ijmn"
 
     def __init__(self, components, dims):
 
@@ -304,6 +307,11 @@ class Tensor(ABC):
         if dims is None:
             num_indices = len(self.components.shape) - self._component_dims
             dims = _default_dims(num_indices)
+
+        if any(char in self._reserved_indices for char in dims):
+            raise ValueError(
+                f"Dimensions ({dims}) cannot overlap with indices reserved for tensor components ({self._reserved_indices})"
+            )
 
         self.indices_str = dims + self._component_indices
         self.dims_str = dims

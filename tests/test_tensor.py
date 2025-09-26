@@ -293,8 +293,9 @@ def test_default_dims():
     assert _default_dims(0) == ""
     assert _default_dims(1) == "p"
     assert _default_dims(2) == "ps"
-    assert _default_dims(3) == "psa"
-    assert _default_dims(4) == "psab"
+    assert _default_dims(3) == "pst"
+    assert _default_dims(4) == "psta"
+    assert _default_dims(5) == "pstab"
 
     # Ensure no duplicate characters (p and s don't reappear)
     dims = _default_dims(20)
