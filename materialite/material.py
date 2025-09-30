@@ -637,9 +637,17 @@ class Material:
 
         data = fields[label].to_list()
         if isinstance(data[0], Order2SymmetricTensor):
-            result = type(data[0]).from_list(data).stress_voigt
+            tensor = type(data[0]).from_list(data)
+            if "t" in tensor.dims_str:
+                result = tensor[:, -1].stress_voigt
+            else:
+                result = tensor.stress_voigt
         elif isinstance(data[0], Scalar) or isinstance(data[0], Vector):
-            result = type(data[0]).from_list(data).components
+            tensor = type(data[0]).from_list(data)
+            if "t" in tensor.dims_str:
+                result = tensor[:, -1].components
+            else:
+                result = tensor.components
         else:
             result = np.array(data)
         plot_array = np.squeeze(result[slices])
