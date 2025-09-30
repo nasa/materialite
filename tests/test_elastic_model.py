@@ -140,28 +140,27 @@ def test_compare_elasticity_with_evpfft(material, elastic_model):
     model = SmallStrainFFT(
         load_schedule=load_schedule, end_time=5.0e-5, constitutive_model=elastic_model
     )
-    material = model(material)
+    material = model(material, linear_solver_tolerance=1.0e-7)
     mean_stress_norm = material.extract("stress").mean().norm.components
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
 
 
 def test_stress_bc(material_with_defect):
-    time_increment = 5.0e-5
+    end_time = 1.0e-4
     expected_mean_stress_norm = 6.0
     applied_strain_rate = Order2SymmetricTensor.zero()
-    stress_rate = (
-        Order2SymmetricTensor(np.array([0, 0, 6, 0, 0, 0])) / time_increment / 2
-    )
+    stress_rate = Order2SymmetricTensor(np.array([0, 0, 6, 0, 0, 0])) / end_time
     stress_mask = np.ones(6)
     load_schedule = LoadSchedule.from_constant_rates(
         applied_strain_rate, stress_rate, stress_mask
     )
     model = SmallStrainFFT(
         load_schedule=load_schedule,
-        end_time=1.0e-4,
-        initial_time_increment=time_increment,
+        end_time=end_time,
     )
-    material = model(material_with_defect, phase_label="phase")
+    material = model(
+        material_with_defect, phase_label="phase", linear_solver_tolerance=1.0e-7
+    )
     mean_stress_norm = material.extract("stress").mean().norm.components
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
 
@@ -173,7 +172,9 @@ def test_elasticity_with_defect(material_with_defect):
     model = SmallStrainFFT(
         load_schedule=load_schedule, end_time=5.0e-5, initial_time_increment=5.0e-5
     )
-    material = model(material_with_defect, phase_label="phase")
+    material = model(
+        material_with_defect, phase_label="phase", linear_solver_tolerance=1.0e-7
+    )
     mean_stress_norm = material.extract("stress").mean().norm.components
     print(mean_stress_norm)
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
@@ -193,7 +194,7 @@ def test_single_crystal_tension(simple_material, elastic_model):
     model = SmallStrainFFT(
         load_schedule=load_schedule, end_time=end_time, constitutive_model=elastic_model
     )
-    material = model(simple_material)
+    material = model(simple_material, linear_solver_tolerance=1.0e-7)
     stress_elasticity = material.extract("stress").components
     for s in stress_elasticity:
         assert_allclose_with_atol(s, stress_isostrain)
@@ -215,7 +216,7 @@ def test_single_crystal_shear(simple_material, elastic_model):
     model = SmallStrainFFT(
         load_schedule=load_schedule, end_time=end_time, constitutive_model=elastic_model
     )
-    material = model(simple_material)
+    material = model(simple_material, linear_solver_tolerance=1.0e-7)
     stress_elasticity = material.extract("stress").components
     for s in stress_elasticity:
         assert_allclose_with_atol(s, stress_isostrain)
@@ -240,7 +241,7 @@ def test_periodicity(elastic_model):
         .create_uniform_field("grain", 0)
         .run(create_grains, grains_per_side=grains_per_side)
         .create_regional_fields("grain", regional_field)
-        .run(model)
+        .run(model, linear_solver_tolerance=1.0e-7)
     )
     grain_size = material.sizes[0] / grains_per_side
     xyz_shift_half = grain_size / 2.0
@@ -248,12 +249,12 @@ def test_periodicity(elastic_model):
     material_half = (
         material.run(shift_origin, xyz_shift=xyz_shift_half)
         .create_regional_fields("grain", regional_field)
-        .run(model)
+        .run(model, linear_solver_tolerance=1.0e-7)
     )
     material_double = (
         material.run(shift_origin, xyz_shift=xyz_shift_double)
         .create_regional_fields("grain", regional_field)
-        .run(model)
+        .run(model, linear_solver_tolerance=1.0e-7)
     )
     stress = material.extract("stress").norm.components
     stress_half = material_half.extract("stress").norm.components
