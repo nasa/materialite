@@ -561,7 +561,7 @@ class Scalar(Tensor):
 
     @classmethod
     def zero(cls):
-        return cls(0)
+        return cls(0.0)
 
     @property
     def abs(self):
