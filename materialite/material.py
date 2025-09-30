@@ -103,7 +103,13 @@ class Material:
     def _get_spacing_and_sizes(self, spacing, sizes, dimensions):
         """Calculate spacing and sizes from given parameters."""
         if sizes is not None:
-            spacing = sizes / (dimensions - 1)
+            spacing = np.divide(
+                sizes,
+                dimensions - 1,
+                out=np.zeros_like(sizes, dtype=float),
+                where=dimensions != 1,
+            )
+            sizes[np.where(dimensions==1)[0]] = 0
         else:
             sizes = spacing * (dimensions - 1)
         return spacing, sizes
