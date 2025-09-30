@@ -40,6 +40,9 @@ def material():
 
 
 def test_with_linear_hardening(material):
+    expected_mean_stress_norm = 150.3980086
+    yield_stress = 150.0
+    hardening_rate = 1000.0
     load_schedule = LoadSchedule.from_constant_uniaxial_strain_rate(direction="z")
     time_increment = 1.0e-4
     end_time = 15.0e-4
@@ -56,7 +59,15 @@ def test_with_linear_hardening(material):
         output_variables=["eq_plastic_strains"],
         phase_label="phase",
     )
+    stress = material.extract("stress")
+    mean_stress_norm = stress[:, -1].mean().norm.components
+    axial_stresses = stress.mean("p").components[:, 2]
     eq_plastic_strains = material.extract("eq_plastic_strains")
     mean_eq_plastic_strains = eq_plastic_strains.mean("p").components
+    assert_allclose(mean_stress_norm, expected_mean_stress_norm)
+    assert_allclose(stress[:, -1].components[:, 2], axial_stresses[-1])
+    assert_allclose(
+        axial_stresses[12:], hardening_rate * mean_eq_plastic_strains[11:-1] + yield_stress
+    )
     mean_eq_plastic_strains = np.tile(mean_eq_plastic_strains, (len(eq_plastic_strains), 1))
     assert_allclose(eq_plastic_strains.components, mean_eq_plastic_strains)
