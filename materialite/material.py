@@ -16,11 +16,7 @@ from copy import deepcopy
 
 import numpy as np
 import pandas as pd
-
-try:
-    import pyvista as pv
-except ImportError:
-    pv = None
+import pyvista as pv
 from materialite.tensor import Order2SymmetricTensor, Orientation, Scalar, Vector
 from materialite.util import cartesian_grid, power_of_two_below, repeat_data
 from scipy import spatial
@@ -92,6 +88,17 @@ class Material:
     def center(self):
         """Center of the domain."""
         return self.origin + self.sizes / 2
+
+    @property
+    def far_corner(self):
+        """Far corner of the domain."""
+        return self.origin + self.sizes
+
+    @property
+    def corners(self):
+        """All corners of the domain indexed by multi-dimensional index."""
+        patterns = np.stack(np.meshgrid([0, 1], [0, 1], [0, 1], indexing="ij"), axis=-1)
+        return self.origin + patterns * self.sizes
 
     def _get_spacing_and_sizes(self, spacing, sizes, dimensions):
         """Calculate spacing and sizes from given parameters."""
@@ -412,24 +419,59 @@ class Material:
         Parameters
         ----------
         feature : Feature
-            Geometric feature object defining the region.
+            Geometric feature defining the region of interest
         fields : dict
-            Dictionary of field_name: value pairs to insert.
+            Dictionary mapping field names to values to insert
 
         Returns
         -------
         Material
-            New material with field values inserted in the feature region.
+            New material with updated field values
         """
-        is_inside = feature.check_inside(self.fields.x, self.fields.y, self.fields.z)
+        points = Vector(self.fields[["x", "y", "z"]].to_numpy())
+        is_inside = feature.check_inside(points)
+        num_points = self.num_points
+
         new_fields = {}
+
         for label, values in fields.items():
-            new_values = self.extract(label)
-            new_values[is_inside] = values
-            if isinstance(new_values, np.ndarray) and len(new_values.shape) > 1:
-                new_fields[label] = new_values.tolist()
+            # Create default field if it doesn't exist, otherwise copy existing
+            if label in self.fields:
+                new_values = self.extract(label)
             else:
-                new_fields[label] = new_values
+                if hasattr(values, "zero"):
+                    new_values = values.zero().repeat(num_points)
+                elif hasattr(values, "identity"):
+                    new_values = values.identity().repeat(num_points)
+                else:
+                    new_values = np.zeros(num_points)
+
+            indices = np.where(is_inside)
+            rows = indices[0]  # Point indices
+
+            # Check if single value applies to all points vs multiple features
+            is_uniform = np.isscalar(values) or (
+                hasattr(values, "dims_str") and not values.dims_str
+            )
+
+            if is_uniform:
+                new_values[rows] = values
+            else:
+                # Map each point to its corresponding feature's value
+                feature_indices = indices[1:]
+                cols = np.ravel_multi_index(feature_indices, is_inside.shape[1:])
+
+                # Should be a better way to get numpy array indexing to work here
+                try:
+                    # Try tensor-style indexing first
+                    new_values[rows] = values[cols]
+                except (TypeError, IndexError):
+                    # Fall back to numpy array indexing for lists
+                    values_array = np.asarray(values)
+                    new_values[rows] = values_array[cols]
+
+            new_fields[label] = new_values
+
         return self.create_fields(new_fields)
 
     def remove_field(self, field_label, in_regional_field=None):
@@ -598,6 +640,7 @@ class Material:
         show_edges=False,
         color_lims=None,
         opacity=1.0,
+        mask=None,
     ):
         """
         Plot a field using PyVista visualization.
@@ -648,6 +691,12 @@ class Material:
                 + "You may need to specify a component."
             )
 
+        if mask is not None:
+            if mask not in list(fields):
+                raise TypeError(f"{mask} not found in fields")
+
+            mask_array = np.bool_(fields[mask].values)
+
         # Material points are displayed as voxel centroid (cell) values
         if kind.lower() == "voxel":
             grid = pv.ImageData()
@@ -655,6 +704,8 @@ class Material:
             grid.origin = list(self.origin - self.spacing / 2)
             grid.spacing = self.spacing
             grid.cell_data[label] = plot_array
+            if mask is not None:
+                grid = grid.extract_cells(mask_array)
             grid.plot(
                 cmap=colormap,
                 clim=color_lims,
@@ -1030,6 +1081,12 @@ class Feature:
         """Check if points are inside the feature geometry."""
         raise NotImplementedError
 
+    def _ensure_compatible_dims(self, tensor):
+        """Ensure tensor doesn't use 'p' dimension which conflicts with material points."""
+        if "p" not in tensor.dims_str:
+            return tensor
+        return tensor.with_dims(tensor.dims_str.replace("p", "r"))
+
 
 class Sphere(Feature):
     """
@@ -1037,32 +1094,18 @@ class Sphere(Feature):
 
     Parameters
     ----------
-    radius : float
-        Radius of the sphere.
+    radius : float or array-like
+        Radius of the sphere(s).
     centroid : array-like
-        Center coordinates [x, y, z] of the sphere.
+        Center coordinates [x, y, z] of the sphere(s).
     """
 
     def __init__(self, radius, centroid):
-        self.radius = radius
-        self.centroid = centroid
+        self.radius = self._ensure_compatible_dims(Scalar(radius))
+        self.centroid = self._ensure_compatible_dims(Vector(centroid))
 
-    def check_inside(self, x, y, z):
-        """
-        Check if points are inside the sphere.
-
-        Parameters
-        ----------
-        x, y, z : array-like
-            Point coordinates to check.
-
-        Returns
-        -------
-        array of bool
-            True for points inside the sphere.
-        """
-        c = self.centroid
-        return (x - c[0]) ** 2 + (y - c[1]) ** 2 + (z - c[2]) ** 2 <= self.radius**2
+    def check_inside(self, points):
+        return (points - self.centroid).norm.components <= self.radius.components
 
 
 class Superellipsoid(Feature):
@@ -1071,55 +1114,36 @@ class Superellipsoid(Feature):
 
     Parameters
     ----------
-    major_radius : float
-        Semi-axis length in the major direction.
-    intermediate_radius : float
-        Semi-axis length in the intermediate direction.
-    minor_radius : float
-        Semi-axis length in the minor direction.
-    shape_exponent : float
+    x_radius : float or array-like
+        Semi-axis length in the x direction.
+    y_radius : float or array-like
+        Semi-axis length in the y direction.
+    z_radius : float or array-like
+        Semi-axis length in the z direction.
+    shape_exponent : float or array-like
         Exponent controlling shape (2.0 = ellipsoid, >2 = box-like, <2 = diamond-like).
     centroid : array-like
-        Center coordinates [x, y, z] of the superellipsoid.
+        Center coordinates [x, y, z] of the superellipsoid(s).
     """
 
-    def __init__(
-        self, major_radius, intermediate_radius, minor_radius, shape_exponent, centroid
-    ):
-        self.major_radius = major_radius
-        self.intermediate_radius = intermediate_radius
-        self.minor_radius = minor_radius
-        self.shape_exponent = shape_exponent
-        self.centroid = centroid
+    def __init__(self, x_radius, y_radius, z_radius, shape_exponent, centroid):
+        self.x_radius = self._ensure_compatible_dims(Scalar(x_radius))
+        self.y_radius = self._ensure_compatible_dims(Scalar(y_radius))
+        self.z_radius = self._ensure_compatible_dims(Scalar(z_radius))
+        self.shape_exponent = self._ensure_compatible_dims(Scalar(shape_exponent))
+        self.centroid = self._ensure_compatible_dims(Vector(centroid))
 
-    def check_inside(self, x, y, z):
-        """
-        Check if points are inside the superellipsoid.
-
-        Parameters
-        ----------
-        x, y, z : array-like
-            Point coordinates to check.
-
-        Returns
-        -------
-        array of bool
-            True for points inside the superellipsoid.
-        """
-        a, b, c, n, o = (
-            self.major_radius,
-            self.intermediate_radius,
-            self.minor_radius,
-            self.shape_exponent,
-            self.centroid,
+    def check_inside(self, points):
+        # Stack radii into a single tensor for vectorized computation
+        radius = Scalar.from_stack(
+            [self.x_radius, self.y_radius, self.z_radius],
+            new_dim="b",
         )
+
         return (
-            abs((x - o[0]) / a) ** n
-            + abs((y - o[1]) / b) ** n
-            + abs((z - o[2]) / c) ** n
-            - 1
-            <= 0
-        )
+            (((points - self.centroid) * Vector.basis()).abs / radius)
+            ** self.shape_exponent
+        ).sum("b").components <= 1
 
 
 class Box(Feature):
@@ -1129,45 +1153,35 @@ class Box(Feature):
     Parameters
     ----------
     min_corner : array-like, default [-inf, -inf, -inf]
-        Minimum corner coordinates [x, y, z] of the box.
+        Minimum corner coordinates [x, y, z]. Use None for -inf.
     max_corner : array-like, default [inf, inf, inf]
-        Maximum corner coordinates [x, y, z] of the box.
+        Maximum corner coordinates [x, y, z]. Use None for +inf.
     """
 
     def __init__(
         self,
-        min_corner=np.array([-np.inf, -np.inf, -np.inf]),
-        max_corner=np.array([np.inf, np.inf, np.inf]),
+        min_corner=[-np.inf, -np.inf, -np.inf],
+        max_corner=[np.inf, np.inf, np.inf],
     ):
-        self.min_corner = np.array(
-            [
-                coordinate if coordinate is not None else -np.inf
-                for coordinate in min_corner
-            ]
+        self.min_corner = self._ensure_compatible_dims(
+            self._remove_nones(min_corner, -np.inf)
         )
-        self.max_corner = np.array(
-            [
-                coordinate if coordinate is not None else np.inf
-                for coordinate in max_corner
-            ]
+        self.max_corner = self._ensure_compatible_dims(
+            self._remove_nones(max_corner, np.inf)
         )
 
-    def check_inside(self, x, y, z):
-        """
-        Check if points are inside the box.
+    def _remove_nones(self, corner, default_for_none):
+        """Convert iterable to Vector, replacing None values with default."""
+        if isinstance(corner, Vector):
+            return corner
 
-        Parameters
-        ----------
-        x, y, z : array-like
-            Point coordinates to check.
+        # Replace None values with the appropriate infinity
+        processed = [default_for_none if x is None else x for x in corner]
+        return Vector(processed)
 
-        Returns
-        -------
-        array of bool
-            True for points inside the box.
-        """
-        min_x, min_y, min_z = self.min_corner
-        max_x, max_y, max_z = self.max_corner
-        return np.logical_and.reduce(
-            [min_x <= x, x <= max_x, min_y <= y, y <= max_y, min_z <= z, z <= max_z]
-        )
+    def check_inside(self, points):
+        above_min = (points - self.min_corner).components >= 0
+        below_max = -(points - self.max_corner).components >= 0
+
+        # Point is inside if all coordinates are between min and max
+        return np.logical_and(np.all(above_min, axis=-1), np.all(below_max, axis=-1))

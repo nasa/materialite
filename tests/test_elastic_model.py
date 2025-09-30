@@ -3,6 +3,8 @@ from functools import partial
 import numpy as np
 import pandas as pd
 import pytest  # Includes: tmp_path, mocker
+from materialite.models.small_strain_fft import Elastic, LoadSchedule, SmallStrainFFT
+from materialite.util import repeat_data
 from numpy.testing import assert_allclose
 
 from materialite import (
@@ -13,8 +15,6 @@ from materialite import (
     Orientation,
     Sphere,
 )
-from materialite.models.small_strain_fft import Elastic, LoadSchedule, SmallStrainFFT
-from materialite.util import repeat_data
 
 A_TOL = 1e-14
 assert_allclose_with_atol = partial(assert_allclose, atol=A_TOL)
@@ -88,7 +88,7 @@ def material():
         "orientation", Orientation.from_euler_angles([0, np.pi / 4, 0])
     ).insert_feature(
         Box(max_corner=[None, None, material.sizes[2] / 2]),
-        fields={"orientation": Orientation(np.eye(3))},
+        fields={"orientation": Orientation.identity()},
     )
     return material
 
@@ -96,7 +96,7 @@ def material():
 @pytest.fixture
 def simple_material():
     return Material(dimensions=[3, 4, 5]).create_uniform_field(
-        "orientation", Orientation(np.eye(3))
+        "orientation", Orientation.identity()
     )
 
 
