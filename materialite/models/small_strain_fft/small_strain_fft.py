@@ -98,6 +98,7 @@ class SmallStrainFFT(Model):
         old_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
         old_stress = Order2SymmetricTensor.zero().repeat(self._num_points)
         old_fluctuation_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
+        old_max_strain_increment = 0.0
         summed_von_mises_stress = 0.0
         time_step_id = 0
         time_increment = self.initial_time_increment
@@ -107,6 +108,12 @@ class SmallStrainFFT(Model):
             strain_increment = self.load_schedule.strain_increment(time, time_increment)
             stress_increment = self.load_schedule.stress_increment(time, time_increment)
             mean_applied_stress = self.load_schedule.stress(time, time_increment)
+            max_strain_increment_idx = np.argmax(np.abs(strain_increment.components))
+            max_strain_increment = strain_increment.components[max_strain_increment_idx]
+            if max_strain_increment * old_max_strain_increment < 0.0:
+                old_fluctuation_strain = Order2SymmetricTensor.zero().repeat(
+                    self._num_points
+                )
             strain = old_strain + strain_increment + old_fluctuation_strain
             if not np.all(stress_increment.components < 1.0e-14):
                 strain += tangent.mean().inv @ stress_increment
@@ -135,7 +142,7 @@ class SmallStrainFFT(Model):
                         1.5
                     )
                     equilibrium_error = np.max(np.abs(b)) / mean_von_mises_stress
-                    self._logger.debug(f"b0: {equilibrium_error}")
+                    self._logger.debug(f"equilibrium error: {equilibrium_error}")
                     guess_stress = stress.copy()
                     all_constit_iters.append(constit_iters)
                 self._logger.debug(f"global iteration {iteration}")
@@ -193,10 +200,10 @@ class SmallStrainFFT(Model):
                     converged = True
 
                 guess_stress = stress.copy()
-                self._logger.debug(f"equilibrium err: {equilibrium_error}")
-                self._logger.debug(f"scaled strain err: {scaled_strain_error}")
+                self._logger.debug(f"equilibrium error: {equilibrium_error}")
+                self._logger.debug(f"scaled strain error: {scaled_strain_error}")
                 self._logger.debug(
-                    f"proj. scaled strain err: {projected_scaled_strain_error}"
+                    f"projected scaled strain error: {projected_scaled_strain_error}"
                 )
 
                 if iteration == MAX_ITERATIONS and not converged:
@@ -209,6 +216,7 @@ class SmallStrainFFT(Model):
                 old_strain = strain.copy()
                 old_tangent = tangent.copy()
                 summed_von_mises_stress += mean_von_mises_stress
+                old_max_strain_increment = max_strain_increment
                 time_step_id += 1
                 time += time_increment
                 if time >= (next_output_time - time_tolerance):
