@@ -69,6 +69,7 @@ class ElasticViscoplastic:
         )
         plastic_strains = Order2SymmetricTensor.zero().repeat(num_points)
         slip_system_shear_strains = Scalar.zero().repeat((num_points, num_slip_systems))
+        accumulated_slip = Scalar.zero().repeat(num_points)
         self.state_variables["orientations"] = orientations
         self.state_variables["stiffnesses"] = self.stiffness
         self.state_variables["schmid_tensors"] = schmid_tensor
@@ -82,6 +83,8 @@ class ElasticViscoplastic:
         self.state_variables["old_slip_system_shear_strains"] = (
             slip_system_shear_strains.copy()
         )
+        self.state_variables["accumulated_slip"] = accumulated_slip
+        self.state_variables["old_accumulated_slip"] = accumulated_slip.copy()
 
         return self.stiffness.to_specimen_frame(orientations)
 
@@ -98,6 +101,7 @@ class ElasticViscoplastic:
         old_slip_system_shear_strains = self.state_variables[
             "old_slip_system_shear_strains"
         ]
+        old_accumulated_slip = self.state_variables["old_accumulated_slip"]
         slip_resistances = self.state_variables["slip_resistances"]
         schmid_tensors = self.state_variables["schmid_tensors"]
         stiffnesses = self.state_variables["stiffnesses"]
@@ -127,7 +131,7 @@ class ElasticViscoplastic:
                     old_plastic_strains[not_converged],
                     time_increment,
                     strains[not_converged],
-                    old_slip_system_shear_strains[not_converged],
+                    old_accumulated_slip[not_converged],
                     old_slip_resistances[not_converged],
                 )
             else:
@@ -149,7 +153,7 @@ class ElasticViscoplastic:
                     old_plastic_strains,
                     time_increment,
                     strains,
-                    old_slip_system_shear_strains,
+                    old_accumulated_slip,
                     old_slip_resistances,
                 )
 
@@ -173,6 +177,9 @@ class ElasticViscoplastic:
         self.state_variables["slip_system_shear_strains"] = (
             old_slip_system_shear_strains + slip_increments
         )
+        self.state_variables["accumulated_slip"] = (
+            old_accumulated_slip + slip_increments.abs.sum("s")
+        )
 
         return (
             stresses.to_specimen_frame(orientations),
@@ -190,7 +197,7 @@ class ElasticViscoplastic:
         old_plastic_strains,
         time_increment,
         strains,
-        old_slip_system_shear_strains,
+        old_accumulated_slip,
         old_slip_resistances,
     ):
         prev_stresses = stresses.copy()
@@ -228,7 +235,7 @@ class ElasticViscoplastic:
         )
         slip_resistances = self.hardening_function(
             self.hardening_properties,
-            old_slip_system_shear_strains,
+            old_accumulated_slip,
             old_slip_resistances,
             plastic_slip_rates,
             time_increment,
@@ -258,6 +265,9 @@ class ElasticViscoplastic:
         ].copy()
         self.state_variables["old_slip_system_shear_strains"] = self.state_variables[
             "slip_system_shear_strains"
+        ].copy()
+        self.state_variables["old_accumulated_slip"] = self.state_variables[
+            "accumulated_slip"
         ].copy()
 
     def postprocess(self, output_variables=None):

@@ -17,7 +17,7 @@ from materialite import Scalar
 
 def perfect_plasticity(
     properties,
-    old_slip_system_shear_strains,
+    old_accumulated_slip,
     old_slip_resistances,
     plastic_slip_rates,
     time_increment,
@@ -27,7 +27,7 @@ def perfect_plasticity(
 
 def linear(
     properties,
-    old_slip_system_shear_strains,
+    old_accumulated_slip,
     old_slip_resistances,
     plastic_slip_rates,
     time_increment,
@@ -41,7 +41,7 @@ def linear(
 
 def voce(
     properties,
-    old_slip_system_shear_strains,
+    old_accumulated_slip,
     old_slip_resistances,
     plastic_slip_rates,
     time_increment,
@@ -50,10 +50,6 @@ def voce(
         slip_increment = time_increment * plastic_slip_rates.abs.sum("s")
     except ValueError:
         slip_increment = time_increment * plastic_slip_rates.abs
-    try:
-        old_accumulated_slip = old_slip_system_shear_strains.abs.sum("s")
-    except ValueError:
-        old_accumulated_slip = old_slip_system_shear_strains.abs
     theta0 = properties["theta_0"]
     theta1 = properties["theta_1"]
     tau1 = properties["tau_1"]
@@ -78,7 +74,7 @@ def voce(
 
 def armstrong_frederick(
     properties,
-    old_slip_system_shear_strains,
+    old_accumulated_slip,
     old_slip_resistances,
     plastic_slip_rates,
     time_increment,
