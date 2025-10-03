@@ -109,7 +109,7 @@ class Material:
                 out=np.zeros_like(sizes, dtype=float),
                 where=dimensions != 1,
             )
-            sizes[np.where(dimensions==1)[0]] = 0
+            sizes[np.where(dimensions == 1)[0]] = 0
         else:
             sizes = spacing * (dimensions - 1)
         return spacing, sizes
@@ -570,6 +570,15 @@ class Material:
                 f"Values of {region_label} not found in regional field: {missing_keys}"
             )
         material._regional_fields[region_label] = regional_fields
+        return material
+
+    def update_regional_field(self, region_label, regional_field_update):
+        regional_field_update = pd.DataFrame(regional_field_update)
+        material = self.copy()
+        regional_field = material._regional_fields[region_label]
+        material._regional_fields[region_label] = pd.concat(
+            [regional_field, regional_field_update], ignore_index=True
+        )
         return material
 
     def extract_regional_field(self, region_label, field_label=None):

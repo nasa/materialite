@@ -980,6 +980,27 @@ def test_regional_field_error_if_new_regional_field_does_not_have_same_keys(
     df = pd.DataFrame(columns=labels, data=np.c_[categories, new1])
     bad_df = pd.DataFrame(columns=bad_labels, data=np.c_[bad_categories, new2])
     with pytest.raises(ValueError):
-        new_material = small_material.create_regional_fields(
+        _ = small_material.create_regional_fields(
             "x", df
         ).create_regional_fields("x", bad_df)
+
+
+def test_update_regional_field(small_material):
+    labels = ["x", "new1"]
+    regions = [0, 1, 2]
+    new1 = [1, 2, 3]
+    expected_fields = small_material.get_fields().assign(
+        **{"new1": np.repeat(new1[:-1], 12)}
+    )
+    expected_regional_field = pd.DataFrame(columns=labels, data=np.c_[regions, new1])
+    regional_field = pd.DataFrame(columns=labels, data=np.c_[regions[:-1], new1[:-1]])
+    regional_field_update = {"x": [regions[-1]], "new1": [new1[-1]]}
+    new_material = small_material.create_regional_fields(
+        "x", regional_field
+    ).update_regional_field("x", regional_field_update)
+    assert_frame_equal(new_material.get_fields(), expected_fields, check_dtype=False)
+    assert_frame_equal(
+        new_material.extract_regional_field("x"),
+        expected_regional_field,
+        check_dtype=False,
+    )
