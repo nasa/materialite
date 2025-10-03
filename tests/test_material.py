@@ -389,11 +389,41 @@ def test_insert_vector_field(small_material):
 def test_box_with_none_values():
     box = Box(min_corner=[None, 0, None], max_corner=[1, None, 1])
 
-    point_inside = Vector([[0.5, 100, 0.5]])
+    point_inside = Vector([[1, 100, 0.5]])
     assert box.check_inside(point_inside)[0] == True
 
     point_outside = Vector([[2, 0, 0.5]])
     assert box.check_inside(point_outside)[0] == False
+
+
+def test_multiple_boxes():
+    box = Box(
+        min_corner=[[0, None, None], [None, 0, None]],
+        max_corner=[[None, 1, None], [1, None, 1]],
+    )
+    assert_array_equal(
+        box.min_corner.components, [[0, -np.inf, -np.inf], [-np.inf, 0, -np.inf]]
+    )
+    assert_array_equal(box.max_corner.components, [[np.inf, 1, np.inf], [1, np.inf, 1]])
+
+    points = Vector([[0.5, 100, 0.5], [2, 0, 0.5]])
+    assert (box.check_inside(points) == [[False, True], [True, False]]).all()
+
+
+def test_multiple_boxes_vector_input():
+    box = Box(
+        min_corner=Vector([[0, None, None], [None, 0, None]]),
+        max_corner=Vector([[None, 1, None], [1, None, 1]]),
+    )
+    assert_array_equal(
+        box.min_corner.components, [[0, -np.inf, -np.inf], [-np.inf, 0, -np.inf]]
+    )
+    assert_array_equal(box.max_corner.components, [[np.inf, 1, np.inf], [1, np.inf, 1]])
+
+
+def test_multiple_boxes_error_if_corner_lengths_different():
+    with pytest.raises(ValueError):
+        _ = Box(min_corner=[[1, 1, 1], [2, 2, 2]], max_corner=[5, 5, 5])
 
 
 def test_overriding_dimension_for_sphere():
@@ -435,15 +465,7 @@ def test_uniform_vs_multiple_feature_values(small_material):
     assert phase_corner_multiple == 20
 
 
-def test_export_to_vtk(small_material, tmp_path):
-    output_filename = tmp_path / "fields.vtk"
-    small_material.export_to_vtk(output=output_filename)
-    with open(output_filename) as output_file:
-        dimensions = output_file.read().split("\n")[4].split()[1:]
-    assert dimensions == ["3", "4", "5"]
-
-
-def test_add_feature_with_field(small_material):
+def test_add_spheres_with_fields(small_material):
     sphere_1 = Sphere(radius=1, centroid=[0, 0, 0])
     sphere_2 = Sphere(radius=2, centroid=[1, 2, 3])
 
@@ -490,6 +512,11 @@ def test_add_feature_with_field(small_material):
     )
 
 
+def test_error_if_sphere_inputs_have_different_lengths():
+    with pytest.raises(ValueError):
+        _ = Sphere(radius=[0.8], centroid=[[0, 0, 0], [1, 2, 3]])
+
+
 def test_initialize_superellipsoid():
     superellipsoid = Superellipsoid(
         x_radius=3,
@@ -534,6 +561,25 @@ def test_insert_superellipsoids(small_material):
         material.get_fields().query("x > 0.9 and y > 1.9 and z > 2.9").feature.iat[0]
         == 3
     )
+
+
+def test_error_if_superellipsoid_inputs_have_different_lengths():
+    with pytest.raises(ValueError):
+        _ = superellipsoid = Superellipsoid(
+            x_radius=[3, 4],
+            y_radius=2,
+            z_radius=1,
+            shape_exponent=10,
+            centroid=[2, 2, 2],
+        )
+
+
+def test_export_to_vtk(small_material, tmp_path):
+    output_filename = tmp_path / "fields.vtk"
+    small_material.export_to_vtk(output=output_filename)
+    with open(output_filename) as output_file:
+        dimensions = output_file.read().split("\n")[4].split()[1:]
+    assert dimensions == ["3", "4", "5"]
 
 
 def test_export_to_evpfft(tmp_path, expected_evpfft_file_contents):
@@ -980,9 +1026,9 @@ def test_regional_field_error_if_new_regional_field_does_not_have_same_keys(
     df = pd.DataFrame(columns=labels, data=np.c_[categories, new1])
     bad_df = pd.DataFrame(columns=bad_labels, data=np.c_[bad_categories, new2])
     with pytest.raises(ValueError):
-        _ = small_material.create_regional_fields(
-            "x", df
-        ).create_regional_fields("x", bad_df)
+        _ = small_material.create_regional_fields("x", df).create_regional_fields(
+            "x", bad_df
+        )
 
 
 def test_update_regional_field(small_material):

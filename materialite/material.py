@@ -1126,6 +1126,10 @@ class Sphere(Feature):
     def __init__(self, radius, centroid):
         self.radius = self._ensure_compatible_dims(Scalar(radius))
         self.centroid = self._ensure_compatible_dims(Vector(centroid))
+        if self.radius.shape != self.centroid.shape:
+            raise ValueError(
+                f"Different numbers of radii and centroids were provided to Sphere"
+            )
 
     def check_inside(self, points):
         return (points - self.centroid).norm.components <= self.radius.components
@@ -1155,6 +1159,17 @@ class Superellipsoid(Feature):
         self.z_radius = self._ensure_compatible_dims(Scalar(z_radius))
         self.shape_exponent = self._ensure_compatible_dims(Scalar(shape_exponent))
         self.centroid = self._ensure_compatible_dims(Vector(centroid))
+        shapes = [
+            self.x_radius.shape,
+            self.y_radius.shape,
+            self.z_radius.shape,
+            self.shape_exponent.shape,
+            self.centroid.shape,
+        ]
+        if not all(s == shapes[0] for s in shapes):
+            raise ValueError(
+                f"Different numbers of x radii, y radii, z radii, shape exponents, and/or centroids were provided to Superellipsoid"
+            )
 
     def check_inside(self, points):
         # Stack radii into a single tensor for vectorized computation
@@ -1192,15 +1207,22 @@ class Box(Feature):
         self.max_corner = self._ensure_compatible_dims(
             self._remove_nones(max_corner, np.inf)
         )
+        if self.max_corner.shape != self.min_corner.shape:
+            raise ValueError(
+                f"Different numbers of min_corners and max_corners were provided to Box"
+            )
 
     def _remove_nones(self, corner, default_for_none):
         """Convert iterable to Vector, replacing None values with default."""
         if isinstance(corner, Vector):
-            return corner
+            corner = corner.components
+        corner = np.array(corner)
+        corner_shape = corner.shape
+        corner = corner.ravel()
 
         # Replace None values with the appropriate infinity
         processed = [default_for_none if x is None else x for x in corner]
-        return Vector(processed)
+        return Vector(np.reshape(processed, corner_shape))
 
     def check_inside(self, points):
         above_min = (points - self.min_corner).components >= 0
