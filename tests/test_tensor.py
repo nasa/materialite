@@ -474,6 +474,22 @@ def test_from_list(vectors_p, vectors_s, vectors):
     assert vectors_new.dims_str == "ps"
 
 
+def test_from_stack(vectors_p, vectors):
+    vectors_p_list = [Vector(v) for v in vectors_p]
+    vectors_p_stacked = Vector.from_stack(vectors_p_list, new_dim="p")
+    assert_array_equal(vectors_p_stacked.components, vectors_p.components)
+    assert vectors_p_stacked.dims_str == vectors_p.dims_str
+
+    vectors_list = [Vector(v) for v in vectors]
+    vectors_stacked = Vector.from_stack(vectors_list, new_dim="p")
+    assert_array_equal(vectors_stacked.components, vectors.components)
+    assert vectors_stacked.dims_str == vectors.dims_str
+
+    vectors_stacked_t = Vector.from_stack(vectors_list, new_dim="t", axis=1)
+    assert_array_equal(np.moveaxis(vectors_stacked_t.components, 1, 0), vectors.components)
+    assert vectors_stacked_t.dims_str == "st"
+
+
 def test_get_item(
     scalars,
     o2_tensors,

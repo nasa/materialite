@@ -545,13 +545,15 @@ class Tensor(ABC):
     @classmethod
     def from_list(cls, tensor):
         if "p" in tensor[0].dims_str:
-            raise ValueError("Cannot create list from tensors that already have a points dimension")
+            raise ValueError(
+                "Cannot create list from tensors that already have a points dimension"
+            )
         dims = "p" + tensor[0].dims_str
         components = np.array([t.components for t in tensor])
         return cls(components, dims)
 
     @classmethod
-    def from_stack(cls, tensors, new_dim):
+    def from_stack(cls, tensors, new_dim, axis=0):
         """
         Stack tensors by creating a new dimension.
 
@@ -561,6 +563,8 @@ class Tensor(ABC):
             List of tensors to stack. All tensors must have the same dimensions.
         new_dim : str
             New dimension name to create for stacking.
+        axis : int
+            Axis where the data will be stacked.
 
         Returns
         -------
@@ -584,12 +588,16 @@ class Tensor(ABC):
             raise ValueError(
                 f"Dimension '{new_dim}' already exists in tensor dimensions '{base_dims}'"
             )
+        if axis > len(base_dims):
+            raise ValueError(
+                f"Axis {axis} is greater than the number of tensor dimensions `{base_dims}`"
+            )
 
         # Stack components along a new axis (at position 0)
-        stacked_components = np.stack([t.components for t in tensors], axis=0)
+        stacked_components = np.stack([t.components for t in tensors], axis=axis)
 
         # Create new dimensions string with new dimension first
-        new_dims = new_dim + base_dims
+        new_dims = base_dims[:axis] + new_dim + base_dims[axis:]
 
         return cls(stacked_components, new_dims)
 
