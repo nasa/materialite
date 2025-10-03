@@ -254,11 +254,8 @@ class SmallStrainFFT(Model):
             # collect values of output variables into one tensor
             for k, v in new_state.items():
                 tensor_type = type(v[0])
-                tensor_dims = v[0].dims_str
-                num_tensor_dims = len(tensor_dims)
-                components = np.array([t.components for t in v])
-                components = np.moveaxis(components, 0, num_tensor_dims)
-                new_state[k] = tensor_type(components, dims=tensor_dims + "t")
+                num_tensor_dims = len(v[0].dims_str)
+                new_state[k] = tensor_type.from_stack(v, new_dim="t", axis=num_tensor_dims)
             new_material = material.create_fields(new_state)
         else:
             new_material = material.create_fields(outputs)
