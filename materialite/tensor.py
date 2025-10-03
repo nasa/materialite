@@ -221,28 +221,30 @@ def _add_missing_dims_and_broadcast(data1, data2, dims1, dims2, final_dims):
     target_shape1 = []
     target_shape2 = []
 
-    for i, dim in enumerate(final_dims):
+    data1_dim_idx = 0
+    data2_dim_idx = 0
+
+    for dim in final_dims:
         if dim in dims1:
-            # Tensor1 has this dimension at position i in aligned data
-            target_shape1.append(data1.shape[i])
+            # Tensor1 has this dimension
+            target_shape1.append(data1.shape[data1_dim_idx])
+            data1_dim_idx += 1
         else:
             # Tensor1 missing this dimension - add as size-1
             target_shape1.append(1)
 
         if dim in dims2:
-            # Tensor2 has this dimension at position i in aligned data
-            target_shape2.append(data2.shape[i])
+            # Tensor2 has this dimension
+            target_shape2.append(data2.shape[data2_dim_idx])
+            data2_dim_idx += 1
         else:
             # Tensor2 missing this dimension - add as size-1
             target_shape2.append(1)
 
-    num_dims1 = len([d for d in final_dims if d in dims1])
-    num_dims2 = len([d for d in final_dims if d in dims2])
+    comp_shape1 = data1.shape[data1_dim_idx:]
+    comp_shape2 = data2.shape[data2_dim_idx:]
 
-    comp_shape1 = data1.shape[num_dims1:]
-    comp_shape2 = data2.shape[num_dims2:]
-
-    # Combine batch dimensions with component dimensions
+    # Combine dimensions with component dimensions
     full_shape1 = tuple(target_shape1) + comp_shape1
     full_shape2 = tuple(target_shape2) + comp_shape2
 
@@ -251,6 +253,57 @@ def _add_missing_dims_and_broadcast(data1, data2, dims1, dims2, final_dims):
     reshaped2 = data2.reshape(full_shape2)
 
     # Calculate final broadcast shape (max size for each dimension)
+    final_dims_shape = tuple(
+        max(s1, s2) for s1, s2 in zip(target_shape1, target_shape2)
+    )
+    final_shape1 = final_dims_shape + comp_shape1
+    final_shape2 = final_dims_shape + comp_shape2
+
+    return np.broadcast_to(reshaped1, final_shape1), np.broadcast_to(
+        reshaped2, final_shape2
+    )
+
+
+def _add_missing_dims_and_broadcast(data1, data2, dims1, dims2, final_dims):
+    """Add missing dimensions as size-1 and broadcast to common shape."""
+
+    # After transpose, both data arrays are aligned to final_dims order
+    # We just need to pad with size-1 for missing dimensions
+
+    target_shape1 = []
+    target_shape2 = []
+
+    data1_dim_idx = 0  # Track position in data1
+    data2_dim_idx = 0  # Track position in data2
+
+    for dim in final_dims:
+        if dim in dims1:
+            # This dimension exists in tensor1
+            target_shape1.append(data1.shape[data1_dim_idx])
+            data1_dim_idx += 1
+        else:
+            # Missing dimension - add as size-1
+            target_shape1.append(1)
+
+        if dim in dims2:
+            # This dimension exists in tensor2
+            target_shape2.append(data2.shape[data2_dim_idx])
+            data2_dim_idx += 1
+        else:
+            # Missing dimension - add as size-1
+            target_shape2.append(1)
+
+    # Component shapes are everything after the batch dimensions
+    comp_shape1 = data1.shape[data1_dim_idx:]
+    comp_shape2 = data2.shape[data2_dim_idx:]
+
+    # Rest of function stays the same...
+    full_shape1 = tuple(target_shape1) + comp_shape1
+    full_shape2 = tuple(target_shape2) + comp_shape2
+
+    reshaped1 = data1.reshape(full_shape1)
+    reshaped2 = data2.reshape(full_shape2)
+
     final_dims_shape = tuple(
         max(s1, s2) for s1, s2 in zip(target_shape1, target_shape2)
     )
@@ -320,6 +373,13 @@ class Tensor(ABC):
 
     def copy(self):
         return deepcopy(self)
+
+    @property
+    def dims(self):
+        return self.dims_str[:]  # Slice is to make a copy
+
+    def with_dims(self, dims):
+        return type(self)(self.components, dims)
 
     def __repr__(self):
         dimensions = ", ".join([DIM_NAMES(i) for i in self.dims_str])
@@ -489,6 +549,49 @@ class Tensor(ABC):
         dims = "p" + tensor[0].dims_str
         components = np.array([t.components for t in tensor])
         return cls(components, dims)
+
+    @classmethod
+    def from_stack(cls, tensors, new_dim):
+        """
+        Stack tensors by creating a new dimension.
+
+        Parameters
+        ----------
+        tensors : list of Tensor
+            List of tensors to stack. All tensors must have the same dimensions.
+        new_dim : str
+            New dimension name to create for stacking.
+
+        Returns
+        -------
+        Tensor
+            New tensor with stacked data along a new dimension.
+        """
+        if not tensors:
+            raise ValueError("Cannot stack empty list of tensors")
+
+        # Validate tensors have the same dimensions
+        base_dims = tensors[0].dims_str
+        for tensor in tensors:
+            if tensor.dims_str != base_dims:
+                raise ValueError(
+                    f"All tensors must have the same dimensions. "
+                    f"Found '{tensor.dims_str}' but expected '{base_dims}'."
+                )
+
+        # Validate the new dimension doesn't already exist
+        if new_dim in base_dims:
+            raise ValueError(
+                f"Dimension '{new_dim}' already exists in tensor dimensions '{base_dims}'"
+            )
+
+        # Stack components along a new axis (at position 0)
+        stacked_components = np.stack([t.components for t in tensors], axis=0)
+
+        # Create new dimensions string with new dimension first
+        new_dims = new_dim + base_dims
+
+        return cls(stacked_components, new_dims)
 
     @abstractmethod
     def __mul__(self, *args, **kwargs):
@@ -684,6 +787,10 @@ class Vector(Tensor):
     @classmethod
     def zero(cls):
         return cls(np.zeros(3))
+
+    @classmethod
+    def basis(cls, dim="b"):
+        return cls(np.eye(3), dim)
 
     @property
     def cartesian(self):
@@ -1526,6 +1633,9 @@ class Orientation:
                 f"tried to create Orientation with dimensions {self.indices_str} but rotation matrix has shape {matrix_shape}"
             )
 
+    def copy(self):
+        return deepcopy(self)
+
     @property
     def rotation_matrix_mandel(self):
         R_mandel = np.zeros((*self.shape, 6, 6))
@@ -1604,10 +1714,89 @@ class Orientation:
     def __iter__(self):
         return OrientationIterator(self.rotation_matrix)
 
+    # def __getitem__(self, slice_):
+    #     if len(self.dims_str) is None:
+    #         raise ValueError("can't index")
+    #     return Orientation(self.rotation_matrix[slice_])
+
     def __getitem__(self, slice_):
-        if len(self.dims_str) is None:
-            raise ValueError("can't index")
-        return Orientation(self.rotation_matrix[slice_])
+
+        self._check_valid_slice(slice_)
+        components = self.rotation_matrix[slice_]
+
+        # Figure out which dimensions remain after slicing
+        dims = self._get_remaining_dims(slice_)
+
+        return type(self)(components, dims)
+
+    def _get_remaining_dims(self, slice_):
+        """
+        Determine which dimensions survive the slicing operation.
+
+        Rules: Integer indices remove dimensions, slices/lists/arrays keep them.
+        """
+        if isinstance(slice_, (int, np.integer)):
+            # Single integer removes the first dimension
+            return self.dims_str[1:]
+        elif isinstance(slice_, slice):
+            # Slice notation (e.g., [:]) keeps all dimensions
+            return self.dims_str
+        elif isinstance(slice_, (list, np.ndarray)):
+            # Fancy indexing keeps the dimension structure
+            return self.dims_str
+        elif isinstance(slice_, tuple):
+            # Multiple indices - check each one individually
+            remaining_dims = []
+            for i, s in enumerate(slice_):
+                if i >= len(self.dims_str):
+                    break  # Don't go beyond our named dimensions
+
+                # Determine if this index removes or keeps the dimension
+                if isinstance(s, (int, np.integer)):
+                    # Integer removes the dimension (skip it)
+                    pass
+                elif isinstance(s, (slice, list, np.ndarray)):
+                    # Slice/fancy indexing keeps the dimension
+                    remaining_dims.append(self.dims_str[i])
+
+            return "".join(remaining_dims)
+        else:
+            # Unknown slice type - assume it keeps dimensions
+            return self.dims_str
+
+    def _check_valid_slice(self, slice_):
+
+        # Tensors with no dimensions can't be indexed
+        if not self.dims_str:
+            raise ValueError(f"Cannot index {type(self).__name__} with no dimensions")
+
+        # Simple slice types are always valid
+        if isinstance(slice_, (Number, slice, list, np.ndarray)):
+            return
+
+        # For tuple slices, check bounds
+        if isinstance(slice_, tuple) and len(slice_) > len(self.dims_str):
+            dims_desc = ", ".join([DIM_NAMES(d) for d in self.dims_str])
+            raise ValueError(
+                f"Provided {len(slice_)} indices to {type(self).__name__} "
+                f"with only {len(self.dims_str)} dimensions ({dims_desc})"
+            )
+
+        # Ellipsis is not supported (would complicate dimension tracking)
+        if slice_ is ...:
+            raise ValueError(
+                f"Ellipsis indexing is not supported for {type(self).__name__}"
+            )
+
+        # Check for ellipsis in tuple slices
+        if isinstance(slice_, tuple):
+            for element in slice_:
+                if element is ...:
+                    raise ValueError(
+                        f"Ellipsis indexing is not supported for {type(self).__name__}"
+                    )
+
+        return
 
     def __setitem__(self, key, item):
         if not isinstance(item, Orientation):
@@ -1678,7 +1867,7 @@ class Orientation:
         return cls(np.squeeze(rotation_matrix), dims)
 
     @classmethod
-    def random(cls, shape=100, rng=np.random.default_rng(), dims=None):
+    def random(cls, shape=1, rng=np.random.default_rng(), dims=None):
         # Check if iterable to allow the user to pass in an int
         shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
 
@@ -1768,6 +1957,33 @@ class Orientation:
             ),
             u,
         )
+
+    def repeat(self, shape, dims=None):
+
+        # Only allow repeat on tensors with no dimensions
+        if self.dims_str:
+            raise ValueError(
+                f"Cannot repeat {type(self).__name__} that already has dimensions '{self.dims_str}'. "
+                f"Repeat only works on tensors with no existing dimensions."
+            )
+
+        # Check if iterable to allow the user to pass in an int
+        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
+
+        if dims is None:
+            dims = _default_dims(len(shape))
+
+        # Add singleton dimensions at the front
+        expanded = self.rotation_matrix[(np.newaxis,) * len(shape)]
+
+        # Broadcast to final shape
+        final_shape = shape + self.rotation_matrix.shape
+
+        # A copy of the broadcasted array is needed to avoid setitem issues for a view
+        # There are ways to avoid this, but it's the simplest solution
+        repeated_components = np.broadcast_to(expanded, final_shape).copy()
+
+        return type(self)(repeated_components, dims)
 
 
 class OrientationIterator:
