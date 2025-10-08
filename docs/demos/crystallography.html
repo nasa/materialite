@@ -63,7 +63,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="IPF Coloring" href="ipf_example.html" />
-    <link rel="prev" title="Tensors" href="tensors.html" />
+    <link rel="prev" title="Orientations" href="orientations.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -189,12 +189,20 @@
 <li class="toctree-l1"><a class="reference internal" href="material_phase.html">Material Phases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="regional_fields.html">Regional Fields</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Demos</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tensor/Crystallography Demos</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="tensors.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orientations.html">Orientations</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Crystallography</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ipf_example.html">IPF Coloring</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mechanical Model Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="constitutive_models.html">Constitutive Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constitutive_models2.html">Constitutive Models: Deep Dive</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Thermal/Process Model Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="convolution.html">Convolution Thermal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
 <li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
@@ -598,7 +606,7 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.5), np.float64(2693.5), np.float64(2365.5), np.float64(-0.5))
 </pre></div>
 </div>
-<img alt="../_images/323e71607138b41f859688a1d702d59839bdf7e3a60ae2a78702e4d728c0717b.png" src="../_images/323e71607138b41f859688a1d702d59839bdf7e3a60ae2a78702e4d728c0717b.png" />
+<img alt="../_images/ddd85e7a5b9de158072e87b26e6aa8355c844c5def69d2e817f2162a5a1ace3c.png" src="../_images/ddd85e7a5b9de158072e87b26e6aa8355c844c5def69d2e817f2162a5a1ace3c.png" />
 </div>
 </div>
 <p>Make an inverse pole figure on the standard stereographic triangle. The <code class="docutils literal notranslate"><span class="pre">get_ipf</span></code> function takes the same inputs as <code class="docutils literal notranslate"><span class="pre">add_ipf_colors_field</span></code>. It returns the point on the IPF for each point in the <code class="docutils literal notranslate"><span class="pre">Material</span></code> and the boundary of the SST so that we can make a scatterplot of the IPF.</p>
@@ -649,7 +657,7 @@ document.write(`
  np.float64(0.38432667397366066))
 </pre></div>
 </div>
-<img alt="../_images/c29299aa7a1f8b25667029d595cc7c0a8fd17e548d56a8b1cdb37df451335556.png" src="../_images/c29299aa7a1f8b25667029d595cc7c0a8fd17e548d56a8b1cdb37df451335556.png" />
+<img alt="../_images/981edf3552b12f532bfa6c38b0f011708be345054a8667b3cf1219cfbbca6be1.png" src="../_images/981edf3552b12f532bfa6c38b0f011708be345054a8667b3cf1219cfbbca6be1.png" />
 </div>
 </div>
 <p>Do the same thing but with a hexagonal unit cell and the basal and prismatic slip systems</p>
@@ -737,7 +745,7 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.5), np.float64(2637.5), np.float64(1565.5), np.float64(-0.5))
 </pre></div>
 </div>
-<img alt="../_images/76c10beb52d1efd256cdf26b80e3220faccddf19f3be9a629f224ab6772d2390.png" src="../_images/76c10beb52d1efd256cdf26b80e3220faccddf19f3be9a629f224ab6772d2390.png" />
+<img alt="../_images/e58862bfd901d147a3f0f44e31dcaa1abc890c6f37706f087bbcd824ab5a4dca.png" src="../_images/e58862bfd901d147a3f0f44e31dcaa1abc890c6f37706f087bbcd824ab5a4dca.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -783,7 +791,7 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.05), np.float64(1.05), np.float64(-0.025), np.float64(0.525))
 </pre></div>
 </div>
-<img alt="../_images/391e82a9f8a473ddd4ae35faa7c06316315ef668bc2c4e7aaa9b96ac311ba54f.png" src="../_images/391e82a9f8a473ddd4ae35faa7c06316315ef668bc2c4e7aaa9b96ac311ba54f.png" />
+<img alt="../_images/188d177f5e208051b809fd7d5d4a6909348ac1c78400075de83f2c88eae43dcc.png" src="../_images/188d177f5e208051b809fd7d5d4a6909348ac1c78400075de83f2c88eae43dcc.png" />
 </div>
 </div>
 </section>
@@ -819,12 +827,12 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="tensors.html"
+       href="orientations.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Tensors</p>
+        <p class="prev-next-title">Orientations</p>
       </div>
     </a>
     <a class="right-next"
