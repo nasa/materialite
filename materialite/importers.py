@@ -55,7 +55,9 @@ def import_dream3d(
         region_id_field = d3d.get(region_id_path)[:].reshape(-1)
         fields[region_id_label] = region_id_field
         if region_field_paths is not None:
-            regional_fields[region_id_label] = np.unique(region_id_field)
+            unique_region_ids = np.unique(region_id_field)
+            regional_fields[region_id_label] = unique_region_ids
+            start_idx = 0 if 0 in unique_region_ids else 1
 
     region_field_paths = [] if region_field_paths is None else region_field_paths
     for region_field_path in region_field_paths:
@@ -64,7 +66,7 @@ def import_dream3d(
         num_components = region_field.shape[1]
         for ii in range(num_components):
             suffix = "" if num_components == 1 else "_" + str(ii + 1)
-            regional_fields[region_label + suffix] = region_field[1:, ii]
+            regional_fields[region_label + suffix] = region_field[start_idx:, ii]
 
     material = Material(
         dimensions=dimensions, origin=origin, spacing=spacing, fields=fields
