@@ -896,6 +896,26 @@ class Vector(Tensor):
             output_indices[:-2],
         )
 
+    def cross(self, tensor):
+        if not isinstance(tensor, Vector):
+            raise ValueError(
+                f"Cannot do cross product between a Vector and {type(tensor)}"
+            )
+        permutation = np.zeros((3, 3, 3))
+        permutation[0, 1, 2] = permutation[1, 2, 0] = permutation[2, 0, 1] = 1
+        permutation[1, 0, 2] = permutation[0, 2, 1] = permutation[2, 1, 0] = -1
+        self_dims = self.dims_str + "j"
+        tensor_dims = tensor.dims_str + "k"
+        output_dims = order_dims(self.dims_str, tensor.dims_str) + "i"
+        components = np.einsum(
+            f"ijk, {self_dims}, {tensor_dims} -> {output_dims}",
+            permutation,
+            self.components,
+            tensor.components,
+            optimize=True,
+        )
+        return Vector(components, dims=output_dims[:-1])
+
     def to_crystal_frame(self, orientations):
         output_dims, output_indices = self._get_transformation_indices(orientations)
         orientation_indices = orientations.dims_str + "mj"
@@ -1817,13 +1837,14 @@ class Orientation:
 
     @classmethod
     def from_miller_indices(cls, plane, direction, dims=None):
-        plane = np.asarray(plane)
-        plane = plane / np.linalg.norm(plane, axis=-1)[..., np.newaxis]
-        direction = np.asarray(direction)
-        direction = direction / np.linalg.norm(direction, axis=-1)[..., np.newaxis]
-        td = np.cross(plane, direction)
-        rotation_matrix = np.array([direction, td, plane])
-        rotation_matrix = np.moveaxis(rotation_matrix, 0, -1)
+        plane = Vector(plane).unit
+        direction = Vector(direction).unit
+        if plane.shape != direction.shape:
+            raise ValueError("Must provide same number of plane(s) and direction(s) to construct Orientation(s) from Miller indices")
+        td = plane.cross(direction)
+        rotation_matrix = np.stack(
+            [direction.components, td.components, plane.components], axis=-1
+        )
         return cls(rotation_matrix, dims)
 
     @classmethod

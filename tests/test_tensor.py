@@ -764,7 +764,6 @@ def test_mul_symmetric_symmetric(sym_tensors, sym_tensors_p, sym_tensors_s, sym_
 
 def test_mul_symmetric_order2(
     sym_tensors,
-    sym_tensor,
     o2_tensors,
     o2_tensors_p,
     o2_tensors_s,
@@ -1083,6 +1082,15 @@ def test_from_tensor_product(vectors, vectors_p, vectors_s, vector):
     assert_allclose(Order2Tensor.from_tensor_product(vector, vector).components, v_v)
 
 
+def test_cross_product(vectors, vectors_p, vectors_s, vector):
+    vp_vs = np.cross(vectors_p.components[:, np.newaxis, :], vectors_s.components[np.newaxis, :, :])
+    v_vall = np.cross(vector.components, vectors.components)
+    assert_allclose(vectors.cross(vectors).components, np.zeros(vectors.components.shape), atol=1.0e-14)
+    assert_allclose(vectors_p.cross(vectors_s).components, vp_vs, atol=1.0e-14)
+    assert_allclose(vector.cross(vectors).components, v_vall, atol=1.0e-14)
+    assert vectors_p.cross(vectors_s).dims_str == "ps"
+
+
 def test_outer_vectors(vectors, vectors_p, vectors_s, vector):
     vall_vall = np.einsum("psi, psj -> psij", vectors.components, vectors.components)
     vp_vs = np.einsum("pi, sj -> psij", vectors_p.components, vectors_s.components)
@@ -1399,10 +1407,7 @@ def test_rotations_with_inverse_s_dimension(
     vectors,
     minor_sym_tensors,
 ):
-    orientations = Orientation.random(
-        NUM_POINTS * NUM_SLIP_SYSTEMS
-    ).rotation_matrix.reshape((NUM_POINTS, NUM_SLIP_SYSTEMS, 3, 3))
-    o = Orientation(orientations)
+    o = Orientation.random(shape=(NUM_POINTS, NUM_SLIP_SYSTEMS))
     tensors_p = [o2_tensors_p, sym_tensors_p, vectors_p, minor_sym_tensors_p]
     for t in tensors_p:
         expected = np.repeat(t.components[:, np.newaxis, ...], NUM_SLIP_SYSTEMS, axis=1)
