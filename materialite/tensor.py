@@ -350,8 +350,17 @@ class Tensor(ABC):
         # If components is already a Tensor, copy it
         if isinstance(components, Tensor):
             self.components = components.components.copy()
-            self.indices_str = components.indices_str
-            self.dims_str = components.dims_str
+            if dims is None:
+                self.dims_str = components.dims_str
+                self.indices_str = components.indices_str
+            elif any(char in self._reserved_indices for char in dims):
+                raise ValueError(
+                    f"Dimensions ({dims}) cannot overlap with indices reserved for tensor components ({self._reserved_indices})"
+                )
+            else:
+                self.indices_str = dims + self._component_indices
+                self.dims_str = dims
+                _check_consistent_dims(self)
             return
 
         self.components = np.asarray(components)

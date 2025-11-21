@@ -339,6 +339,12 @@ def test_idempotence(scalars, vectors, sym_tensors, o2_tensors, minor_sym_tensor
     check_equal(sym_tensors1, sym_tensors)
     check_equal(minor_sym_tensors1, minor_sym_tensors)
 
+    new_dims = "ab"
+    scalars2 = Scalar(scalars, new_dims)
+    assert scalars2.dims_str == new_dims
+    assert scalars2.indices_str == new_dims
+    assert_allclose(scalars2.components, scalars.components)
+
 
 def test_init_vector_ps(vectors, all_vectors):
     assert vectors.indices_str == "psj"
