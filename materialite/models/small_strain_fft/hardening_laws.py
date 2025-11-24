@@ -15,6 +15,20 @@ import numpy as np
 from materialite import Scalar
 
 
+def _get_slip_increments(plastic_slip_rates, time_increment, properties):
+    if "s" in plastic_slip_rates.dims_str:
+        hardening_matrix = properties.get("hardening_matrix", None)
+        if hardening_matrix is None:
+            slip_rates = plastic_slip_rates.abs.sum("s")
+        else:
+            hardening_matrix = Scalar(hardening_matrix, "sa")
+            slip_rates = (hardening_matrix * plastic_slip_rates.abs).sum("s")
+            slip_rates = Scalar(slip_rates, "ps")
+    else:
+        slip_rates = plastic_slip_rates.abs
+    return slip_rates * time_increment
+
+
 def perfect_plasticity(
     properties,
     old_accumulated_slip,
@@ -32,11 +46,10 @@ def linear(
     plastic_slip_rates,
     time_increment,
 ):
-    try:
-        slip_increment = time_increment * plastic_slip_rates.abs.sum("s")
-    except ValueError:
-        slip_increment = time_increment * plastic_slip_rates.abs
-    return old_slip_resistances + properties["hardening_rate"] * slip_increment
+    slip_increments = _get_slip_increments(
+        plastic_slip_rates, time_increment, properties
+    )
+    return old_slip_resistances + properties["hardening_rate"] * slip_increments
 
 
 def voce(
@@ -46,25 +59,28 @@ def voce(
     plastic_slip_rates,
     time_increment,
 ):
-    try:
-        slip_increment = time_increment * plastic_slip_rates.abs.sum("s")
-    except ValueError:
-        slip_increment = time_increment * plastic_slip_rates.abs
+    slip_increments = _get_slip_increments(
+        plastic_slip_rates, time_increment, properties
+    )
     theta0 = properties["theta_0"]
     theta1 = properties["theta_1"]
     tau1 = properties["tau_1"]
     ratio = np.abs(theta0 / tau1)
-    exp_initial = Scalar(np.exp(-ratio * old_accumulated_slip.components))
-    exp_change = Scalar(np.exp(-ratio * slip_increment.components))
+    exp_initial = Scalar(
+        np.exp(-ratio * old_accumulated_slip.components), old_accumulated_slip.dims_str
+    )
+    exp_change = Scalar(
+        np.exp(-ratio * slip_increments.components), slip_increments.dims_str
+    )
     slip_resistances = (
         old_slip_resistances
-        + theta1 * slip_increment
+        + theta1 * slip_increments
         - (ratio * tau1 - theta1) / ratio * exp_initial * (exp_change - 1)
         - theta1
         / ratio
         * exp_initial
         * (
-            exp_change * (1 + ratio * (old_accumulated_slip + slip_increment))
+            exp_change * (1 + ratio * (old_accumulated_slip + slip_increments))
             - 1
             - ratio * old_accumulated_slip
         )
@@ -79,12 +95,11 @@ def armstrong_frederick(
     plastic_slip_rates,
     time_increment,
 ):
+    slip_increments = _get_slip_increments(
+        plastic_slip_rates, time_increment, properties
+    )
     hardening = properties["direct_hardening"]
     dynamic_recovery = properties["dynamic_recovery"]
-    try:
-        slip_increment = time_increment * plastic_slip_rates.abs.sum("s")
-    except ValueError:
-        slip_increment = time_increment * plastic_slip_rates.abs
     return old_slip_resistances + (
         hardening - dynamic_recovery * old_slip_resistances
-    ) * slip_increment / (1 + dynamic_recovery * slip_increment)
+    ) * slip_increments / (1 + dynamic_recovery * slip_increments)
