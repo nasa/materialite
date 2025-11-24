@@ -492,7 +492,9 @@ def test_from_stack(vectors_p, vectors):
     assert vectors_stacked.dims_str == vectors.dims_str
 
     vectors_stacked_t = Vector.from_stack(vectors_list, new_dim="t", axis=1)
-    assert_array_equal(np.moveaxis(vectors_stacked_t.components, 1, 0), vectors.components)
+    assert_array_equal(
+        np.moveaxis(vectors_stacked_t.components, 1, 0), vectors.components
+    )
     assert vectors_stacked_t.dims_str == "st"
 
 
@@ -552,12 +554,15 @@ def test_get_item(
 
         t9 = t[[0, 1]]
         assert_array_equal(t9.components, t.components[[0, 1]])
+        assert t9.dims_str == "ps"
 
         t10 = t[0, np.array([0, 1])]
         assert_array_equal(t10.components, t.components[0, [0, 1]])
+        assert t10.dims_str == "s"
 
         t11 = t[np.array([0, 1])]
         assert_array_equal(t11.components, t.components[[0, 1]])
+        assert t11.dims_str == "ps"
 
         with pytest.raises(ValueError):
             _ = t[:, :, 0]
@@ -570,6 +575,20 @@ def test_get_item(
 
         with pytest.raises(ValueError):
             _ = t[..., 0]
+
+    t = Scalar(np.arange(24).reshape((2, 3, 4)))
+
+    t1 = t[0, 0, 0]
+    assert_array_equal(t1.components, t.components[0, 0, 0])
+    assert t1.dims_str == ""
+
+    t2 = t[0, 0]
+    assert_array_equal(t2.components, t.components[0, 0])
+    assert t2.dims_str == "t"
+
+    t3 = t[:, 0, :]
+    assert_array_equal(t3.components, t.components[:, 0, :])
+    assert t3.dims_str == "pt"
 
 
 def test_broadcast_with_different_dims(scalars, scalars_p):
@@ -1089,9 +1108,15 @@ def test_from_tensor_product(vectors, vectors_p, vectors_s, vector):
 
 
 def test_cross_product(vectors, vectors_p, vectors_s, vector):
-    vp_vs = np.cross(vectors_p.components[:, np.newaxis, :], vectors_s.components[np.newaxis, :, :])
+    vp_vs = np.cross(
+        vectors_p.components[:, np.newaxis, :], vectors_s.components[np.newaxis, :, :]
+    )
     v_vall = np.cross(vector.components, vectors.components)
-    assert_allclose(vectors.cross(vectors).components, np.zeros(vectors.components.shape), atol=1.0e-14)
+    assert_allclose(
+        vectors.cross(vectors).components,
+        np.zeros(vectors.components.shape),
+        atol=1.0e-14,
+    )
     assert_allclose(vectors_p.cross(vectors_s).components, vp_vs, atol=1.0e-14)
     assert_allclose(vector.cross(vectors).components, v_vall, atol=1.0e-14)
     assert vectors_p.cross(vectors_s).dims_str == "ps"

@@ -449,7 +449,7 @@ class Tensor(ABC):
                     # Slice/fancy indexing keeps the dimension
                     remaining_dims.append(self.dims_str[i])
 
-            return "".join(remaining_dims)
+            return "".join(remaining_dims) + self.dims_str[len(slice_):]
         else:
             # Unknown slice type - assume it keeps dimensions
             return self.dims_str
