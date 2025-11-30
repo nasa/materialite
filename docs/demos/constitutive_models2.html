@@ -439,7 +439,6 @@ document.write(`
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">()</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">materialite</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -571,7 +570,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/19a7f7340f88bf2dbac3d6149cc3b3e89800f0e9fd8bda6b82ace16a83ac7962.png" src="../_images/19a7f7340f88bf2dbac3d6149cc3b3e89800f0e9fd8bda6b82ace16a83ac7962.png" />
+<img alt="../_images/01c509cc5ef8f24c9172c86e173ff85836880db610b18ea8bdbc7c9f19d3186b.png" src="../_images/01c509cc5ef8f24c9172c86e173ff85836880db610b18ea8bdbc7c9f19d3186b.png" />
 </div>
 </div>
 <p>Pointwise CRSS. Since the hardening law is a function of only the accumulated slip, the CRSS is the same on all slip systems at a given point. Here, we take the max over the slip systems, but taking the mean would yield the same result in this case.</p>
@@ -584,7 +583,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/eca333354914ba4c3b4b7c945ead3b25222415d591616e1385e65a27cbcc56aa.png" src="../_images/eca333354914ba4c3b4b7c945ead3b25222415d591616e1385e65a27cbcc56aa.png" />
+<img alt="../_images/cab01e5a28a8dc2d4254c82814c20c44134e22d09a82c2de3a050723f178d214.png" src="../_images/cab01e5a28a8dc2d4254c82814c20c44134e22d09a82c2de3a050723f178d214.png" />
 </div>
 </div>
 <p>We can do the same with the max slip across the 12 slip systems at each point.</p>
@@ -597,7 +596,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/211467b71ff8e31e816476e3db9d1559b5a5f454e712bcd4d3b3f834245637aa.png" src="../_images/211467b71ff8e31e816476e3db9d1559b5a5f454e712bcd4d3b3f834245637aa.png" />
+<img alt="../_images/4eea77b125e3d5e83a811bfba17386a75a58c2db24688fdec471bd1d2e68d9df.png" src="../_images/4eea77b125e3d5e83a811bfba17386a75a58c2db24688fdec471bd1d2e68d9df.png" />
 </div>
 </div>
 <p>We can also calculate and plot grain-average quantities. The method <code class="docutils literal notranslate"><span class="pre">get_region_indices</span></code> returns a dictionary whose keys are the region IDs (in this case grain IDs) and whose values are the indices in <code class="docutils literal notranslate"><span class="pre">material.get_fields()</span></code> corresponding to each region ID.</p>
@@ -621,7 +620,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/c91c5800c4faabfda018d141de8b604dec6d9c0de15d97887f981bc348ecff28.png" src="../_images/c91c5800c4faabfda018d141de8b604dec6d9c0de15d97887f981bc348ecff28.png" />
+<img alt="../_images/f8bdf058f9704e5ed059e5288daa646e22d16f1bdf87879192a581853b29b58e.png" src="../_images/f8bdf058f9704e5ed059e5288daa646e22d16f1bdf87879192a581853b29b58e.png" />
 </div>
 </div>
 <p><strong>Example 2: Cyclic loading</strong></p>
@@ -817,7 +816,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/a6a1c8d6c158273758f447b0e2f359a517337ed7fab989ab296be25c75795a5a.png" src="../_images/a6a1c8d6c158273758f447b0e2f359a517337ed7fab989ab296be25c75795a5a.png" />
+<img alt="../_images/6adcbb0787555cbe131c2ec03dd4914a655475aea3225ea59f940ba7487c161f.png" src="../_images/6adcbb0787555cbe131c2ec03dd4914a655475aea3225ea59f940ba7487c161f.png" />
 </div>
 </div>
 <p>Running a model follows the same steps as Example 4 in the constitutive models demo. Create a regional field to assign constitutive models to the zero-stiffness phase (phase ID 0) and the solid material (phase ID 1).</p>
@@ -850,7 +849,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/2273574c51aeb7f9549e4427860b60f5dd580738f119fcba54b3a33dd05a4c4d.png" src="../_images/2273574c51aeb7f9549e4427860b60f5dd580738f119fcba54b3a33dd05a4c4d.png" />
+<img alt="../_images/80e51112baa636886497c9ded1c3ae567818fa38bf0c52b90279fb081734abd7.png" src="../_images/80e51112baa636886497c9ded1c3ae567818fa38bf0c52b90279fb081734abd7.png" />
 </div>
 </div>
 <p>If you want to simulate microstructure in the center of a specimen, you could use an <code class="docutils literal notranslate"><span class="pre">IsotropicElasticPlastic</span></code> buffer material instead of <code class="docutils literal notranslate"><span class="pre">Elastic</span></code> with zero stiffness.</p>
@@ -1217,7 +1216,109 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/c91c5800c4faabfda018d141de8b604dec6d9c0de15d97887f981bc348ecff28.png" src="../_images/c91c5800c4faabfda018d141de8b604dec6d9c0de15d97887f981bc348ecff28.png" />
+<img alt="../_images/f8bdf058f9704e5ed059e5288daa646e22d16f1bdf87879192a581853b29b58e.png" src="../_images/f8bdf058f9704e5ed059e5288daa646e22d16f1bdf87879192a581853b29b58e.png" />
+</div>
+</div>
+<p><strong>Example 5: Anisotropic hardening</strong></p>
+<p>Repeat Example 1 but using an anisotropic hardening law. We will use the octahedral slip systems again, but with a self-hardening coefficient of <span class="math notranslate nohighlight">\(1.0\)</span> and a latent hardening coefficient of <span class="math notranslate nohighlight">\(1.2\)</span>.</p>
+<p>To do this, we need to add a <code class="docutils literal notranslate"><span class="pre">hardening_matrix</span></code> to the dictionary of hardening parameters. In the hardening matrix, the diagonal terms are the self-hardening coefficient(s), and the off-diagonal terms are the latent hardening coefficient(s).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">slip_systems</span> <span class="o">=</span> <span class="n">SlipSystem</span><span class="o">.</span><span class="n">octahedral</span><span class="p">()</span>
+<span class="n">num_slip_systems</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">slip_systems</span><span class="p">)</span>
+<span class="n">hardening_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">num_slip_systems</span><span class="p">,</span> <span class="n">num_slip_systems</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1.2</span>
+<span class="n">hardening_properties</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;tau_1&quot;</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">,</span>
+    <span class="s2">&quot;theta_0&quot;</span><span class="p">:</span> <span class="mf">1450.0</span><span class="p">,</span>
+    <span class="s2">&quot;theta_1&quot;</span><span class="p">:</span> <span class="mf">95.0</span><span class="p">,</span>
+    <span class="s2">&quot;hardening_matrix&quot;</span><span class="p">:</span> <span class="n">hardening_matrix</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Otherwise, set up the constitutive model in the same way.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stiffness_tensor</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_cubic_constants</span><span class="p">(</span>
+    <span class="n">C11</span><span class="o">=</span><span class="mi">243300</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="mi">156700</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="mi">117800</span>
+<span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">hardening_matrix</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">constitutive_model</span> <span class="o">=</span> <span class="n">ElasticViscoplastic</span><span class="p">(</span>
+    <span class="n">stiffness</span><span class="o">=</span><span class="n">stiffness_tensor</span><span class="p">,</span>
+    <span class="n">slip_systems</span><span class="o">=</span><span class="n">SlipSystem</span><span class="o">.</span><span class="n">octahedral</span><span class="p">(),</span>
+    <span class="n">reference_slip_rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">rate_exponent</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">slip_resistance</span><span class="o">=</span><span class="mf">143.0</span><span class="p">,</span>
+    <span class="n">hardening_function</span><span class="o">=</span><span class="n">voce</span><span class="p">,</span>
+    <span class="n">hardening_properties</span><span class="o">=</span><span class="n">hardening_properties</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">load_schedule</span> <span class="o">=</span> <span class="n">LoadSchedule</span><span class="o">.</span><span class="n">from_constant_uniaxial_strain_rate</span><span class="p">(</span>
+    <span class="n">magnitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;z&quot;</span>
+<span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">SmallStrainFFT</span><span class="p">(</span>
+    <span class="n">load_schedule</span><span class="o">=</span><span class="n">load_schedule</span><span class="p">,</span>
+    <span class="n">end_time</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">initial_time_increment</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+    <span class="n">constitutive_model</span><span class="o">=</span><span class="n">constitutive_model</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">output_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">material_5</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">output_times</span><span class="o">=</span><span class="n">output_times</span><span class="p">,</span>
+    <span class="n">output_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;slip_resistances&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Compare the mean stress-strain curve with Example 1. Note that the case with anisotropic hardening has higher stresses due to the latent hardening coefficient being greater than 1.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span> <span class="o">=</span> <span class="n">material_5</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">)</span>
+<span class="n">strain</span> <span class="o">=</span> <span class="n">material_5</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;strain&quot;</span><span class="p">)</span>
+<span class="n">stress1</span> <span class="o">=</span> <span class="n">material_1</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">)</span>
+<span class="n">strain1</span> <span class="o">=</span> <span class="n">material_1</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;strain&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strain</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Anisotropic hardening&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strain1</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress1</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Isotropic hardening&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Axial strain [-]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Axial stress [MPa]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x1cf5f666510&gt;
+</pre></div>
+</div>
+<img alt="../_images/0d44c14af9a29716bc42fd51f63476a3ea40067b70081b6a589116d551cf4b47.png" src="../_images/0d44c14af9a29716bc42fd51f63476a3ea40067b70081b6a589116d551cf4b47.png" />
+</div>
+</div>
+<p>Now the slip resistances are different across each slip system.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material_5</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;slip_resistances&quot;</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([[164.14970033 164.39023491 164.46167343 ... 164.43802522 164.46167384
+  164.35224907]
+ [174.27245784 173.79484097 172.56942262 ... 174.26493831 174.2718922
+  172.61539879]
+ [171.4128959  171.41289635 171.41289309 ... 170.57009999 171.41289635
+  170.15853936]
+ ...
+ [169.06256046 169.07517988 169.07511847 ... 169.07249457 169.07516566
+  168.77766402]
+ [169.06576327 169.07627307 169.07627376 ... 169.065674   169.07625964
+  168.34547412]
+ [170.90645409 170.92998511 170.93037496 ... 170.88980175 170.93037175
+  169.96203552]], dims: (points, slip systems), components shape: (4096, 12))
+</pre></div>
+</div>
 </div>
 </div>
 <p><strong>Other notes</strong></p>
