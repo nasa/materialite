@@ -158,7 +158,7 @@ class Material:
             inferred_sizes = (
                 fields[["x", "y", "z"]].max() - fields[["x", "y", "z"]].min()
             )
-            if not np.array_equal(inferred_sizes, self.sizes):
+            if not np.allclose(inferred_sizes, self.sizes):
                 raise ValueError(
                     "provided x, y, and z fields do not match provided sizes"
                 )

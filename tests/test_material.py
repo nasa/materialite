@@ -911,6 +911,13 @@ def test_dimensions_and_origin_of_cropped_by_id_material(
     assert_array_equal(submaterial.origin, origin)
 
 
+def test_sizes_of_cropped_by_id_material():
+    material = Material(dimensions=[1077, 1077, 1], spacing=[0.00148, 0.00148, 1])
+    submaterial = material.crop_by_id_range(x_id_range=(50, 200), y_id_range=(0, 100))
+    assert_array_equal(submaterial.dimensions, [151, 101, 1])
+    assert_allclose(submaterial.spacing, [0.00148, 0.00148, 1])
+
+
 def test_dimensions_and_origin_of_cropped_material(material):
     submaterial = material.crop_by_range(x_range=(1, 1), y_range=(2, 5), z_range=(5, 6))
     assert_array_equal(submaterial.dimensions, [1, 4, 2])
