@@ -68,6 +68,7 @@ class SmallStrainFFT(Model):
         strain_correction_tolerance=1.0e-2,
         linear_solver_tolerance=1.0e-5,
         postprocessor=None,
+        temperature_history=None,
     ):
         self._sizes = material.sizes
         self._dimensions = material.dimensions
@@ -94,10 +95,12 @@ class SmallStrainFFT(Model):
         tangent = constitutive_model.initialize(orientations)
         stress = Order2SymmetricTensor.zero().repeat(self._num_points)
         strain = Order2SymmetricTensor.zero().repeat(self._num_points)
+        thermal_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
         old_tangent = tangent.copy()
         old_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
         old_stress = Order2SymmetricTensor.zero().repeat(self._num_points)
         old_fluctuation_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
+        old_thermal_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
         old_max_strain_increment = 0.0
         summed_von_mises_stress = 0.0
         time_step_id = 0
@@ -117,6 +120,14 @@ class SmallStrainFFT(Model):
             strain = old_strain + strain_increment + old_fluctuation_strain
             if not np.all(stress_increment.components < 1.0e-14):
                 strain += tangent.mean().inv @ stress_increment
+            if temperature_history is not None:
+                delta_temperature = temperature_history.temperature_increment(
+                    time, time_increment
+                )
+                thermal_strain_increment = constitutive_model.calculate_thermal_strain(
+                    delta_temperature
+                )
+                thermal_strain = old_thermal_strain + thermal_strain_increment
             if time_step_id == 0:
                 guess_stress = stress_increment + tangent @ strain_increment
             else:
@@ -156,7 +167,7 @@ class SmallStrainFFT(Model):
 
                 stress, tangent, constit_iters = (
                     constitutive_model.calculate_stress_and_tangent(
-                        strain, guess_stress, time_increment
+                        strain - thermal_strain, guess_stress, time_increment
                     )
                 )
                 if not constit_iters:
@@ -215,6 +226,7 @@ class SmallStrainFFT(Model):
                 old_stress = stress.copy()
                 old_strain = strain.copy()
                 old_tangent = tangent.copy()
+                old_thermal_strain = thermal_strain.copy()
                 summed_von_mises_stress += mean_von_mises_stress
                 old_max_strain_increment = max_strain_increment
                 time_step_id += 1
@@ -222,6 +234,8 @@ class SmallStrainFFT(Model):
                 if time >= (next_output_time - time_tolerance):
                     outputs = constitutive_model.generate_outputs(output_variables)
                     outputs.update({"stress": stress, "strain": strain})
+                    if temperature_history is not None:
+                        outputs.update({"thermal_strain": thermal_strain})
                     if postprocessor is not None:
                         outputs = postprocessor(outputs)
                     for k, v in outputs.items():
@@ -247,6 +261,8 @@ class SmallStrainFFT(Model):
 
         outputs = constitutive_model.postprocess(output_variables)
         outputs.update({"stress": stress, "strain": strain})
+        if temperature_history is not None:
+            outputs.update({"thermal_strain": thermal_strain})
         if output_times is None:
             # get final values of output variables and create fields
             new_material = material.create_fields(outputs)
