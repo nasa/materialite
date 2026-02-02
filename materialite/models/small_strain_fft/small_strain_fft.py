@@ -152,7 +152,7 @@ class SmallStrainFFT(Model):
                     mean_von_mises_stress = stress.mean().dev.norm.components * np.sqrt(
                         1.5
                     )
-                    equilibrium_error = np.max(np.abs(b)) / mean_von_mises_stress
+                    equilibrium_error = np.max(np.abs(b))
                     self._logger.debug(f"equilibrium error: {equilibrium_error}")
                     guess_stress = stress.copy()
                     all_constit_iters.append(constit_iters)
@@ -184,27 +184,26 @@ class SmallStrainFFT(Model):
                 time_avg_von_mises_stress = (
                     summed_von_mises_stress + mean_von_mises_stress
                 ) / (time_step_id + 1)
-                if mean_von_mises_stress / time_avg_von_mises_stress < 1.0e-12:
+                if mean_von_mises_stress < 1.0e-12 * time_avg_von_mises_stress:
                     mean_von_mises_stress = time_avg_von_mises_stress
-                equilibrium_error = np.max(np.abs(b)) / mean_von_mises_stress
+                equilibrium_error = np.max(np.abs(b))
 
                 # Strain correction (mapped to stress to filter out zero-stiffness points)
                 max_stress_increment = np.max(
                     (stress - old_stress).dev.norm.components
                 ) * np.sqrt(1.5)
-                if max_stress_increment / mean_von_mises_stress < 1.0e-12:
+                if max_stress_increment < 1.0e-12 * mean_von_mises_stress:
                     max_stress_increment = mean_von_mises_stress
-                scaled_strain_error = (
-                    np.max((tangent @ fluctuation_strain).norm.components)
-                    / max_stress_increment
+                scaled_strain_error = np.max(
+                    (tangent @ fluctuation_strain).norm.components
                 )
-                projected_scaled_strain_error = (
-                    scaled_strain_error * equilibrium_error / old_equilibrium_error
-                )
+                projected_scaled_strain_error = scaled_strain_error * equilibrium_error
 
-                if equilibrium_error < global_tolerance and (
-                    scaled_strain_error < strain_correction_tolerance
-                    or projected_scaled_strain_error < strain_correction_tolerance
+                if equilibrium_error < global_tolerance * mean_von_mises_stress and (
+                    scaled_strain_error
+                    < strain_correction_tolerance * max_stress_increment
+                    or projected_scaled_strain_error
+                    < strain_correction_tolerance * old_equilibrium_error
                     or time_step_id == 0
                     or equilibrium_error < 1e-8
                 ):
@@ -271,7 +270,9 @@ class SmallStrainFFT(Model):
             for k, v in new_state.items():
                 tensor_type = type(v[0])
                 num_tensor_dims = len(v[0].dims_str)
-                new_state[k] = tensor_type.from_stack(v, new_dim="t", axis=num_tensor_dims)
+                new_state[k] = tensor_type.from_stack(
+                    v, new_dim="t", axis=num_tensor_dims
+                )
             new_material = material.create_fields(new_state)
         else:
             new_material = material.create_fields(outputs)
