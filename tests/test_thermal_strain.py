@@ -120,13 +120,12 @@ def test_elastic(
         applied_strain_rate, stress, stress_mask
     )
     model = SmallStrainFFT(
-        load_schedule=load_schedule, end_time=1.0, constitutive_model=elastic_model
-    )
-    material = model(
-        material,
-        linear_solver_tolerance=1.0e-7,
+        load_schedule=load_schedule,
+        end_time=1.0,
+        constitutive_model=elastic_model,
         temperature_history=temperature_history,
     )
+    material = model(material, linear_solver_tolerance=1.0e-7)
     indices = material.get_region_indices("phase")
     stress_1 = material.extract("stress")[indices[1]].mean().components
     stress_2 = material.extract("stress")[indices[2]].mean().components
@@ -182,12 +181,12 @@ def test_isotropic_plasticity(
         end_time=end_time,
         initial_time_increment=time_increment,
         constitutive_model=constitutive_model,
+        temperature_history=temperature_history,
     )
     output_times = (np.arange(num_time_steps) + 1) * time_increment
     material = model(
         material,
         output_times=output_times,
-        temperature_history=temperature_history,
     )
     stress = material.extract("stress")
     mean_stress_norm = stress[:, -1].mean().norm.components
@@ -233,15 +232,15 @@ def test_elastic_viscoplastic(thermal_expansion_coefficients, delta_T):
     )
 
     evp_linear = ElasticViscoplastic(
-            stiffness=stiffness_tensor,
-            slip_systems=SlipSystem.octahedral(),
-            reference_slip_rate=1.0,
-            rate_exponent=10.0,
-            slip_resistance=300.0,
-            hardening_function=linear,
-            hardening_properties={"hardening_rate": 10},
-            thermal_expansion_coefficients=thermal_expansion_coefficients,
-        )
+        stiffness=stiffness_tensor,
+        slip_systems=SlipSystem.octahedral(),
+        reference_slip_rate=1.0,
+        rate_exponent=10.0,
+        slip_resistance=300.0,
+        hardening_function=linear,
+        hardening_properties={"hardening_rate": 10},
+        thermal_expansion_coefficients=thermal_expansion_coefficients,
+    )
     end_time = 1.0
     initial_time_increment = 0.1
     model = SmallStrainFFT(
@@ -265,13 +264,17 @@ def test_elastic_viscoplastic(thermal_expansion_coefficients, delta_T):
         end_time=end_time,
         initial_time_increment=initial_time_increment,
         constitutive_model=evp_linear,
+        temperature_history=temperature_history,
     )
-    material_thermal = model_thermal(material, output_times=output_times, temperature_history=temperature_history)
+    material_thermal = model_thermal(material, output_times=output_times)
 
     stress_basic = material_basic.extract("stress").mean("p").components[:, 0]
     strain_basic = material_basic.extract("strain").mean("p").components[:, 0]
     stress_thermal = material_thermal.extract("stress").mean("p").components[:, 0]
-    strain_thermal = (material_thermal.extract("strain").mean("p") - material_thermal.extract("thermal_strain").mean("p")).components[:, 0]
+    strain_thermal = (
+        material_thermal.extract("strain").mean("p")
+        - material_thermal.extract("thermal_strain").mean("p")
+    ).components[:, 0]
 
-    assert_allclose(stress_thermal, stress_basic, atol=1.0e-13, rtol=1.0e-5)
-    assert_allclose(strain_thermal, strain_basic, atol=1.0e-13, rtol=1.0e-5)
+    assert_allclose(stress_thermal, stress_basic, atol=1.0e-13)
+    assert_allclose(strain_thermal, strain_basic, atol=1.0e-13)

@@ -36,6 +36,7 @@ class SmallStrainFFT(Model):
         min_time_increment=1.0e-9,
         start_time=0.0,
         constitutive_model=None,
+        temperature_history=None,
     ):
         self.load_schedule = load_schedule
         self.end_time = end_time
@@ -50,6 +51,7 @@ class SmallStrainFFT(Model):
         self.min_time_increment = min_time_increment
         self.start_time = start_time
         self._constitutive_model = constitutive_model
+        self.temperature_history = temperature_history
         self._logger = logging.getLogger("SmallStrainFFT")
 
         self._sizes = None
@@ -68,7 +70,6 @@ class SmallStrainFFT(Model):
         strain_correction_tolerance=1.0e-2,
         linear_solver_tolerance=1.0e-5,
         postprocessor=None,
-        temperature_history=None,
     ):
         self._sizes = material.sizes
         self._dimensions = material.dimensions
@@ -120,8 +121,8 @@ class SmallStrainFFT(Model):
             strain = old_strain + strain_increment + old_fluctuation_strain
             if not np.all(stress_increment.components < 1.0e-14):
                 strain += tangent.mean().inv @ stress_increment
-            if temperature_history is not None:
-                delta_temperature = temperature_history.temperature_increment(
+            if self.temperature_history is not None:
+                delta_temperature = self.temperature_history.temperature_increment(
                     time, time_increment
                 )
                 thermal_strain_increment = constitutive_model.calculate_thermal_strain(
@@ -142,7 +143,7 @@ class SmallStrainFFT(Model):
                 if iteration == 1:
                     stress, tangent, constit_iters = (
                         constitutive_model.calculate_stress_and_tangent(
-                            strain, guess_stress, time_increment
+                            strain - thermal_strain, guess_stress, time_increment
                         )
                     )
                     if not constit_iters:
@@ -233,7 +234,7 @@ class SmallStrainFFT(Model):
                 if time >= (next_output_time - time_tolerance):
                     outputs = constitutive_model.generate_outputs(output_variables)
                     outputs.update({"stress": stress, "strain": strain})
-                    if temperature_history is not None:
+                    if self.temperature_history is not None:
                         outputs.update({"thermal_strain": thermal_strain})
                     if postprocessor is not None:
                         outputs = postprocessor(outputs)
@@ -260,7 +261,7 @@ class SmallStrainFFT(Model):
 
         outputs = constitutive_model.postprocess(output_variables)
         outputs.update({"stress": stress, "strain": strain})
-        if temperature_history is not None:
+        if self.temperature_history is not None:
             outputs.update({"thermal_strain": thermal_strain})
         if output_times is None:
             # get final values of output variables and create fields
