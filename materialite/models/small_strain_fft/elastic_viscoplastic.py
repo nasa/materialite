@@ -27,6 +27,7 @@ class ElasticViscoplastic:
         slip_resistance,
         hardening_function,
         hardening_properties,
+        thermal_expansion_coefficients=None,
     ):
         self.stiffness = stiffness
         self._ref_modulus = float(
@@ -38,6 +39,7 @@ class ElasticViscoplastic:
         self.initial_slip_resistance = slip_resistance
         self.hardening_function = hardening_function
         self.hardening_properties = hardening_properties
+        self.thermal_expansion_coefficients = thermal_expansion_coefficients
 
         self.state_variables = dict()
         self.available_state_variables = [
@@ -85,6 +87,11 @@ class ElasticViscoplastic:
         )
         self.state_variables["accumulated_slip"] = accumulated_slip
         self.state_variables["old_accumulated_slip"] = accumulated_slip.copy()
+
+        if self.thermal_expansion_coefficients is not None:
+            self.state_variables["thermal_expansion_coefficients"] = (
+                self.thermal_expansion_coefficients.to_specimen_frame(orientations)
+            )
 
         return self.stiffness.to_specimen_frame(orientations)
 
@@ -281,6 +288,15 @@ class ElasticViscoplastic:
         else:
             outputs = dict()
         return outputs
+
+    def calculate_thermal_strain(self, temperature_increment):
+        if self.thermal_expansion_coefficients is None:
+            raise ValueError(
+                "Thermal expansion coefficients not defined for this material."
+            )
+        else:
+            coefficients = self.state_variables["thermal_expansion_coefficients"]
+            return coefficients * temperature_increment
 
     def __repr__(self):
         return (
