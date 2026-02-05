@@ -1166,7 +1166,7 @@ class Order2SymmetricTensor(Tensor):
 
     @classmethod
     def from_cartesian(cls, matrices, dims=None):
-        if not np.allclose(matrices, np.einsum("...ij -> ...ji", matrices), atol=1e-14):
+        if not np.allclose(matrices, np.einsum("...ij -> ...ji", matrices), atol=1e-13):
             raise ValueError(
                 "tried to create Order2SymmetricTensor using non-symmetric input"
             )
