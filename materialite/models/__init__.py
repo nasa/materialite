@@ -15,3 +15,4 @@ from materialite.models.model import Model
 from .decoupled_crystal_elasticity import DecoupledCrystalElasticity
 from .grain_coarsening_model import GrainCoarseningModel
 from .taylor_model import TaylorModel
+from .crop import Crop

@@ -11,7 +11,7 @@
 # specific language governing permissions and limitations under the License.
 
 import warnings
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from copy import deepcopy
 
 import numpy as np
@@ -19,6 +19,7 @@ import pandas as pd
 import pyvista as pv
 from materialite.tensor import Order2SymmetricTensor, Orientation, Scalar, Vector
 from materialite.util import cartesian_grid, power_of_two_below, repeat_data
+from matplotlib import pyplot as plt
 from scipy import spatial
 
 
@@ -64,6 +65,43 @@ class Material:
         self.state = dict()
         self._regional_fields = dict()
 
+    @classmethod
+    def from_image(cls, image, spacing=1, label="intensity", flip_y=True):
+        """
+        Create a Material from an image by adding a singleton z-dimension.
+        Parameters
+        ----------
+        image : 2D array-like
+            Input image data.
+        spacing : float or list, default 1
+            Spacing in x and y directions.
+        label : str, default 'intensity'
+            Label for the image intensity field.
+        flip_y : bool, default False
+            Whether to flip the image in the y-direction.
+        Returns
+        -------
+        Material
+            New Material instance with singleton z-dimension.
+        """
+
+        if isinstance(spacing, (int, float)):
+            spacing = [spacing, spacing]
+        elif len(spacing) == 2:
+            spacing = [spacing[0], spacing[1], 1]
+
+        image = np.array(image)
+
+        # Images typically have a row-column format, so change to x-y
+        if flip_y:
+            image = np.flipud(image).T
+
+        return cls(
+            dimensions=[image.shape[0], image.shape[1], 1],
+            spacing=[spacing[0], spacing[1], 1],
+            fields={label: image.flatten()},
+        )
+
     @property
     def origin(self):
         """Origin coordinates of the domain."""
@@ -90,6 +128,11 @@ class Material:
         return self.origin + self.sizes / 2
 
     @property
+    def center_id(self):
+        """Index of the center point of the domain."""
+        return (self.dimensions - 1) // 2
+
+    @property
     def far_corner(self):
         """Far corner of the domain."""
         return self.origin + self.sizes
@@ -99,6 +142,19 @@ class Material:
         """All corners of the domain indexed by multi-dimensional index."""
         patterns = np.stack(np.meshgrid([0, 1], [0, 1], [0, 1], indexing="ij"), axis=-1)
         return self.origin + patterns * self.sizes
+
+    @property
+    def corner_ids(self):
+        """All corner indices of the domain."""
+        return np.stack(
+            np.meshgrid(
+                [0, self.dimensions[0] - 1],
+                [0, self.dimensions[1] - 1],
+                [0, self.dimensions[2] - 1],
+                indexing="ij",
+            ),
+            axis=-1,
+        )
 
     def _get_spacing_and_sizes(self, spacing, sizes, dimensions):
         """Calculate spacing and sizes from given parameters."""
@@ -158,7 +214,7 @@ class Material:
             inferred_sizes = (
                 fields[["x", "y", "z"]].max() - fields[["x", "y", "z"]].min()
             )
-            if not np.array_equal(inferred_sizes, self.sizes):
+            if not np.allclose(inferred_sizes, self.sizes):
                 raise ValueError(
                     "provided x, y, and z fields do not match provided sizes"
                 )
@@ -779,7 +835,215 @@ class Material:
         else:
             raise ValueError(f"{kind} is not a valid plot kind")
 
-    def apply(self, func, *func_args, out=None, **func_kwargs):
+    def plot_slice(
+        self,
+        label,
+        component=None,
+        colormap="coolwarm",
+        color_lims=None,
+        figsize=(10, 8),
+        title=None,
+        ax=None,
+        by_id=False,
+    ):
+        """
+        Plot 2D slice from Material with one singleton dimension.
+
+        Parameters
+        ----------
+        label : str
+            Field name to plot
+        component : int or list, optional
+            Component(s) to plot for multi-component fields
+        colormap : str, default "coolwarm"
+            Colormap name
+        color_lims : tuple, optional
+            Color scale limits (min, max)
+        figsize : tuple, default (10, 8)
+            Figure size (only used if ax is None)
+        title : str, optional
+            Plot title
+        ax : matplotlib.axes.Axes, optional
+            Axis to plot on. If None, creates new figure and axis.
+        by_id : bool, default False
+            Whether to plot by material point ID
+
+        Returns
+        -------
+        fig, ax : matplotlib Figure and Axes
+            If ax was provided, fig will be None
+        """
+
+        # Check for exactly one singleton dimension
+        if len(np.where(self.dimensions == 1)[0]) != 1:
+            raise ValueError(
+                f"plot_slice requires exactly one singleton dimension, "
+                f"but dimensions are {self.dimensions}"
+            )
+
+        fields = self.get_fields()
+
+        # Determine slices to grab components of the field
+        slices = [slice(None)]
+        if component is not None:
+            component = [component] if not isinstance(component, list) else component
+            for c in component:
+                slices.append(slice(c, c + 1))
+        slices = tuple(slices)
+
+        if label not in list(fields):
+            raise TypeError(f"{label} not found in fields")
+
+        # Handle different data types (tensors, scalars, vectors)
+        data = fields[label].to_list()
+        if isinstance(data[0], Order2SymmetricTensor):
+            tensor = type(data[0]).from_list(data)
+            result = (
+                tensor[:, -1].stress_voigt
+                if "t" in tensor.dims_str
+                else tensor.stress_voigt
+            )
+        elif isinstance(data[0], Scalar) or isinstance(data[0], Vector):
+            tensor = type(data[0]).from_list(data)
+            result = (
+                tensor[:, -1].components
+                if "t" in tensor.dims_str
+                else tensor.components
+            )
+        else:
+            result = np.array(data)
+
+        plot_array = np.squeeze(result[slices])
+
+        if len(plot_array.shape) != 1:
+            raise ValueError(
+                "Tried to plot a field with multiple dimensions. "
+                "You may need to specify a component."
+            )
+
+        # Reshape to 2D based on material dimensions
+        plot_data = plot_array.reshape([d for d in self.dimensions if d != 1])
+
+        # Determine active axes
+        axis_names = ["x", "y", "z"]
+        active_indices = [i for i in range(3) if self.dimensions[i] != 1]
+        active_axes = [axis_names[i] for i in active_indices]
+
+        # Get coordinate extents for active axes (cell-centered like plot() voxel mode)
+        extent = (
+            [
+                self.origin[active_indices[0]] - self.spacing[active_indices[0]] / 2,
+                self.origin[active_indices[0]]
+                + self.sizes[active_indices[0]]
+                + self.spacing[active_indices[0]] / 2,
+                self.origin[active_indices[1]] - self.spacing[active_indices[1]] / 2,
+                self.origin[active_indices[1]]
+                + self.sizes[active_indices[1]]
+                + self.spacing[active_indices[1]] / 2,
+            ]
+            if not by_id
+            else None
+        )
+
+        # Determine color limits
+        color_lims = (
+            color_lims if color_lims is not None else (plot_data.min(), plot_data.max())
+        )
+
+        # Create figure/axis if not provided
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+            show_plot = True
+        else:
+            fig = None
+            show_plot = False
+
+        # Plot with extent (transpose to match [y, x] for imshow)
+        im = ax.imshow(
+            plot_data.T,
+            cmap=colormap,
+            vmin=color_lims[0],
+            vmax=color_lims[1],
+            origin="lower",
+            aspect="auto",
+            extent=extent,
+        )
+
+        xlabel = f"{active_axes[0]} (ID)" if by_id else f"{active_axes[0]}"
+        ylabel = f"{active_axes[1]} (ID)" if by_id else f"{active_axes[1]}"
+
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+
+        if title is not None:
+            ax.set_title(title)
+
+        plt.colorbar(im, ax=ax, label=label)
+        plt.tight_layout()
+        if show_plot:
+            plt.show()
+
+        return fig, ax
+
+    def compare_slice_plots(
+        self,
+        label1,
+        label2,
+        component=None,
+        colormap="coolwarm",
+        color_lims=None,
+        figsize=(12, 6),
+    ):
+        """
+        Compare 2D slices from Material with one singleton dimension.
+
+        Parameters
+        ----------
+        label1 : str
+            First field name to plot
+        label2 : str
+            Second field name to plot
+        component : int or list, optional
+            Component(s) to plot for multi-component fields
+        colormap : str, default "coolwarm"
+            Colormap name
+        color_lims : tuple, optional
+            Color scale limits (min, max)
+        figsize : tuple, default (12, 6)
+            Figure size
+
+        Returns
+        -------
+        fig, axes : matplotlib Figure and Axes array
+        """
+
+        fig, axes = plt.subplots(1, 2, figsize=figsize)
+
+        self.plot_slice(
+            label1,
+            component=component,
+            colormap=colormap,
+            color_lims=color_lims,
+            ax=axes[0],
+        )
+
+        self.plot_slice(
+            label2,
+            component=component,
+            colormap=colormap,
+            color_lims=color_lims,
+            ax=axes[1],
+        )
+
+        for ax in axes:
+            ax.set_aspect("equal", adjustable="box")
+
+        plt.tight_layout()
+        plt.show()
+
+        return fig, axes
+
+    def apply(self, func, *func_args, out=None, adapter=None, **func_kwargs):
         """
         Apply function with automatic field extraction and optional field creation.
 
@@ -791,6 +1055,12 @@ class Material:
             Field labels (str) to extract or raw values to pass to function
         out : str or iterable of str, optional
             If provided, create field(s) with these labels containing the result(s)
+        adapter : str or None, optional
+            How to reshape fields before/after function application:
+            - None: No reshaping, pass flat arrays (default)
+            - '3d': Reshape to (D, H, W) for volumetric operations
+            - 'tomopy': Reshape to (1, H, W) for tomopy-style operations
+            - 'image': Reshape to (H, W) for 2D image operations
         **func_kwargs : str or any
             Field labels (str) to extract or raw values to pass as keyword arguments
 
@@ -798,44 +1068,107 @@ class Material:
         --------
         Material or result
             New Material with added field(s) if `out` is specified, otherwise the raw result
+
+        Examples:
+        ---------
+        >>> # 3D volumetric smoothing
+        >>> mat = material.apply(filters.gaussian, 'attenuation', sigma=2.0,
+        ...                      adapter='3d', out='smooth')
+
+        >>> # 2D image processing on slice
+        >>> mat = slice_material.apply(filters.median, 'attenuation',
+        ...                            adapter='image', out='filtered')
+
+        >>> # TomoPy operations
+        >>> mat = slice_material.apply(tomopy.remove_ring, 'attenuation',
+        ...                            adapter='tomopy', out='clean')
         """
 
+        # Map string shortcuts to adapter instances
+        adapter_map = {
+            None: NoReshape(),
+            "3d": Reshape3D(),
+            "3D": Reshape3D(),
+            "tomopy": ReshapeTomopy(),
+            "image": ReshapeImage(),
+        }
+
+        # Validate and get adapter instance
+        if adapter not in adapter_map:
+            raise ValueError(
+                f"Unknown adapter '{adapter}'. "
+                f"Valid options: {list(adapter_map.keys())}"
+            )
+
+        adapter_obj = adapter_map[adapter]
         field_labels = self.get_fields().columns
 
-        # Extract fields or use raw values
-        args = [
-            (self.extract(arg) if isinstance(arg, str) and arg in field_labels else arg)
+        # Extract fields and track which args/kwargs are fields vs raw values
+        # Format: each becomes (value, is_field_boolean)
+        extracted_args = [
+            (
+                (self.extract(arg), True)
+                if isinstance(arg, str) and arg in field_labels
+                else (arg, False)
+            )
             for arg in func_args
         ]
-        kwargs = {
-            k: self.extract(v) if isinstance(v, str) and v in field_labels else v
+
+        extracted_kwargs = {
+            k: (
+                (self.extract(v), True)
+                if isinstance(v, str) and v in field_labels
+                else (v, False)
+            )
             for k, v in func_kwargs.items()
         }
 
+        # Apply adapter to reshape only the extracted fields (not raw values)
+        args = [
+            adapter_obj.reshape_field(val, self.dimensions) if is_field else val
+            for val, is_field in extracted_args
+        ]
+        kwargs = {
+            k: adapter_obj.reshape_field(val, self.dimensions) if is_field else val
+            for k, (val, is_field) in extracted_kwargs.items()
+        }
+
+        # Run the function
         result = func(*args, **kwargs)
 
+        # Early return if no output field specified
         if out is None:
             return result
 
-        # Return new material with the new field if function only has a single output
-        if isinstance(out, str):
-            return self.create_fields({out: result})
+        # Reshape result back to flat arrays for Material storage
+        # Handle both single outputs and tuple/list outputs
+        if isinstance(result, tuple):
+            result = tuple(
+                adapter_obj.reshape_result(r) if isinstance(r, np.ndarray) else r
+                for r in result
+            )
+        elif isinstance(result, np.ndarray):
+            result = adapter_obj.reshape_result(result)
 
-        # Create multiple fields if function has multiple outputs
-        try:
-            labels = list(out)
-            fields = (
-                dict(zip(labels, result))
-                if not len(labels) == 1
-                else {labels[0]: result}
-            )
-            return self.create_fields(fields)
-        except (TypeError, ValueError) as e:
-            raise ValueError(
-                f"Could not create fields from out={out} and result. "
-                f"If out is iterable, result must be iterable with matching length. "
-                f"Error: {e}"
-            )
+        # Normalize out to list for uniform handling
+        out_labels = [out] if isinstance(out, str) else list(out)
+
+        # Create fields dictionary
+        if len(out_labels) == 1:
+            # Single output: assign entire result to the field
+            fields = {out_labels[0]: result}
+        else:
+            # Multiple outputs: unpack result and match to labels
+            try:
+                fields = dict(zip(out_labels, result))
+            except TypeError as e:
+                raise ValueError(
+                    f"Cannot unpack result into {len(out_labels)} fields. "
+                    f"Result must be iterable with matching length. "
+                    f"Error: {e}"
+                )
+
+        return self.create_fields(fields)
 
     def pipe(self, func, *args, **kwargs):
         """
@@ -1230,3 +1563,115 @@ class Box(Feature):
 
         # Point is inside if all coordinates are between min and max
         return np.logical_and(np.all(above_min, axis=-1), np.all(below_max, axis=-1))
+
+
+class ReshapeAdapter(ABC):
+    """
+    Abstract base class for field reshaping strategies.
+
+    Strategies define how to transform flat C-ordered field arrays into
+    formats expected by different processing libraries, and how to convert
+    results back to flat arrays for Material storage.
+    """
+
+    @abstractmethod
+    def reshape_field(self, field, dimensions):
+        """
+        Reshape a flat field array to the required format.
+
+        Parameters
+        ----------
+        field : ndarray
+            Flat 1D array to reshape
+        dimensions : ndarray
+            Material dimensions (nx, ny, nz)
+
+        Returns
+        -------
+        ndarray
+            Reshaped array in the format needed by the target function
+        """
+        pass
+
+    @abstractmethod
+    def reshape_result(self, result):
+        """
+        Reshape function result back to flat 1D array.
+
+        Parameters
+        ----------
+        result : ndarray
+            Result from the applied function
+
+        Returns
+        -------
+        ndarray
+            Flattened result for Material storage
+        """
+        pass
+
+
+class NoReshape(ReshapeAdapter):
+    """Pass fields as flat arrays (default behavior)."""
+
+    def reshape_field(self, field, dimensions):
+        return field
+
+    def reshape_result(self, result):
+        return result
+
+
+class Reshape3D(ReshapeAdapter):
+    """
+    Reshape to full 3D volume (D, H, W).
+
+    Used for volumetric operations on 3D data (e.g., scipy.ndimage,
+    skimage filters on volumes).
+    """
+
+    def reshape_field(self, field, dimensions):
+        return field.reshape(dimensions)
+
+    def reshape_result(self, result):
+        return result.ravel()
+
+
+class ReshapeTomopy(ReshapeAdapter):
+    """
+    Reshape to tomopy-style (1, H, W) for single-layer operations.
+
+    TomoPy expects a batch dimension even for single slices. Requires
+    exactly one singleton dimension in the Material.
+    """
+
+    def reshape_field(self, field, dimensions):
+        singleton_dims = np.where(dimensions == 1)[0]
+        if len(singleton_dims) != 1:
+            raise ValueError(
+                f"ReshapeTomopy requires one singleton dimension, got {dimensions}"
+            )
+        squeezed = field.reshape(dimensions).squeeze()
+        return squeezed[np.newaxis, :, :]  # Add batch dimension
+
+    def reshape_result(self, result):
+        return result.squeeze().ravel()
+
+
+class ReshapeImage(ReshapeAdapter):
+    """
+    Reshape to 2D image (H, W) for skimage-style operations.
+
+    Most skimage functions expect pure 2D arrays. Requires exactly one
+    singleton dimension in the Material.
+    """
+
+    def reshape_field(self, field, dimensions):
+        singleton_dims = np.where(dimensions == 1)[0]
+        if len(singleton_dims) != 1:
+            raise ValueError(
+                f"ReshapeImage requires one singleton dimension, got {dimensions}"
+            )
+        return field.reshape(dimensions).squeeze()
+
+    def reshape_result(self, result):
+        return result.ravel()
