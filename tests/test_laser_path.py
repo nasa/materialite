@@ -83,6 +83,10 @@ def test_get_position_multi_segment():
     pos = path.get_position(0.03)
     assert_allclose(pos, [0.005, 0.001, 0])
 
+    # Position after second segment
+    pos = path.get_position(0.041)
+    assert pos is None
+
 
 def test_raster_scan_bidirectional():
     """Test creating a bidirectional raster scan pattern."""
