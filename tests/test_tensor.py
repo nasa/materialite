@@ -293,8 +293,9 @@ def test_default_dims():
     assert _default_dims(0) == ""
     assert _default_dims(1) == "p"
     assert _default_dims(2) == "ps"
-    assert _default_dims(3) == "psa"
-    assert _default_dims(4) == "psab"
+    assert _default_dims(3) == "pst"
+    assert _default_dims(4) == "psta"
+    assert _default_dims(5) == "pstab"
 
     # Ensure no duplicate characters (p and s don't reappear)
     dims = _default_dims(20)
@@ -337,6 +338,12 @@ def test_idempotence(scalars, vectors, sym_tensors, o2_tensors, minor_sym_tensor
     check_equal(o2_tensors1, o2_tensors)
     check_equal(sym_tensors1, sym_tensors)
     check_equal(minor_sym_tensors1, minor_sym_tensors)
+
+    new_dims = "ab"
+    scalars2 = Scalar(scalars, new_dims)
+    assert scalars2.dims_str == new_dims
+    assert scalars2.indices_str == new_dims
+    assert_allclose(scalars2.components, scalars.components)
 
 
 def test_init_vector_ps(vectors, all_vectors):
@@ -454,9 +461,10 @@ def test_init_minor_sym_tensor_defaults(stiffness_matrices):
     )
 
 
-def test_from_list(vectors_p, vectors_s):
+def test_from_list(vectors_p, vectors_s, vectors):
     vectors_p_list = [Vector(c) for c in vectors_p.components]
     vectors_s_list = [Vector(c) for c in vectors_s.components]
+    vectors_list = [Vector(c, "s") for c in vectors.components]
     vectors_p_new = vectors_p.from_list(vectors_p_list)
     assert_array_equal(vectors_p_new.components, vectors_p.components)
     assert vectors_p_new.dims_str == "p"
@@ -467,8 +475,27 @@ def test_from_list(vectors_p, vectors_s):
     assert vectors_s_to_p.dims_str == "p"
     assert isinstance(vectors_s_to_p, Vector)
 
-    vectors_s_new = Vector.from_list(vectors_s_list, "s")
-    assert vectors_s_new.dims_str == "s"
+    vectors_new = Vector.from_list(vectors_list)
+    assert_array_equal(vectors_new.components, vectors.components)
+    assert vectors_new.dims_str == "ps"
+
+
+def test_from_stack(vectors_p, vectors):
+    vectors_p_list = [Vector(v) for v in vectors_p]
+    vectors_p_stacked = Vector.from_stack(vectors_p_list, new_dim="p")
+    assert_array_equal(vectors_p_stacked.components, vectors_p.components)
+    assert vectors_p_stacked.dims_str == vectors_p.dims_str
+
+    vectors_list = [Vector(v) for v in vectors]
+    vectors_stacked = Vector.from_stack(vectors_list, new_dim="p")
+    assert_array_equal(vectors_stacked.components, vectors.components)
+    assert vectors_stacked.dims_str == vectors.dims_str
+
+    vectors_stacked_t = Vector.from_stack(vectors_list, new_dim="t", axis=1)
+    assert_array_equal(
+        np.moveaxis(vectors_stacked_t.components, 1, 0), vectors.components
+    )
+    assert vectors_stacked_t.dims_str == "st"
 
 
 def test_get_item(
@@ -527,12 +554,15 @@ def test_get_item(
 
         t9 = t[[0, 1]]
         assert_array_equal(t9.components, t.components[[0, 1]])
+        assert t9.dims_str == "ps"
 
         t10 = t[0, np.array([0, 1])]
         assert_array_equal(t10.components, t.components[0, [0, 1]])
+        assert t10.dims_str == "s"
 
         t11 = t[np.array([0, 1])]
         assert_array_equal(t11.components, t.components[[0, 1]])
+        assert t11.dims_str == "ps"
 
         with pytest.raises(ValueError):
             _ = t[:, :, 0]
@@ -545,6 +575,20 @@ def test_get_item(
 
         with pytest.raises(ValueError):
             _ = t[..., 0]
+
+    t = Scalar(np.arange(24).reshape((2, 3, 4)))
+
+    t1 = t[0, 0, 0]
+    assert_array_equal(t1.components, t.components[0, 0, 0])
+    assert t1.dims_str == ""
+
+    t2 = t[0, 0]
+    assert_array_equal(t2.components, t.components[0, 0])
+    assert t2.dims_str == "t"
+
+    t3 = t[:, 0, :]
+    assert_array_equal(t3.components, t.components[:, 0, :])
+    assert t3.dims_str == "pt"
 
 
 def test_broadcast_with_different_dims(scalars, scalars_p):
@@ -745,7 +789,6 @@ def test_mul_symmetric_symmetric(sym_tensors, sym_tensors_p, sym_tensors_s, sym_
 
 def test_mul_symmetric_order2(
     sym_tensors,
-    sym_tensor,
     o2_tensors,
     o2_tensors_p,
     o2_tensors_s,
@@ -756,6 +799,18 @@ def test_mul_symmetric_order2(
     check_mul_cartesian(sym_tensors, o2_tensors_s, Scalar, "ps", "psij, sij -> ps")
     check_mul_cartesian(o2_tensors_s, sym_tensors, Scalar, "ps", "sij, psij -> ps")
     check_mul_cartesian(sym_tensors, o2_tensor, Scalar, "ps", "psij, ij -> ps")
+
+
+def test_mul_scalar_vector(vectors, vectors_p, vectors_s, scalars):
+    check_mul(scalars, vectors, Vector, "psj", "ps, psj -> psj")
+    check_mul(scalars, vectors_p, Vector, "psj", "ps, pj -> psj")
+    check_mul(scalars, vectors_s, Vector, "psj", "ps, sj -> psj")
+
+
+def test_mul_vector_scalar(vectors, vectors_p, vectors_s, scalars):
+    check_mul(vectors, scalars, Vector, "psj", "psj, ps -> psj")
+    check_mul(vectors_p, scalars, Vector, "psj", "pj, ps -> psj")
+    check_mul(vectors_s, scalars, Vector, "psj", "sj, ps -> psj")
 
 
 def test_mul_symmetric_scalar(sym_tensors, sym_tensors_p, sym_tensor, scalars):
@@ -1050,6 +1105,21 @@ def test_from_tensor_product(vectors, vectors_p, vectors_s, vector):
         Order2Tensor.from_tensor_product(vector, vectors_p).components, v_vp
     )
     assert_allclose(Order2Tensor.from_tensor_product(vector, vector).components, v_v)
+
+
+def test_cross_product(vectors, vectors_p, vectors_s, vector):
+    vp_vs = np.cross(
+        vectors_p.components[:, np.newaxis, :], vectors_s.components[np.newaxis, :, :]
+    )
+    v_vall = np.cross(vector.components, vectors.components)
+    assert_allclose(
+        vectors.cross(vectors).components,
+        np.zeros(vectors.components.shape),
+        atol=1.0e-14,
+    )
+    assert_allclose(vectors_p.cross(vectors_s).components, vp_vs, atol=1.0e-14)
+    assert_allclose(vector.cross(vectors).components, v_vall, atol=1.0e-14)
+    assert vectors_p.cross(vectors_s).dims_str == "ps"
 
 
 def test_outer_vectors(vectors, vectors_p, vectors_s, vector):
@@ -1368,10 +1438,7 @@ def test_rotations_with_inverse_s_dimension(
     vectors,
     minor_sym_tensors,
 ):
-    orientations = Orientation.random(
-        NUM_POINTS * NUM_SLIP_SYSTEMS
-    ).rotation_matrix.reshape((NUM_POINTS, NUM_SLIP_SYSTEMS, 3, 3))
-    o = Orientation(orientations)
+    o = Orientation.random(shape=(NUM_POINTS, NUM_SLIP_SYSTEMS))
     tensors_p = [o2_tensors_p, sym_tensors_p, vectors_p, minor_sym_tensors_p]
     for t in tensors_p:
         expected = np.repeat(t.components[:, np.newaxis, ...], NUM_SLIP_SYSTEMS, axis=1)

@@ -1,18 +1,20 @@
 import numpy as np
 import pandas as pd
 import pytest  # Includes: tmp_path
+from materialite.util import power_of_two_below
 from numpy.testing import assert_allclose, assert_array_equal
 from pandas.testing import assert_frame_equal
 
 from materialite import (
     Box,
     Material,
+    Orientation,
+    Scalar,
     Sphere,
     Superellipsoid,
-    Orientation,
+    Vector,
     import_dream3d,
 )
-from materialite.util import power_of_two_below
 
 
 @pytest.fixture
@@ -172,6 +174,51 @@ def test_choose_sizes():
     assert material.fields.z.max() == 11
 
 
+def test_center(material, small_material, initialized_material):
+    default_center = material.origin + material.sizes / 2
+    small_center = small_material.origin + small_material.sizes / 2
+    initialized_center = initialized_material.origin + initialized_material.sizes / 2
+
+    assert_array_equal(material.center, default_center)
+    assert_array_equal(small_material.center, small_center)
+    assert_array_equal(initialized_material.center, initialized_center)
+
+
+def test_far_corner(material, small_material, initialized_material):
+    default_far = material.origin + material.sizes
+    small_far = small_material.origin + small_material.sizes
+    initialized_far = initialized_material.origin + initialized_material.sizes
+
+    assert_array_equal(material.far_corner, default_far)
+    assert_array_equal(small_material.far_corner, small_far)
+    assert_array_equal(initialized_material.far_corner, initialized_far)
+
+
+def test_corners(material, small_material, initialized_material):
+
+    assert material.corners.shape == (2, 2, 2, 3)
+    assert small_material.corners.shape == (2, 2, 2, 3)
+    assert initialized_material.corners.shape == (2, 2, 2, 3)
+
+    assert_array_equal(material.corners[0, 0, 0], material.origin)
+    assert_array_equal(small_material.corners[0, 0, 0], small_material.origin)
+    assert_array_equal(
+        initialized_material.corners[0, 0, 0], initialized_material.origin
+    )
+
+    assert_array_equal(material.corners[1, 1, 1], material.far_corner)
+    assert_array_equal(small_material.corners[1, 1, 1], small_material.far_corner)
+    assert_array_equal(
+        initialized_material.corners[1, 1, 1], initialized_material.far_corner
+    )
+
+    expected_100 = material.origin + [material.sizes[0], 0, 0]
+    assert_array_equal(material.corners[1, 0, 0], expected_100)
+
+    expected_011 = material.origin + [0, material.sizes[1], material.sizes[2]]
+    assert_array_equal(material.corners[0, 1, 1], expected_011)
+
+
 def test_initial_material_feature(material):
     material = material.create_fields(fields={"feature": 2})
     assert material.fields.feature.sum() == 2 * 16**3
@@ -257,7 +304,14 @@ def test_init_material_one_xyz():
 
 def test_initialize_sphere():
     sphere = Sphere(radius=1, centroid=[2, 2, 2])
-    assert sphere.radius == 1 and sphere.centroid == [2, 2, 2]
+    assert sphere.radius.components == 1
+    assert_allclose(sphere.centroid.components, np.array([2, 2, 2]))
+
+
+def test_multiple_spheres_initialization():
+    spheres = Sphere(radius=[1, 2], centroid=[[0, 0, 0], [2, 2, 2]])
+    assert_allclose(spheres.radius.components, [1, 2])
+    assert_allclose(spheres.centroid.components, [[0, 0, 0], [2, 2, 2]])
 
 
 def test_check_inside_box():
@@ -268,7 +322,7 @@ def test_check_inside_box():
     expected_results = np.array(
         [False, False, False, False, True, True, True, False, False, False, False]
     )
-    assert_array_equal(box.check_inside(x, y, z), expected_results)
+    assert_array_equal(box.check_inside(Vector(np.c_[x, y, z])), expected_results)
 
 
 def test_check_inside_semi_infinite_box_on_min_side():
@@ -279,7 +333,7 @@ def test_check_inside_semi_infinite_box_on_min_side():
     expected_results = np.array(
         [True, True, True, True, True, True, True, False, False, False, False]
     )
-    assert_array_equal(box.check_inside(x, y, z), expected_results)
+    assert_array_equal(box.check_inside(Vector(np.c_[x, y, z])), expected_results)
 
 
 def test_check_inside_semi_infinite_box_on_max_side():
@@ -290,7 +344,7 @@ def test_check_inside_semi_infinite_box_on_max_side():
     expected_results = np.array(
         [False, False, False, False, True, True, True, True, True, True, True]
     )
-    assert_array_equal(box.check_inside(x, y, z), expected_results)
+    assert_array_equal(box.check_inside(Vector(np.c_[x, y, z])), expected_results)
 
 
 def test_insert_feature():
@@ -302,15 +356,116 @@ def test_insert_feature():
     assert material.fields.query("x < 0.1 and y < 0.1 and z < 0.1").feature.iat[0] == 2
 
 
-def test_export_to_vtk(small_material, tmp_path):
-    output_filename = tmp_path / "fields.vtk"
-    small_material.export_to_vtk(output=output_filename)
-    with open(output_filename) as output_file:
-        dimensions = output_file.read().split("\n")[4].split()[1:]
-    assert dimensions == ["3", "4", "5"]
+def test_insert_multiple_spheres(small_material):
+    spheres = Sphere(
+        radius=[0.8, 0.8], centroid=[small_material.origin, small_material.far_corner]
+    )
+
+    material = small_material.create_fields({"phase": 0}).insert_feature(
+        spheres, fields={"phase": [1, 2]}
+    )
+
+    fields = material.get_fields()
+    phase_at_origin = fields.query("x < 0.1 and y < 0.1 and z < 0.1").phase.iat[0]
+    phase_at_corner = fields.query("x > 0.9 and y > 1.9 and z > 2.9").phase.iat[0]
+
+    assert phase_at_origin == 1
+    assert phase_at_corner == 2
 
 
-def test_add_feature_with_field(small_material):
+def test_insert_vector_field(small_material):
+    sphere = Sphere(radius=1, centroid=small_material.origin)
+    velocity_field = Vector([1, 2, 3])
+
+    material = small_material.insert_feature(
+        sphere, fields={"velocity": velocity_field}
+    )
+
+    assert "velocity" in material.fields
+    velocity_at_origin = material.extract("velocity")[0]
+    assert_allclose(velocity_at_origin.components, [1, 2, 3])
+
+
+def test_box_with_none_values():
+    box = Box(min_corner=[None, 0, None], max_corner=[1, None, 1])
+
+    point_inside = Vector([[1, 100, 0.5]])
+    assert box.check_inside(point_inside)[0] == True
+
+    point_outside = Vector([[2, 0, 0.5]])
+    assert box.check_inside(point_outside)[0] == False
+
+
+def test_multiple_boxes():
+    box = Box(
+        min_corner=[[0, None, None], [None, 0, None]],
+        max_corner=[[None, 1, None], [1, None, 1]],
+    )
+    assert_array_equal(
+        box.min_corner.components, [[0, -np.inf, -np.inf], [-np.inf, 0, -np.inf]]
+    )
+    assert_array_equal(box.max_corner.components, [[np.inf, 1, np.inf], [1, np.inf, 1]])
+
+    points = Vector([[0.5, 100, 0.5], [2, 0, 0.5]])
+    assert (box.check_inside(points) == [[False, True], [True, False]]).all()
+
+
+def test_multiple_boxes_vector_input():
+    box = Box(
+        min_corner=Vector([[0, None, None], [None, 0, None]]),
+        max_corner=Vector([[None, 1, None], [1, None, 1]]),
+    )
+    assert_array_equal(
+        box.min_corner.components, [[0, -np.inf, -np.inf], [-np.inf, 0, -np.inf]]
+    )
+    assert_array_equal(box.max_corner.components, [[np.inf, 1, np.inf], [1, np.inf, 1]])
+
+
+def test_multiple_boxes_error_if_corner_lengths_different():
+    with pytest.raises(ValueError):
+        _ = Box(min_corner=[[1, 1, 1], [2, 2, 2]], max_corner=[5, 5, 5])
+
+
+def test_overriding_dimension_for_sphere():
+    radius_with_p = Scalar([1, 2], dims="p")
+    spheres = Sphere(radius=radius_with_p, centroid=[[0, 0, 0], [2, 2, 2]])
+
+    assert spheres.radius.dims_str == "r"
+    assert_allclose(spheres.radius.components, [1, 2])
+
+
+def test_uniform_vs_multiple_feature_values(small_material):
+    spheres = Sphere(radius=[0.8, 0.8], centroid=[[0, 0, 0], [1, 2, 3]])
+
+    fields_uniform = (
+        small_material.create_fields({"phase": 0})
+        .insert_feature(spheres, fields={"phase": 5})
+        .get_fields()
+    )
+
+    fields_multiple = (
+        small_material.create_fields({"phase": 0})
+        .insert_feature(spheres, fields={"phase": [10, 20]})
+        .get_fields()
+    )
+
+    phase_origin_uniform = fields_uniform.query(
+        "x < 0.1 and y < 0.1 and z < 0.1"
+    ).phase.iat[0]
+    assert phase_origin_uniform == 5
+
+    phase_origin_multiple = fields_multiple.query(
+        "x < 0.1 and y < 0.1 and z < 0.1"
+    ).phase.iat[0]
+    phase_corner_multiple = fields_multiple.query(
+        "x > 0.9 and y > 1.9 and z > 2.9"
+    ).phase.iat[0]
+
+    assert phase_origin_multiple == 10
+    assert phase_corner_multiple == 20
+
+
+def test_add_spheres_with_fields(small_material):
     sphere_1 = Sphere(radius=1, centroid=[0, 0, 0])
     sphere_2 = Sphere(radius=2, centroid=[1, 2, 3])
 
@@ -357,33 +512,38 @@ def test_add_feature_with_field(small_material):
     )
 
 
+def test_error_if_sphere_inputs_have_different_lengths():
+    with pytest.raises(ValueError):
+        _ = Sphere(radius=[0.8], centroid=[[0, 0, 0], [1, 2, 3]])
+
+
 def test_initialize_superellipsoid():
     superellipsoid = Superellipsoid(
-        major_radius=3,
-        intermediate_radius=2,
-        minor_radius=1,
+        x_radius=3,
+        y_radius=2,
+        z_radius=1,
         shape_exponent=10,
         centroid=[2, 2, 2],
     )
-    assert superellipsoid.major_radius == 3
-    assert superellipsoid.intermediate_radius == 2
-    assert superellipsoid.minor_radius == 1
-    assert superellipsoid.shape_exponent == 10
-    assert superellipsoid.centroid == [2, 2, 2]
+    assert superellipsoid.x_radius.components == 3
+    assert superellipsoid.y_radius.components == 2
+    assert superellipsoid.z_radius.components == 1
+    assert superellipsoid.shape_exponent.components == 10
+    assert_allclose(superellipsoid.centroid.components, np.array([2, 2, 2]))
 
 
 def test_insert_superellipsoids(small_material):
     superellipsoid_1 = Superellipsoid(
-        major_radius=3,
-        intermediate_radius=2,
-        minor_radius=1,
+        x_radius=3,
+        y_radius=2,
+        z_radius=1,
         shape_exponent=10,
         centroid=[0, 0, 0],
     )
     superellipsoid_2 = Superellipsoid(
-        major_radius=3,
-        intermediate_radius=2,
-        minor_radius=1,
+        x_radius=3,
+        y_radius=2,
+        z_radius=1,
         shape_exponent=10,
         centroid=[1, 2, 3],
     )
@@ -401,6 +561,25 @@ def test_insert_superellipsoids(small_material):
         material.get_fields().query("x > 0.9 and y > 1.9 and z > 2.9").feature.iat[0]
         == 3
     )
+
+
+def test_error_if_superellipsoid_inputs_have_different_lengths():
+    with pytest.raises(ValueError):
+        _ = superellipsoid = Superellipsoid(
+            x_radius=[3, 4],
+            y_radius=2,
+            z_radius=1,
+            shape_exponent=10,
+            centroid=[2, 2, 2],
+        )
+
+
+def test_export_to_vtk(small_material, tmp_path):
+    output_filename = tmp_path / "fields.vtk"
+    small_material.export_to_vtk(output=output_filename)
+    with open(output_filename) as output_file:
+        dimensions = output_file.read().split("\n")[4].split()[1:]
+    assert dimensions == ["3", "4", "5"]
 
 
 def test_export_to_evpfft(tmp_path, expected_evpfft_file_contents):
@@ -732,6 +911,13 @@ def test_dimensions_and_origin_of_cropped_by_id_material(
     assert_array_equal(submaterial.origin, origin)
 
 
+def test_sizes_of_cropped_by_id_material():
+    material = Material(dimensions=[1077, 1077, 1], spacing=[0.00148, 0.00148, 1])
+    submaterial = material.crop_by_id_range(x_id_range=(50, 200), y_id_range=(0, 100))
+    assert_array_equal(submaterial.dimensions, [151, 101, 1])
+    assert_allclose(submaterial.spacing, [0.00148, 0.00148, 1])
+
+
 def test_dimensions_and_origin_of_cropped_material(material):
     submaterial = material.crop_by_range(x_range=(1, 1), y_range=(2, 5), z_range=(5, 6))
     assert_array_equal(submaterial.dimensions, [1, 4, 2])
@@ -847,6 +1033,27 @@ def test_regional_field_error_if_new_regional_field_does_not_have_same_keys(
     df = pd.DataFrame(columns=labels, data=np.c_[categories, new1])
     bad_df = pd.DataFrame(columns=bad_labels, data=np.c_[bad_categories, new2])
     with pytest.raises(ValueError):
-        new_material = small_material.create_regional_fields(
-            "x", df
-        ).create_regional_fields("x", bad_df)
+        _ = small_material.create_regional_fields("x", df).create_regional_fields(
+            "x", bad_df
+        )
+
+
+def test_update_regional_field(small_material):
+    labels = ["x", "new1"]
+    regions = [0, 1, 2]
+    new1 = [1, 2, 3]
+    expected_fields = small_material.get_fields().assign(
+        **{"new1": np.repeat(new1[:-1], 12)}
+    )
+    expected_regional_field = pd.DataFrame(columns=labels, data=np.c_[regions, new1])
+    regional_field = pd.DataFrame(columns=labels, data=np.c_[regions[:-1], new1[:-1]])
+    regional_field_update = {"x": [regions[-1]], "new1": [new1[-1]]}
+    new_material = small_material.create_regional_fields(
+        "x", regional_field
+    ).update_regional_field("x", regional_field_update)
+    assert_frame_equal(new_material.get_fields(), expected_fields, check_dtype=False)
+    assert_frame_equal(
+        new_material.extract_regional_field("x"),
+        expected_regional_field,
+        check_dtype=False,
+    )

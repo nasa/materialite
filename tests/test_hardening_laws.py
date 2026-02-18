@@ -4,7 +4,14 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from materialite import Material, Order4SymmetricTensor, Orientation, SlipSystem, Vector
+from materialite import (
+    Material,
+    Order4SymmetricTensor,
+    Orientation,
+    SlipSystem,
+    Vector,
+    Scalar,
+)
 from materialite.models.small_strain_fft import (
     ElasticViscoplastic,
     LoadSchedule,
@@ -16,20 +23,15 @@ from materialite.models.small_strain_fft import (
 )
 
 
-def get_outputs(material, num_output_times):
-    results = defaultdict(list)
-    for i in range(num_output_times):
-        data = material.state[f"output_time_{i}"]
-        results["slip_system_shear_strains"].append(
-            data["slip_system_shear_strains"].mean("p").components
-        )
-        results["slip_resistances"].append(
-            data["slip_resistances"].mean("p").components
-        )
-        results["plastic_strains"].append(data["plastic_strains"].mean("p").components)
-    for k, v in results.items():
-        results[k] = np.array(v)
-    return results
+def extract_outputs(material):
+    slip_resistances = (
+        material.extract("slip_resistances").mean("p").mean("s").components
+    )
+    slip_system_shear_strains = (
+        material.extract("slip_system_shear_strains").mean("p").mean("s").components
+    )
+    plastic_strains = material.extract("plastic_strains").mean("p").components
+    return slip_resistances, slip_system_shear_strains, plastic_strains
 
 
 @pytest.fixture
@@ -80,6 +82,151 @@ def output_variables():
     return ["slip_system_shear_strains", "plastic_strains", "slip_resistances"]
 
 
+@pytest.fixture
+def plastic_slip_rates():
+    return Scalar([[0.1, 0.2, -0.3], [0.4, -0.5, 0.6]], "ps")
+
+
+@pytest.fixture
+def old_slip_resistances():
+    return Scalar([[100, 200, 300], [400, 500, 600]], "ps")
+
+
+@pytest.fixture
+def old_accumulated_slip():
+    return Scalar([0.1, 0.2], "p")
+
+
+@pytest.fixture
+def time_increment():
+    return 0.001
+
+
+def test_perfect_plasticity_increment(
+    plastic_slip_rates, old_slip_resistances, old_accumulated_slip, time_increment
+):
+    properties = dict()
+    slip_resistances = perfect_plasticity(
+        properties,
+        old_accumulated_slip,
+        old_slip_resistances,
+        plastic_slip_rates,
+        time_increment,
+    )
+    assert_allclose(slip_resistances.components, old_slip_resistances.components)
+
+
+def test_linear_hardening_increment(
+    plastic_slip_rates, old_slip_resistances, old_accumulated_slip, time_increment
+):
+    properties = {"hardening_rate": 10.0}
+    slip_resistances = linear(
+        properties,
+        old_accumulated_slip,
+        old_slip_resistances,
+        plastic_slip_rates,
+        time_increment,
+    )
+    expected_slip_resistances = [
+        old_slip_resistances.components[0, :] + 0.006,
+        old_slip_resistances.components[1, :] + 0.015,
+    ]
+    assert_allclose(slip_resistances.components, expected_slip_resistances)
+
+
+def test_linear_hardening_increment_anisotropic(
+    plastic_slip_rates, old_slip_resistances, old_accumulated_slip, time_increment
+):
+    properties = {
+        "hardening_rate": 10.0,
+        "hardening_matrix": np.array(
+            [[1.0, 2.0, 2.0], [2.0, 1.0, 2.0], [2.0, 2.0, 1.0]]
+        ),
+    }
+    slip_resistances = linear(
+        properties,
+        old_accumulated_slip,
+        old_slip_resistances,
+        plastic_slip_rates,
+        time_increment,
+    )
+    slip_resistance_increments = np.array([[0.011, 0.01, 0.009], [0.026, 0.025, 0.024]])
+    expected_slip_resistances = (
+        old_slip_resistances.components + slip_resistance_increments
+    )
+    assert_allclose(slip_resistances.components, expected_slip_resistances)
+
+
+def test_voce_increment(
+    plastic_slip_rates, old_slip_resistances, old_accumulated_slip, time_increment
+):
+    theta0 = 1000.0
+    theta1 = 10.0
+    tau1 = 100.0
+    properties = {"theta_0": theta0, "theta_1": theta1, "tau_1": tau1}
+    slip_resistances = voce(
+        properties,
+        old_accumulated_slip,
+        old_slip_resistances,
+        plastic_slip_rates,
+        time_increment,
+    )
+    slip_increment = np.array([0.0006, 0.0015])
+    accumulated_slip = old_accumulated_slip.components + slip_increment
+    ratio = theta0 / tau1
+    exp_initial = np.exp(-ratio * old_accumulated_slip.components)
+    exp_change = np.exp(-ratio * slip_increment)
+    slip_resistance_increment = (
+        theta1 * slip_increment
+        - (ratio * tau1 - theta1) / ratio * exp_initial * (exp_change - 1)
+        - theta1
+        / ratio
+        * exp_initial
+        * (
+            exp_change * (1 + ratio * accumulated_slip)
+            - (1 + ratio * old_accumulated_slip.components)
+        )
+    )
+    # slip_resistances_increments = [0.2260734, 0.21851794]
+    expected_slip_resistances = [
+        old_slip_resistances.components[0, :] + slip_resistance_increment[0],
+        old_slip_resistances.components[1, :] + slip_resistance_increment[1],
+    ]
+    assert_allclose(slip_resistances.components, expected_slip_resistances)
+
+
+def test_af_increment(
+    plastic_slip_rates, old_slip_resistances, old_accumulated_slip, time_increment
+):
+    H = 10000.0
+    H_d = 10.0
+    properties = {"direct_hardening": H, "dynamic_recovery": H_d}
+    slip_resistances = armstrong_frederick(
+        properties,
+        old_accumulated_slip,
+        old_slip_resistances,
+        plastic_slip_rates,
+        time_increment,
+    )
+    slip_increment = np.array([0.0006, 0.0015])
+    slip_resistance_increment0 = (
+        (H - H_d * old_slip_resistances.components[0, :])
+        * slip_increment[0]
+        / (1 + H_d * slip_increment[0])
+    )
+    slip_resistance_increment1 = (
+        (H - H_d * old_slip_resistances.components[1, :])
+        * slip_increment[1]
+        / (1 + H_d * slip_increment[1])
+    )
+    # slip resistance increments: [[5.3678, 4.7714, 4.1750], [8.8670, 7.3892, 5.9113]]
+    expected_slip_resistances = [
+        old_slip_resistances.components[0, :] + slip_resistance_increment0,
+        old_slip_resistances.components[1, :] + slip_resistance_increment1,
+    ]
+    assert_allclose(slip_resistances.components, expected_slip_resistances)
+
+
 def test_perfect_plasticity(
     material, model_setup, parameters, output_times, output_variables
 ):
@@ -92,9 +239,9 @@ def test_perfect_plasticity(
         output_times=output_times,
         output_variables=output_variables,
     )
-    outputs = get_outputs(material, len(output_times))
-    assert_allclose(outputs["slip_resistances"], parameters["slip_resistance"])
-    assert_allclose(np.sum(outputs["plastic_strains"][:, :3], axis=1), 0)
+    slip_resistances, _, plastic_strains = extract_outputs(material)
+    assert_allclose(slip_resistances, parameters["slip_resistance"])
+    assert_allclose(np.sum(plastic_strains[:, :3], axis=1), 0)
 
 
 def test_linear_hardening(
@@ -112,12 +259,48 @@ def test_linear_hardening(
         output_times=output_times,
         output_variables=output_variables,
     )
-    outputs = get_outputs(material, len(output_times))
-    output_hardening_rate = (
-        outputs["slip_resistances"][-1] - outputs["slip_resistances"][0]
-    ) / (outputs["slip_system_shear_strains"][-1])
+    slip_resistances, slip_system_shear_strains, plastic_strains = extract_outputs(
+        material
+    )
+    output_hardening_rate = (slip_resistances[-1] - slip_resistances[0]) / (
+        slip_system_shear_strains[-1]
+    )
     assert_allclose(output_hardening_rate, hardening_rate)
-    assert_allclose(np.sum(outputs["plastic_strains"][:, :3], axis=1), 0)
+    assert_allclose(np.sum(plastic_strains[:, :3], axis=1), 0)
+
+
+def test_linear_hardening_anisotropic(
+    material, model_setup, parameters, output_times, output_variables
+):
+    hardening_rate = 1000.0
+    slip_plane_normals = Vector([[1.0, 1.0, 0.0], [-1.0, 1.0, 0.0]], "s")
+    slip_directions = Vector([[1.0, -1.0, 0.0], [-1.0, -1.0, 0]], "s")
+    parameters["slip_systems"] = SlipSystem(slip_plane_normals, slip_directions)
+    hardening_matrix = np.array([[1.0, 1.2], [1.2, 1.0]])
+    constitutive_model = ElasticViscoplastic(
+        **parameters,
+        hardening_function=linear,
+        hardening_properties={
+            "hardening_rate": hardening_rate,
+            "hardening_matrix": hardening_matrix,
+        },
+    )
+    model = SmallStrainFFT(**model_setup, constitutive_model=constitutive_model)
+    material = model(
+        material,
+        output_times=output_times,
+        output_variables=output_variables,
+    )
+    slip_resistances, slip_system_shear_strains, plastic_strains = extract_outputs(
+        material
+    )
+    # slip is identical on both slip systems due to symmetry
+    # accumulated slip in the hardening law is thus (slip_increment + 1.2 * slip_increment)
+    output_hardening_rate = (slip_resistances[-1] - slip_resistances[0]) / (
+        2.2 * slip_system_shear_strains[-1]
+    )
+    assert_allclose(output_hardening_rate, hardening_rate)
+    assert_allclose(np.sum(plastic_strains[:, :3], axis=1), 0)
 
 
 def test_voce_hardening(
@@ -137,16 +320,18 @@ def test_voce_hardening(
         output_times=output_times,
         output_variables=output_variables,
     )
-    outputs = get_outputs(material, len(output_times))
+    slip_resistances, slip_system_shear_strains, plastic_strains = extract_outputs(
+        material
+    )
     integrated_voce = lambda x: parameters["slip_resistance"] + (tau1 + theta1 * x) * (
         1 - np.exp(-x * np.abs(theta0 / tau1))
     )
-    idx = outputs["slip_system_shear_strains"] > 1.0e-10
+    idx = slip_system_shear_strains > 1.0e-10
     assert_allclose(
-        integrated_voce(outputs["slip_system_shear_strains"][idx]),
-        outputs["slip_resistances"][idx],
+        integrated_voce(slip_system_shear_strains[idx]),
+        slip_resistances[idx],
     )
-    assert_allclose(np.sum(outputs["plastic_strains"][:, :3], axis=1), 0)
+    assert_allclose(np.sum(plastic_strains[:, :3], axis=1), 0)
 
 
 def test_af_hardening(
@@ -168,12 +353,14 @@ def test_af_hardening(
         output_times=output_times,
         output_variables=output_variables,
     )
-    outputs = get_outputs(material, len(output_times))
-    idx = outputs["slip_system_shear_strains"] > 1.0e-10
-    nonzero_slips = outputs["slip_system_shear_strains"][idx]
-    nonzero_crss = outputs["slip_resistances"][idx]
+    slip_resistances, slip_system_shear_strains, plastic_strains = extract_outputs(
+        material
+    )
+    idx = slip_system_shear_strains > 1.0e-10
+    nonzero_slips = slip_system_shear_strains[idx]
+    nonzero_crss = slip_resistances[idx]
     expected_slip_increments = nonzero_slips[1:] - nonzero_slips[:-1]
     crss_increments = nonzero_crss[1:] - nonzero_crss[:-1]
     slip_increments = crss_increments / (hardening - recovery * nonzero_crss[1:])
     assert_allclose(slip_increments, expected_slip_increments)
-    assert_allclose(np.sum(outputs["plastic_strains"][:, :3], axis=1), 0)
+    assert_allclose(np.sum(plastic_strains[:, :3], axis=1), 0)

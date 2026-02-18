@@ -16,6 +16,7 @@
 # [3]: T.W.J. de Geus, J. Vondrejc. FFT-based non-linear solvers made simple (v0.1.0). Zenodo, 2019. doi:10.5281/zenodo.3550748. url:https://github.com/tdegeus/GooseFFT
 
 import logging
+from collections import defaultdict
 
 import numpy as np
 import scipy.sparse.linalg as sp
@@ -35,6 +36,7 @@ class SmallStrainFFT(Model):
         min_time_increment=1.0e-9,
         start_time=0.0,
         constitutive_model=None,
+        temperature_history=None,
     ):
         self.load_schedule = load_schedule
         self.end_time = end_time
@@ -49,6 +51,7 @@ class SmallStrainFFT(Model):
         self.min_time_increment = min_time_increment
         self.start_time = start_time
         self._constitutive_model = constitutive_model
+        self.temperature_history = temperature_history
         self._logger = logging.getLogger("SmallStrainFFT")
 
         self._sizes = None
@@ -63,7 +66,9 @@ class SmallStrainFFT(Model):
         phase_label=None,
         output_variables=None,
         output_times=None,
-        global_tolerance=1.0e-4,
+        global_tolerance=1.0e-3,
+        strain_correction_tolerance=1.0e-2,
+        linear_solver_tolerance=1.0e-5,
         postprocessor=None,
     ):
         self._sizes = material.sizes
@@ -77,7 +82,7 @@ class SmallStrainFFT(Model):
             next_output_time = output_times[time_idx]
         else:
             next_output_time = np.inf
-        new_state = dict()
+        new_state = defaultdict(list)
 
         # Values that stay constant
         orientations = material.extract(orientation_label)
@@ -91,60 +96,79 @@ class SmallStrainFFT(Model):
         tangent = constitutive_model.initialize(orientations)
         stress = Order2SymmetricTensor.zero().repeat(self._num_points)
         strain = Order2SymmetricTensor.zero().repeat(self._num_points)
+        thermal_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
         old_tangent = tangent.copy()
         old_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
         old_stress = Order2SymmetricTensor.zero().repeat(self._num_points)
-        mean_strain = Order2SymmetricTensor.zero()
-        mean_applied_stress = Order2SymmetricTensor.zero()
+        old_fluctuation_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
+        old_thermal_strain = Order2SymmetricTensor.zero().repeat(self._num_points)
+        old_max_strain_increment = 0.0
+        summed_von_mises_stress = 0.0
         time_step_id = 0
         time_increment = self.initial_time_increment
-        old_max_constit_iters = 1
 
         while time < (self.end_time - time_tolerance):
             self._logger.info(f"New increment: time {time} + {time_increment}")
             strain_increment = self.load_schedule.strain_increment(time, time_increment)
             stress_increment = self.load_schedule.stress_increment(time, time_increment)
             mean_applied_stress = self.load_schedule.stress(time, time_increment)
-            strain = old_strain + strain_increment
+            max_strain_increment_idx = np.argmax(np.abs(strain_increment.components))
+            max_strain_increment = strain_increment.components[max_strain_increment_idx]
+            if max_strain_increment * old_max_strain_increment < 0.0:
+                old_fluctuation_strain = Order2SymmetricTensor.zero().repeat(
+                    self._num_points
+                )
+            strain = old_strain + strain_increment + old_fluctuation_strain
             if not np.all(stress_increment.components < 1.0e-14):
                 strain += tangent.mean().inv @ stress_increment
-            mean_strain = strain.mean()
-            mean_von_mises_strain = np.sqrt(2 / 3) * mean_strain.dev.norm.components
+            if self.temperature_history is not None:
+                delta_temperature = self.temperature_history.temperature_increment(
+                    time, time_increment
+                )
+                thermal_strain_increment = constitutive_model.calculate_thermal_strain(
+                    delta_temperature
+                )
+                thermal_strain = old_thermal_strain + thermal_strain_increment
             if time_step_id == 0:
                 guess_stress = stress_increment + tangent @ strain_increment
             else:
                 guess_stress = old_stress + stress_increment
 
-            TOLERANCE = global_tolerance
             MAX_ITERATIONS = 100
             converged = False
             iteration = 0
-            cgtol = 1.0e-2
             all_constit_iters = []
             while not converged:
                 iteration += 1
                 if iteration == 1:
                     stress, tangent, constit_iters = (
                         constitutive_model.calculate_stress_and_tangent(
-                            strain, guess_stress, time_increment
+                            strain - thermal_strain, guess_stress, time_increment
                         )
                     )
                     if not constit_iters:
                         tangent = old_tangent.copy()
                         break
                     b = self._apply_projection_tensor(mean_applied_stress - stress)
+                    mean_von_mises_stress = stress.mean().dev.norm.components * np.sqrt(
+                        1.5
+                    )
+                    equilibrium_error = np.max(np.abs(b))
+                    self._logger.debug(f"equilibrium error: {equilibrium_error}")
                     guess_stress = stress.copy()
                     all_constit_iters.append(constit_iters)
                 self._logger.debug(f"global iteration {iteration}")
+                old_equilibrium_error = np.max([equilibrium_error, global_tolerance])
                 # Solve A * x = b for fluctuation strains in Fourier space
                 fluctuation_strain = self._get_fluctuation_strain(
-                    tangent, ndof, b, cgtol
+                    tangent, ndof, b, linear_solver_tolerance
                 )
                 strain += fluctuation_strain
+                old_fluctuation_strain += fluctuation_strain
 
                 stress, tangent, constit_iters = (
                     constitutive_model.calculate_stress_and_tangent(
-                        strain, guess_stress, time_increment
+                        strain - thermal_strain, guess_stress, time_increment
                     )
                 )
                 if not constit_iters:
@@ -156,32 +180,42 @@ class SmallStrainFFT(Model):
                 b = self._apply_projection_tensor(mean_applied_stress - stress)
 
                 # Check convergence
-                strain_err = (
-                    np.mean(fluctuation_strain.norm.components) / mean_von_mises_strain
+                # Equilibrium
+                mean_von_mises_stress = stress.mean().dev.norm.components * np.sqrt(1.5)
+                time_avg_von_mises_stress = (
+                    summed_von_mises_stress + mean_von_mises_stress
+                ) / (time_step_id + 1)
+                if mean_von_mises_stress < 1.0e-12 * time_avg_von_mises_stress:
+                    mean_von_mises_stress = time_avg_von_mises_stress
+                equilibrium_error = np.max(np.abs(b))
+
+                # Strain correction (mapped to stress to filter out zero-stiffness points)
+                max_stress_increment = np.max(
+                    (stress - old_stress).dev.norm.components
+                ) * np.sqrt(1.5)
+                if max_stress_increment < 1.0e-12 * mean_von_mises_stress:
+                    max_stress_increment = mean_von_mises_stress
+                scaled_strain_error = np.max(
+                    (tangent @ fluctuation_strain).norm.components
                 )
-                mean_stress = stress.mean()
-                mean_von_mises_stress = mean_stress.dev.norm.components * np.sqrt(3 / 2)
-                stress_err = (
-                    np.mean((stress - guess_stress).norm.components)
-                    / mean_von_mises_stress
-                )
-                if strain_err < TOLERANCE and iteration > 1 and stress_err < TOLERANCE:
+                projected_scaled_strain_error = scaled_strain_error * equilibrium_error
+
+                if equilibrium_error < global_tolerance * mean_von_mises_stress and (
+                    scaled_strain_error
+                    < strain_correction_tolerance * max_stress_increment
+                    or projected_scaled_strain_error
+                    < strain_correction_tolerance * old_equilibrium_error
+                    or time_step_id == 0
+                    or equilibrium_error < 1e-8
+                ):
                     converged = True
 
-                max_err = np.max([stress_err, strain_err])
-                max_err = stress_err
-                if max_err < 1.0e-1:
-                    cgtol = 1.0e-5
-                elif max_err < 1.0e-5:
-                    cgtol = 1.0e-7
-                elif max_err < 1.0e-7:
-                    cgtol = 1.0e-9
-                else:
-                    cgtol = 1.0e-3
-
                 guess_stress = stress.copy()
-                self._logger.debug(f"stress err: {stress_err}")
-                self._logger.debug(f"strain err: {strain_err}")
+                self._logger.debug(f"equilibrium error: {equilibrium_error}")
+                self._logger.debug(f"scaled strain error: {scaled_strain_error}")
+                self._logger.debug(
+                    f"projected scaled strain error: {projected_scaled_strain_error}"
+                )
 
                 if iteration == MAX_ITERATIONS and not converged:
                     self._logger.info("Too many iterations in macroloading loop")
@@ -192,37 +226,59 @@ class SmallStrainFFT(Model):
                 old_stress = stress.copy()
                 old_strain = strain.copy()
                 old_tangent = tangent.copy()
+                old_thermal_strain = thermal_strain.copy()
+                summed_von_mises_stress += mean_von_mises_stress
+                old_max_strain_increment = max_strain_increment
                 time_step_id += 1
                 time += time_increment
                 if time >= (next_output_time - time_tolerance):
                     outputs = constitutive_model.generate_outputs(output_variables)
-                    outputs.update({"stress": stress, "strain": strain, "time": time})
+                    outputs.update({"stress": stress, "strain": strain})
+                    if self.temperature_history is not None:
+                        outputs.update({"thermal_strain": thermal_strain})
                     if postprocessor is not None:
                         outputs = postprocessor(outputs)
-                    new_state[f"output_time_{time_idx}"] = outputs
+                    for k, v in outputs.items():
+                        new_state[k].append(v)
                     time_idx += 1
                     next_output_time = output_times[time_idx]
                 max_constit_iters = np.max(all_constit_iters)
-                time_increment = self._get_new_time_increment(
+                new_time_increment = self._get_new_time_increment(
                     time,
                     time_increment,
                     next_output_time,
                     max_constit_iters,
-                    old_max_constit_iters,
                 )
-                old_max_constit_iters = np.max(
-                    [old_max_constit_iters, max_constit_iters]
+                old_fluctuation_strain = (
+                    old_fluctuation_strain * new_time_increment / time_increment
                 )
+                time_increment = new_time_increment
             else:
                 time_increment = time_increment / 2.0
-                old_max_constit_iters = 1
+                old_fluctuation_strain = old_fluctuation_strain / 2.0
                 if time_increment < self.min_time_increment:
                     raise ValueError("min time increment reached")
 
         outputs = constitutive_model.postprocess(output_variables)
         outputs.update({"stress": stress, "strain": strain})
-        new_material = material.create_fields(outputs)
-        new_material.state.update(new_state)
+        if self.temperature_history is not None:
+            outputs.update({"thermal_strain": thermal_strain})
+        if output_times is None:
+            # get final values of output variables and create fields
+            new_material = material.create_fields(outputs)
+        elif postprocessor is None:
+            # collect values of output variables into one tensor
+            for k, v in new_state.items():
+                tensor_type = type(v[0])
+                num_tensor_dims = len(v[0].dims_str)
+                new_state[k] = tensor_type.from_stack(
+                    v, new_dim="t", axis=num_tensor_dims
+                )
+            new_material = material.create_fields(new_state)
+        else:
+            new_material = material.create_fields(outputs)
+            new_material.state.update(new_state)
+
         return new_material
 
     def _get_new_time_increment(
@@ -231,33 +287,30 @@ class SmallStrainFFT(Model):
         time_increment,
         next_output_time,
         max_constit_iters,
-        old_max_constit_iters,
     ):
         fixed_time_increment = np.min([next_output_time - time, self.end_time - time])
         eligible_increments = [self.max_time_increment, fixed_time_increment]
-        if (
-            max_constit_iters < 10 and max_constit_iters < 0.6 * old_max_constit_iters
-        ) or max_constit_iters <= 6:
+        if max_constit_iters < 11:
             eligible_increments.append(time_increment * 2.0)
         else:
             eligible_increments.append(time_increment)
         return np.min(eligible_increments)
 
-    def _get_fluctuation_strain(self, tangent, ndof, b, cgtol=1.0e-5):
-        cg_iters = 0
+    def _get_fluctuation_strain(self, tangent, ndof, b, linear_solver_tolerance):
+        linear_solver_iters = 0
 
         def count_iters(arr):
-            nonlocal cg_iters
-            cg_iters += 1
+            nonlocal linear_solver_iters
+            linear_solver_iters += 1
 
         Ax = lambda deps: self._left_hand_side(deps, tangent)
         deps_vector, _ = sp.minres(
-            rtol=cgtol,
+            rtol=linear_solver_tolerance,
             A=sp.LinearOperator(shape=(ndof, ndof), matvec=Ax, dtype="float"),
             b=b,
             callback=count_iters,
         )
-        self._logger.debug(f"cg iterations: {cg_iters}")
+        self._logger.debug(f"linear solver iterations: {linear_solver_iters}")
         fluctuation_strain = Order2SymmetricTensor(
             deps_vector.reshape(self._num_points, 6), "p"
         )

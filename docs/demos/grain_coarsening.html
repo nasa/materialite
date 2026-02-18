@@ -187,12 +187,20 @@
 <li class="toctree-l1"><a class="reference internal" href="material_phase.html">Material Phases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="regional_fields.html">Regional Fields</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Demos</span></p>
-<ul class="current nav bd-sidenav">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tensor/Crystallography Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="tensors.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orientations.html">Orientations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="crystallography.html">Crystallography</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ipf_example.html">IPF Coloring</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mechanical Model Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="constitutive_models.html">Constitutive Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constitutive_models2.html">Constitutive Models: Deep Dive</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Thermal/Process Model Demos</span></p>
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="convolution.html">Convolution Thermal</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Grain Coarsening</a></li>
 <li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
@@ -454,7 +462,7 @@ For now, we can assign them both to be one, create a grain field with values fro
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/c25482c25b0b2beac9819396303311c9f2603de8829ba98fd5f9ca139348f2e7.png" src="../_images/c25482c25b0b2beac9819396303311c9f2603de8829ba98fd5f9ca139348f2e7.png" />
+<img alt="../_images/1b22225b134033c4f0d894d4508c9f0d5f1eac488262a92fff78dd02ba065d15.png" src="../_images/1b22225b134033c4f0d894d4508c9f0d5f1eac488262a92fff78dd02ba065d15.png" />
 </div>
 </div>
 <p>Each site has been randomly assigned a grain value between 0 and 20. There are repeated values, so more than one site can share the same value. One way of thinking about it is by considering each grain id as corresponding to unique a crystallographic orientation.</p>
@@ -476,7 +484,7 @@ For now, we can assign them both to be one, create a grain field with values fro
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/4290a77338e4b28b7ed7e4fc57832a86e40467ad3d911e87c8748490bad3e493.png" src="../_images/4290a77338e4b28b7ed7e4fc57832a86e40467ad3d911e87c8748490bad3e493.png" />
+<img alt="../_images/fefc0bc0dd98aaf7ebcbd3146b5c3039353deb56cb548c067c8d78f1d6a89450.png" src="../_images/fefc0bc0dd98aaf7ebcbd3146b5c3039353deb56cb548c067c8d78f1d6a89450.png" />
 </div>
 </div>
 <p>If more Monte Carlo flip attempts are taken, the structure will be further coarsened.</p>
@@ -496,7 +504,7 @@ For now, we can assign them both to be one, create a grain field with values fro
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/d9f6760e13133a877904ee2c6e70c6532195cb8f584bf12d9c73cc80973b09e4.png" src="../_images/d9f6760e13133a877904ee2c6e70c6532195cb8f584bf12d9c73cc80973b09e4.png" />
+<img alt="../_images/2334bb94844d767e8a1d82ec56f397590f129c543590f8674d99c52b13000d09.png" src="../_images/2334bb94844d767e8a1d82ec56f397590f129c543590f8674d99c52b13000d09.png" />
 </div>
 </div>
 <p>The total Monte Carlo energy of the three states (the initial material, coarsened material, and extra coarsened material) can be compared. This typically decreases logarithmically with the number of Monte Carlo steps.</p>
@@ -512,9 +520,9 @@ For now, we can assign them both to be one, create a grain field with values fro
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Energy before: 1499698
-Energy after coarsening: 883414
-Energy after extra coarsening: 402140
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Energy before: 1500904
+Energy after coarsening: 885660
+Energy after extra coarsening: 388204
 </pre></div>
 </div>
 </div>
@@ -543,7 +551,7 @@ Energy after extra coarsening: 402140
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/171f1df6e4f833bcc38459354b27bd0cbc823092df96d1db25adbdd432bcebe8.png" src="../_images/171f1df6e4f833bcc38459354b27bd0cbc823092df96d1db25adbdd432bcebe8.png" />
+<img alt="../_images/6b66dbb93b7e009e10e8f30577bf7e2807a8dacc633b3c07f7bfb2c802d6982e.png" src="../_images/6b66dbb93b7e009e10e8f30577bf7e2807a8dacc633b3c07f7bfb2c802d6982e.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -562,8 +570,8 @@ Energy after extra coarsening: 402140
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Energy after coarsening with no pinning: 402140
-Energy after coarsening with pinning: 574808
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Energy after coarsening with no pinning: 388204
+Energy after coarsening with pinning: 562238
 </pre></div>
 </div>
 </div>
@@ -606,7 +614,7 @@ Energy after coarsening with pinning: 574808
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/4e856d968bdfcfe2663e17348c808b2ba6a97ecb456cb1bc717f7bd927c6f441.png" src="../_images/4e856d968bdfcfe2663e17348c808b2ba6a97ecb456cb1bc717f7bd927c6f441.png" />
+<img alt="../_images/e47f2e888a4c7f9d4a9f00d74a657de1e5be47773b535850f8a7cbec2c8747f4.png" src="../_images/e47f2e888a4c7f9d4a9f00d74a657de1e5be47773b535850f8a7cbec2c8747f4.png" />
 </div>
 </div>
 <p>Mobility decreases to zero as it approaches the bottom of the domain, which causes minimal refinement in that portion of the material.</p>

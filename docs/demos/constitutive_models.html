@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -62,7 +62,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'demos/constitutive_models';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Convolution Thermal" href="convolution.html" />
+    <link rel="next" title="Constitutive Models: Deep Dive" href="constitutive_models2.html" />
     <link rel="prev" title="IPF Coloring" href="ipf_example.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -189,16 +189,27 @@
 <li class="toctree-l1"><a class="reference internal" href="material_phase.html">Material Phases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="regional_fields.html">Regional Fields</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Demos</span></p>
-<ul class="current nav bd-sidenav">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tensor/Crystallography Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="tensors.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orientations.html">Orientations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="crystallography.html">Crystallography</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ipf_example.html">IPF Coloring</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mechanical Model Demos</span></p>
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Constitutive Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constitutive_models2.html">Constitutive Models: Deep Dive</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Thermal/Process Model Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="convolution.html">Convolution Thermal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
 <li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convolution_microstructure.html">AM Microstucture</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model-Making Demo</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="model_making.html">Creating New Models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
@@ -506,7 +517,8 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([  0.,   0., 200.,   0.,   0.,   0.])
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([-7.10542736e-15, -1.42108547e-14,  2.00000000e+02,  0.00000000e+00,
+        0.00000000e+00,  0.00000000e+00])
 </pre></div>
 </div>
 </div>
@@ -568,94 +580,61 @@ document.write(`
 </div>
 </div>
 </div>
-<p>Since we specified <code class="docutils literal notranslate"><span class="pre">output_times</span></code>, the returned <code class="docutils literal notranslate"><span class="pre">Material</span></code> will now have an attribute called <code class="docutils literal notranslate"><span class="pre">state</span></code>. This is a dictionary whose keys correspond to the indices of the output times.</p>
+<p>Now the “stress” and “strain” fields in the <code class="docutils literal notranslate"><span class="pre">Material</span></code> contain the pointwise stresses and strains across all the requested output times. Each will be an <code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code> with dimensions “p” (for each point in space) and “t” (for each time step). See the Tensor Demo for details. Here, we’ll verify the dimensions and print the stress at the end of the simulation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">material</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stress dimensions: </span><span class="si">{</span><span class="n">stress</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stress</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>dict_keys([&#39;output_time_0&#39;, &#39;output_time_1&#39;, &#39;output_time_2&#39;, &#39;output_time_3&#39;, &#39;output_time_4&#39;, &#39;output_time_5&#39;, &#39;output_time_6&#39;, &#39;output_time_7&#39;, &#39;output_time_8&#39;, &#39;output_time_9&#39;])
-</pre></div>
-</div>
-</div>
-</div>
-<p>Each entry is a dictionary that contains the corresponding time and the stress, strain, and any requested state variables (see the next example for these).</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;outputs at first output time: </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;output_time_0&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;first output time: </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;output_time_0&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stress at first output time:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;output_time_0&#39;</span><span class="p">][</span><span class="s1">&#39;stress&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;strain at first output time:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;output_time_0&#39;</span><span class="p">][</span><span class="s1">&#39;strain&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>outputs at first output time: dict_keys([&#39;stress&#39;, &#39;strain&#39;, &#39;time&#39;])
-
-first output time: 0.001
-
-stress at first output time:
- Order2SymmetricTensor([[1.42108547e-14 1.42108547e-14 2.00000000e+02 0.00000000e+00
-  0.00000000e+00 0.00000000e+00]
- [1.42108547e-14 1.42108547e-14 2.00000000e+02 0.00000000e+00
-  0.00000000e+00 0.00000000e+00]
- [1.42108547e-14 1.42108547e-14 2.00000000e+02 0.00000000e+00
-  0.00000000e+00 0.00000000e+00]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Stress dimensions: pt
+Order2SymmetricTensor([[-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000000e+00
+   0.00000000e+00  0.00000000e+00]
+ [-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000000e+00
+   0.00000000e+00  0.00000000e+00]
+ [-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000000e+00
+   0.00000000e+00  0.00000000e+00]
  ...
- [1.42108547e-14 1.42108547e-14 2.00000000e+02 0.00000000e+00
-  0.00000000e+00 0.00000000e+00]
- [1.42108547e-14 1.42108547e-14 2.00000000e+02 0.00000000e+00
-  0.00000000e+00 0.00000000e+00]
- [1.42108547e-14 1.42108547e-14 2.00000000e+02 0.00000000e+00
-  0.00000000e+00 0.00000000e+00]], dims: (points), components shape: (512, 6))
-
-strain at first output time:
- Order2SymmetricTensor([[-0.0002987 -0.0002987  0.001      0.         0.         0.       ]
- [-0.0002987 -0.0002987  0.001      0.         0.         0.       ]
- [-0.0002987 -0.0002987  0.001      0.         0.         0.       ]
- ...
- [-0.0002987 -0.0002987  0.001      0.         0.         0.       ]
- [-0.0002987 -0.0002987  0.001      0.         0.         0.       ]
- [-0.0002987 -0.0002987  0.001      0.         0.         0.       ]], dims: (points), components shape: (512, 6))
+ [-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000000e+00
+   0.00000000e+00  0.00000000e+00]
+ [-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000000e+00
+   0.00000000e+00  0.00000000e+00]
+ [-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000000e+00
+   0.00000000e+00  0.00000000e+00]], dims: (points), components shape: (512, 6))
 </pre></div>
 </div>
 </div>
 </div>
-<p>Make a function for plotting the stress-strain curve.</p>
+<p>Extract the mean stress and strain in the material in the loading direction for each time step.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">get_stress_strain_curve</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">output_times</span><span class="p">):</span>
-    <span class="n">stress</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">strain</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output_times</span><span class="p">)):</span>
-        <span class="n">state</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;output_time_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
-        <span class="n">stress</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-        <span class="n">strain</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;strain&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stress</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">strain</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">strain</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;strain&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Plot the stress-strain curve and the axial stress field.</p>
+<p>Plot the mean stress-strain curve. Add a point at (0,0) for visualization.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span><span class="p">,</span> <span class="n">strain</span> <span class="o">=</span> <span class="n">get_stress_strain_curve</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">output_times</span><span class="p">)</span>
-<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strain</span><span class="p">,</span> <span class="n">stress</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;axial strain&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;axial stress [MPa]&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">strain</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">stress</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Axial strain [-]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Axial stress [MPa]&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;axial stress [MPa]&#39;)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Axial stress [MPa]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/42dd2892b2294924363d24b05a59f8b5112ed45096cacac5a2af05bb18b31f42.png" src="../_images/42dd2892b2294924363d24b05a59f8b5112ed45096cacac5a2af05bb18b31f42.png" />
+<img alt="../_images/498d63b25c2f30ae1919e0e24f624f781ad08268d8184ddb3b37a384fa5c7121.png" src="../_images/498d63b25c2f30ae1919e0e24f624f781ad08268d8184ddb3b37a384fa5c7121.png" />
 </div>
 </div>
+<p>Plot the axial stress (normal stress in the loading direction) at each point. <code class="docutils literal notranslate"><span class="pre">material.plot()</span></code> automatically plots the value at the last time step/end of the simulation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">290</span><span class="p">,</span> <span class="mi">310</span><span class="p">))</span>
@@ -748,6 +727,7 @@ strain at first output time:
 </div>
 </div>
 <p>Creating and running the <code class="docutils literal notranslate"><span class="pre">SmallStrainFFT</span></code> model proceeds as before. Here, we will request slip system shear strain outputs using the <code class="docutils literal notranslate"><span class="pre">output_variables</span></code> keyword argument, which must be a list. We will also use Python’s <code class="docutils literal notranslate"><span class="pre">logging</span></code> module to get information during the simulation.  <code class="docutils literal notranslate"><span class="pre">INFO</span></code> marks the start of new increments. <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> provides additional debugging information related to convergence.</p>
+<p>NOTE: The syntax of the <code class="docutils literal notranslate"><span class="pre">logging</span></code> module can be tricky. We suggest calling <code class="docutils literal notranslate"><span class="pre">logging.basicConfig()</span></code> immediately after importing <code class="docutils literal notranslate"><span class="pre">logging</span></code> to set up the logger. Then you can choose the outputs you want by calling <code class="docutils literal notranslate"><span class="pre">logger</span> <span class="pre">=</span> <span class="pre">logging.getLogger()</span></code> followed by <code class="docutils literal notranslate"><span class="pre">logger.setLevel(...)</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">SmallStrainFFT</span><span class="p">(</span>
@@ -759,12 +739,16 @@ strain at first output time:
 <span class="n">num_output_times</span> <span class="o">=</span> <span class="mi">7</span>
 <span class="n">output_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mf">0.007</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">num_output_times</span><span class="p">)</span>
 
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+<span class="c1"># Set up logger</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">()</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
 <span class="n">material</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span> <span class="n">output_times</span><span class="o">=</span><span class="n">output_times</span><span class="p">,</span> <span class="n">output_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;slip_system_shear_strains&quot;</span><span class="p">]</span>
 <span class="p">)</span>
-<span class="c1"># reset logging to default to avoid INFO outputs from PyVista</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+
+<span class="c1"># Reset logger to WARNING to avoid INFO outputs from PyVista</span>
 <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -796,9 +780,10 @@ strain at first output time:
 <p>Plot the mean stress-strain curve and the axial stress field. Note that the stress field is now inhomogeneous.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span><span class="p">,</span> <span class="n">strain</span> <span class="o">=</span> <span class="n">get_stress_strain_curve</span><span class="p">(</span><span class="n">material</span><span class="p">,</span> <span class="n">output_times</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">strain</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;strain&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strain</span><span class="p">,</span> <span class="n">stress</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">strain</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">stress</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;axial strain&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;axial stress [MPa]&quot;</span><span class="p">)</span>
 </pre></div>
@@ -808,7 +793,7 @@ strain at first output time:
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;axial stress [MPa]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/dda9b7f46e388debd8c7d8271c0cbfbff9178a2a0d0585529e5939c3c3b52f54.png" src="../_images/dda9b7f46e388debd8c7d8271c0cbfbff9178a2a0d0585529e5939c3c3b52f54.png" />
+<img alt="../_images/5127795d3170c7b8afcd1b722a314e7b9d966d0b195963b75194efcf47606178.png" src="../_images/5127795d3170c7b8afcd1b722a314e7b9d966d0b195963b75194efcf47606178.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -818,30 +803,33 @@ strain at first output time:
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/18c6d78f167289a1e5aec8f82d3af26b9b58ab5cff0aac7c18ac259b199e6a17.png" src="../_images/18c6d78f167289a1e5aec8f82d3af26b9b58ab5cff0aac7c18ac259b199e6a17.png" />
+<img alt="../_images/8ae786a3bf0765c743863674547a6a2d74d7c787d874f82e9446e0cf38329b55.png" src="../_images/8ae786a3bf0765c743863674547a6a2d74d7c787d874f82e9446e0cf38329b55.png" />
 </div>
 </div>
-<p>The slip system shear strains at the end of the simulation will be added to <code class="docutils literal notranslate"><span class="pre">material.fields</span></code>, in addition to the stress and strain, and will be stored in <code class="docutils literal notranslate"><span class="pre">material.state</span></code> at each of the output times.</p>
+<p>The slip system shear strains at each requested output time will now be added to <code class="docutils literal notranslate"><span class="pre">material.fields</span></code>, in addition to the stress and strain. The <code class="docutils literal notranslate"><span class="pre">Materialite</span></code> <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> stored in the “slip_system_shear_strains” field will be a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> with dimensions “p”, “s”, and “t”, representing the shear strain at each point, on each slip system, at each output time. Look at the slip system shear strains at the end of the simulation:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;slip_system_shear_strains&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">slip_system_shear_strains</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;slip_system_shear_strains&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Slip system shear strain dimensions: </span><span class="si">{</span><span class="n">slip_system_shear_strains</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">slip_system_shear_strains</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([[ 7.78340396e-04  1.29865159e-04 -1.51952052e-09 ...  6.97911869e-05
-  -4.08411839e-11 -3.42524887e-04]
- [ 4.84548465e-12 -1.49556478e-03 -5.38410939e-03 ... -2.84536644e-05
-   1.15246754e-06  5.11438707e-03]
- [-6.28795064e-10  8.97935425e-15  7.24190587e-09 ... -2.36518569e-03
-   4.70096035e-12  3.94305920e-03]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Slip system shear strain dimensions: pst
+Scalar([[ 7.78371938e-04  1.29891163e-04 -1.51862619e-09 ...  6.97309063e-05
+  -4.07851814e-11 -3.42271114e-04]
+ [ 4.86942556e-12 -1.49340991e-03 -5.38309705e-03 ... -2.84103837e-05
+   1.15577790e-06  5.11345257e-03]
+ [-6.34021852e-10  9.05740359e-15  7.30094413e-09 ... -2.36383924e-03
+   4.70063086e-12  3.94256276e-03]
  ...
- [ 3.82828906e-05  8.02550778e-09 -2.40494035e-07 ...  7.47675676e-06
-  -5.50477839e-08 -8.28644649e-04]
- [ 2.62002482e-05  2.22802363e-08 -5.13870356e-08 ...  2.92573947e-05
-  -9.92334256e-08 -2.13412526e-03]
- [ 7.54783272e-05  8.99925663e-07 -4.86423107e-09 ...  1.32273161e-04
-  -1.44151134e-08 -2.85769479e-03]], dims: (points, slip systems), components shape: (4096, 12))
+ [ 3.82444110e-05  7.98865119e-09 -2.40589842e-07 ...  7.46152846e-06
+  -5.51309345e-08 -8.28091687e-04]
+ [ 2.61875422e-05  2.22517239e-08 -5.13988140e-08 ...  2.92375692e-05
+  -9.93742017e-08 -2.13355818e-03]
+ [ 7.54850493e-05  9.00377902e-07 -4.86269023e-09 ...  1.32271909e-04
+  -1.44103654e-08 -2.85620189e-03]], dims: (points, slip systems), components shape: (4096, 12))
 </pre></div>
 </div>
 </div>
@@ -1106,7 +1094,7 @@ strain at first output time:
 </div>
 </div>
 </div>
-<p>Compare mean stress in pore and solid material</p>
+<p>Compare the mean stress in the pore and solid material at each output time. As expected, the stress is zero at all points in the pore.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">indices</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">get_region_indices</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">)</span>
@@ -1123,9 +1111,27 @@ strain at first output time:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>mean pore stress: [0. 0. 0. 0. 0. 0.]
-mean solid stress: [ 3.13510232e-05  3.13510232e-05  3.25739335e+02 -3.25775025e-10
- -1.04009409e-09  1.00783818e-12]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>mean pore stress: [[0. 0. 0. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0.]
+ [0. 0. 0. 0. 0. 0.]]
+mean solid stress: [[-4.01771088e-05 -4.01771088e-05  1.17721036e+02  2.28624890e-17
+   2.91839945e-17 -7.66510416e-17]
+ [ 4.83460989e-06  4.83460989e-06  2.27039459e+02 -4.98955361e-17
+  -6.30415911e-17 -6.34380791e-19]
+ [ 6.07083720e-04  6.07083720e-04  2.83311972e+02 -7.65204299e-10
+   2.26066458e-10 -1.46598899e-10]
+ [ 1.65822596e-04  1.65822596e-04  3.03365583e+02 -1.65927787e-09
+  -5.30326617e-09 -1.90904788e-08]
+ [-2.78437840e-03 -2.78437840e-03  3.12933310e+02 -1.62440466e-09
+  -2.86660059e-10  5.36530042e-10]
+ [-1.63973267e-03 -1.63973267e-03  3.19798080e+02 -6.91754925e-08
+  -5.46264725e-09  7.43628536e-09]
+ [-4.44322799e-04 -4.44322799e-04  3.25746691e+02 -1.42570443e-08
+  -3.13907645e-09  9.02664918e-09]]
 </pre></div>
 </div>
 </div>
@@ -1140,62 +1146,57 @@ mean solid stress: [ 3.13510232e-05  3.13510232e-05  3.25739335e+02 -3.25775025e
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/6896f45bcb4672b4ab8ddbfa1f78ff8673f936ad42d8771221e062c4a17803a0.png" src="../_images/6896f45bcb4672b4ab8ddbfa1f78ff8673f936ad42d8771221e062c4a17803a0.png" />
+<img alt="../_images/17da39294f059331267b31dc7d4b185864fb897585d30b384411653aaea74fe1.png" src="../_images/17da39294f059331267b31dc7d4b185864fb897585d30b384411653aaea74fe1.png" />
 </div>
 </div>
 <p>Plot the mean stress-strain curve</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress_solid</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">stress_pore</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">strain_solid</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">strain_pore</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output_times</span><span class="p">)):</span>
-    <span class="n">stress</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;output_time_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span>
-    <span class="n">strain</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;output_time_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="s2">&quot;strain&quot;</span><span class="p">]</span>
-    <span class="n">stress_solid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stress</span><span class="p">[</span><span class="n">solid_indices</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-    <span class="n">stress_pore</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stress</span><span class="p">[</span><span class="n">pore_indices</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-    <span class="n">strain_solid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">strain</span><span class="p">[</span><span class="n">solid_indices</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-    <span class="n">strain_pore</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">strain</span><span class="p">[</span><span class="n">pore_indices</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">)</span>
+<span class="n">strain</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;strain&quot;</span><span class="p">)</span>
+<span class="n">stress_solid</span> <span class="o">=</span> <span class="n">stress</span><span class="p">[</span><span class="n">solid_indices</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">strain_solid</span> <span class="o">=</span> <span class="n">strain</span><span class="p">[</span><span class="n">solid_indices</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">stress_pore</span> <span class="o">=</span> <span class="n">stress</span><span class="p">[</span><span class="n">pore_indices</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">strain_pore</span> <span class="o">=</span> <span class="n">strain</span><span class="p">[</span><span class="n">pore_indices</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strain_solid</span><span class="p">,</span> <span class="n">stress_solid</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;solid&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strain_pore</span><span class="p">,</span> <span class="n">stress_pore</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pore&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">strain_solid</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">stress_solid</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;solid&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">strain_pore</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">stress_pore</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pore&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;axial strain&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;axial stress [MPa]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Axial strain [-]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Axial stress [MPa]&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;axial stress [MPa]&#39;)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Axial stress [MPa]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/25fe1fe62bc74b30c18fa79abee6597f135a564aed268a5fa586be49afefadb9.png" src="../_images/25fe1fe62bc74b30c18fa79abee6597f135a564aed268a5fa586be49afefadb9.png" />
+<img alt="../_images/0759a65883456cfef922aef8df355017c7543ddd1dbbdb4aa2e6bb14266b905f.png" src="../_images/0759a65883456cfef922aef8df355017c7543ddd1dbbdb4aa2e6bb14266b905f.png" />
 </div>
 </div>
-<p>Look at the slip system shear strains. Note that the values default to zero in the pore since this is not an available state variable in <code class="docutils literal notranslate"><span class="pre">Elastic</span></code> models.</p>
+<p>Look at the slip system shear strains at the end of the simulation. Note that the values default to zero in the pore since this is not an available state variable in <code class="docutils literal notranslate"><span class="pre">Elastic</span></code> models.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">slip_system_shear_strains</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;slip_system_shear_strains&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">slip_system_shear_strains</span><span class="p">[</span><span class="n">solid_indices</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">slip_system_shear_strains</span><span class="p">[</span><span class="n">pore_indices</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">slip_system_shear_strains</span><span class="p">[</span><span class="n">solid_indices</span><span class="p">,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">slip_system_shear_strains</span><span class="p">[</span><span class="n">pore_indices</span><span class="p">,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([[-1.97217217e-003 -1.97217217e-003 -1.45995492e-121 ... -2.00515808e-003
-  -2.00515808e-003  2.22434048e-120]
- [-1.80962699e-003 -1.80962699e-003 -1.64180481e-121 ... -1.91963460e-003
-  -1.91963460e-003  3.69314289e-126]
- [-1.54178748e-003 -1.54178748e-003 -9.38980369e-123 ... -1.68921211e-003
-  -1.68921211e-003  3.10129664e-120]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([[-1.97058407e-003 -1.97058407e-003  3.38956002e-104 ... -2.00352402e-003
+  -2.00352402e-003  8.51426859e-105]
+ [-1.80843984e-003 -1.80843984e-003  3.15201546e-105 ... -1.91844977e-003
+  -1.91844977e-003 -2.21000386e-106]
+ [-1.54129130e-003 -1.54129130e-003 -2.94527937e-102 ... -1.68872123e-003
+  -1.68872123e-003  1.33933569e-102]
  ...
- [-1.54178748e-003 -1.54178748e-003 -3.25023960e-123 ... -1.68921211e-003
-  -1.68921211e-003  2.94103155e-120]
- [-1.80962698e-003 -1.80962698e-003 -1.39723814e-121 ... -1.91963460e-003
-  -1.91963460e-003  8.35517749e-127]
- [-1.97217217e-003 -1.97217217e-003 -8.52604290e-122 ... -2.00515808e-003
-  -2.00515808e-003  1.19673302e-120]], dims: (points, slip systems), components shape: (3960, 12))
+ [-1.54129130e-003 -1.54129130e-003 -6.69430773e-102 ... -1.68872123e-003
+  -1.68872123e-003  3.65619153e-103]
+ [-1.80843984e-003 -1.80843984e-003  4.36549984e-105 ... -1.91844977e-003
+  -1.91844977e-003 -2.13557488e-106]
+ [-1.97058407e-003 -1.97058407e-003  3.54436710e-104 ... -2.00352402e-003
+  -2.00352402e-003 -2.41190948e-105]], dims: (points, slip systems), components shape: (3960, 12))
 Scalar([[0. 0. 0. ... 0. 0. 0.]
  [0. 0. 0. ... 0. 0. 0.]
  [0. 0. 0. ... 0. 0. 0.]
@@ -1209,6 +1210,7 @@ Scalar([[0. 0. 0. ... 0. 0. 0.]
 </div>
 <p><strong>Additional notes</strong></p>
 <p>There are also <code class="docutils literal notranslate"><span class="pre">LoadSchedule</span></code> constructors for strain- and stress-based cyclic loading. Each one requires an amplitude, a frequency, and a stress mask.</p>
+<p>The stress mask is a numpy array of length 6 that contains only 1s and 0s. 1s correspond to components where the mean stress is prescribed; 0s correspond to components where the mean strain is prescribed. The components are in the standard Voigt order (<code class="docutils literal notranslate"><span class="pre">[xx,</span> <span class="pre">yy,</span> <span class="pre">zz,</span> <span class="pre">yz,</span> <span class="pre">xz,</span> <span class="pre">xy]</span></code>)</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">strain_amplitude</span> <span class="o">=</span> <span class="n">Order2SymmetricTensor</span><span class="o">.</span><span class="n">from_strain_voigt</span><span class="p">([</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
@@ -1233,12 +1235,17 @@ Scalar([[0. 0. 0. ... 0. 0. 0.]
 </div>
 <p>You can also create your own <code class="docutils literal notranslate"><span class="pre">LoadSchedule</span></code>. You need to provide:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">strain_increment</span></code>: a function that takes the previous time (<code class="docutils literal notranslate"><span class="pre">t</span></code>) and the current time increment (<code class="docutils literal notranslate"><span class="pre">dt</span></code>) as inputs and returns the strain increment as an <code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code> (i.e., <code class="docutils literal notranslate"><span class="pre">strain_increment(t,</span> <span class="pre">dt)</span> <span class="pre">-&gt;</span> <span class="pre">Order2SymmetricTensor</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">stress_increment</span></code>: a function that takes <code class="docutils literal notranslate"><span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">dt</span></code> as inputs and returns the stress increment as an <code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">stress</span></code>: a function that takes <code class="docutils literal notranslate"><span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">dt</span></code> as inputs and returns the new stress as an <code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">stress_mask</span></code>: same as the definition for all of the <code class="docutils literal notranslate"><span class="pre">LoadSchedule</span></code>s used in this example.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">strain_increment</span></code>: a function that takes the previous time (<code class="docutils literal notranslate"><span class="pre">t</span></code>) and the current time increment (<code class="docutils literal notranslate"><span class="pre">dt</span></code>) as inputs and returns the mean strain increment as an <code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code> (i.e., <code class="docutils literal notranslate"><span class="pre">strain_increment(t,</span> <span class="pre">dt)</span> <span class="pre">-&gt;</span> <span class="pre">Order2SymmetricTensor</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stress_increment</span></code>: a function that takes <code class="docutils literal notranslate"><span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">dt</span></code> as inputs and returns the mean stress increment as an <code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stress</span></code>: a function that takes <code class="docutils literal notranslate"><span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">dt</span></code> as inputs and returns the new mean stress as an <code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stress_mask</span></code>: same as the definition for all of the <code class="docutils literal notranslate"><span class="pre">LoadSchedule</span></code>s above.</p></li>
 </ul>
 <p>Create an instance of your load schedule: <code class="docutils literal notranslate"><span class="pre">load_schedule</span> <span class="pre">=</span> <span class="pre">LoadSchedule(strain_increment,</span> <span class="pre">stress_increment,</span> <span class="pre">stress,</span> <span class="pre">stress_mask)</span></code></p>
+<p>There are two other hardening laws that can be imported from <code class="docutils literal notranslate"><span class="pre">materialite.models.small_strain_fft</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">perfect_plasticity</span></code>: does not require any hardening law properties (i.e., <code class="docutils literal notranslate"><span class="pre">hardening_properties=None</span></code> in the constitutive law definition).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">armstrong_frederick</span></code>: hardening law of the form <span class="math notranslate nohighlight">\(\dot{g}_s = \left(H - H_d g_s \right) \dot{\Gamma}\)</span>. The two required hardening properties are “direct_hardening” (<span class="math notranslate nohighlight">\(H\)</span>) and “dynamic_recovery” (<span class="math notranslate nohighlight">\(H_d\)</span>).</p></li>
+</ul>
 <p>Other notes:</p>
 <ul class="simple">
 <li><p>When constitutive models are specified by phase (or another field in the <code class="docutils literal notranslate"><span class="pre">Material</span></code>), the model assumes there is a regional field associated with the phase called “constitutive_model”.</p></li>
@@ -1292,11 +1299,11 @@ Scalar([[0. 0. 0. ... 0. 0. 0.]
       </div>
     </a>
     <a class="right-next"
-       href="convolution.html"
+       href="constitutive_models2.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Convolution Thermal</p>
+        <p class="prev-next-title">Constitutive Models: Deep Dive</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

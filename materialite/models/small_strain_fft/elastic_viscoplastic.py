@@ -27,6 +27,7 @@ class ElasticViscoplastic:
         slip_resistance,
         hardening_function,
         hardening_properties,
+        thermal_expansion_coefficients=None,
     ):
         self.stiffness = stiffness
         self._ref_modulus = float(
@@ -38,6 +39,7 @@ class ElasticViscoplastic:
         self.initial_slip_resistance = slip_resistance
         self.hardening_function = hardening_function
         self.hardening_properties = hardening_properties
+        self.thermal_expansion_coefficients = thermal_expansion_coefficients
 
         self.state_variables = dict()
         self.available_state_variables = [
@@ -69,6 +71,7 @@ class ElasticViscoplastic:
         )
         plastic_strains = Order2SymmetricTensor.zero().repeat(num_points)
         slip_system_shear_strains = Scalar.zero().repeat((num_points, num_slip_systems))
+        accumulated_slip = Scalar.zero().repeat(num_points)
         self.state_variables["orientations"] = orientations
         self.state_variables["stiffnesses"] = self.stiffness
         self.state_variables["schmid_tensors"] = schmid_tensor
@@ -82,6 +85,13 @@ class ElasticViscoplastic:
         self.state_variables["old_slip_system_shear_strains"] = (
             slip_system_shear_strains.copy()
         )
+        self.state_variables["accumulated_slip"] = accumulated_slip
+        self.state_variables["old_accumulated_slip"] = accumulated_slip.copy()
+
+        if self.thermal_expansion_coefficients is not None:
+            self.state_variables["thermal_expansion_coefficients"] = (
+                self.thermal_expansion_coefficients.to_specimen_frame(orientations)
+            )
 
         return self.stiffness.to_specimen_frame(orientations)
 
@@ -98,6 +108,7 @@ class ElasticViscoplastic:
         old_slip_system_shear_strains = self.state_variables[
             "old_slip_system_shear_strains"
         ]
+        old_accumulated_slip = self.state_variables["old_accumulated_slip"]
         slip_resistances = self.state_variables["slip_resistances"]
         schmid_tensors = self.state_variables["schmid_tensors"]
         stiffnesses = self.state_variables["stiffnesses"]
@@ -127,7 +138,7 @@ class ElasticViscoplastic:
                     old_plastic_strains[not_converged],
                     time_increment,
                     strains[not_converged],
-                    old_slip_system_shear_strains[not_converged],
+                    old_accumulated_slip[not_converged],
                     old_slip_resistances[not_converged],
                 )
             else:
@@ -149,7 +160,7 @@ class ElasticViscoplastic:
                     old_plastic_strains,
                     time_increment,
                     strains,
-                    old_slip_system_shear_strains,
+                    old_accumulated_slip,
                     old_slip_resistances,
                 )
 
@@ -173,6 +184,9 @@ class ElasticViscoplastic:
         self.state_variables["slip_system_shear_strains"] = (
             old_slip_system_shear_strains + slip_increments
         )
+        self.state_variables["accumulated_slip"] = (
+            old_accumulated_slip + slip_increments.abs.sum("s")
+        )
 
         return (
             stresses.to_specimen_frame(orientations),
@@ -190,7 +204,7 @@ class ElasticViscoplastic:
         old_plastic_strains,
         time_increment,
         strains,
-        old_slip_system_shear_strains,
+        old_accumulated_slip,
         old_slip_resistances,
     ):
         prev_stresses = stresses.copy()
@@ -228,7 +242,7 @@ class ElasticViscoplastic:
         )
         slip_resistances = self.hardening_function(
             self.hardening_properties,
-            old_slip_system_shear_strains,
+            old_accumulated_slip,
             old_slip_resistances,
             plastic_slip_rates,
             time_increment,
@@ -259,6 +273,9 @@ class ElasticViscoplastic:
         self.state_variables["old_slip_system_shear_strains"] = self.state_variables[
             "slip_system_shear_strains"
         ].copy()
+        self.state_variables["old_accumulated_slip"] = self.state_variables[
+            "accumulated_slip"
+        ].copy()
 
     def postprocess(self, output_variables=None):
         outputs = self.generate_outputs(output_variables)
@@ -271,6 +288,15 @@ class ElasticViscoplastic:
         else:
             outputs = dict()
         return outputs
+
+    def calculate_thermal_strain(self, temperature_increment):
+        if self.thermal_expansion_coefficients is None:
+            raise ValueError(
+                "Thermal expansion coefficients not defined for this material."
+            )
+        else:
+            coefficients = self.state_variables["thermal_expansion_coefficients"]
+            return coefficients * temperature_increment
 
     def __repr__(self):
         return (

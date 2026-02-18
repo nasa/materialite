@@ -187,12 +187,20 @@
 <li class="toctree-l1"><a class="reference internal" href="material_phase.html">Material Phases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="regional_fields.html">Regional Fields</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Demos</span></p>
-<ul class="current nav bd-sidenav">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tensor/Crystallography Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="tensors.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orientations.html">Orientations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="crystallography.html">Crystallography</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ipf_example.html">IPF Coloring</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mechanical Model Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="constitutive_models.html">Constitutive Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constitutive_models2.html">Constitutive Models: Deep Dive</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Thermal/Process Model Demos</span></p>
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="convolution.html">Convolution Thermal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">AM Laser Pathing</a></li>
@@ -458,7 +466,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/77d231e27d679a5467a112036abe911aa5f0023e35e8f6fa0c66a3b641b69a15.png" src="../_images/77d231e27d679a5467a112036abe911aa5f0023e35e8f6fa0c66a3b641b69a15.png" />
+<img alt="../_images/bd46478c2209fa58868e4d8742056aec72a81c3a175f74bc24f3f72e63bfadc9.png" src="../_images/bd46478c2209fa58868e4d8742056aec72a81c3a175f74bc24f3f72e63bfadc9.png" />
 </div>
 </div>
 <p>It is able to generate relatively complex patterns with multiple layers. However, the design of the class causes points to be generated outside of the processing domain (0-100 in x and 0-100 in y in this case). This can be adjusted by adding ‘adjust_domain=True’. The domain_epsilon term gives some flexibilty on how close to or far out of the domain to allow points to generate. Three examples are shown below.</p>
@@ -474,9 +482,9 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/95076c24c9b4328d75c61acb022520ce1a7aab79c378165562e7db4b190ff0bc.png" src="../_images/95076c24c9b4328d75c61acb022520ce1a7aab79c378165562e7db4b190ff0bc.png" />
-<img alt="../_images/65198e9b6ec8545e4e9507a467dbc3be0ee5456ab34b6f7e25539df2795e782b.png" src="../_images/65198e9b6ec8545e4e9507a467dbc3be0ee5456ab34b6f7e25539df2795e782b.png" />
-<img alt="../_images/b3ab03e5d7a429070fc03117234698854b747afd94146377b29325d7d1d299de.png" src="../_images/b3ab03e5d7a429070fc03117234698854b747afd94146377b29325d7d1d299de.png" />
+<img alt="../_images/da4c6169e47fa7d2034c6638c1b07f62c48bc1fb727ea7392e27c138e7a6b54f.png" src="../_images/da4c6169e47fa7d2034c6638c1b07f62c48bc1fb727ea7392e27c138e7a6b54f.png" />
+<img alt="../_images/4ed4ab97c792a53f629e00c9422cd0331a01a20084d7b87efb3ea9cf06803799.png" src="../_images/4ed4ab97c792a53f629e00c9422cd0331a01a20084d7b87efb3ea9cf06803799.png" />
+<img alt="../_images/b588943751f5b9ec0d7668db4c1e7bc9941431935cbcd4a2c47d16097c9a5415.png" src="../_images/b588943751f5b9ec0d7668db4c1e7bc9941431935cbcd4a2c47d16097c9a5415.png" />
 </div>
 </div>
 <p>Geometric inputs (hatch spacing, layer thickness, offset values, and z_start) other than beam radius are in units of voxels to make it easier to sync with the material dimensions. The offset start and end values can be used to adjust where a line starts and ends for path design. Here is a case with only one layer. <code class="docutils literal notranslate"><span class="pre">create_build_path</span></code> needs to be re-called to regenerate the path.</p>
@@ -513,8 +521,8 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/c5923b6b192bdd41683a30a4841c9de7b2dde59a99c78eb5ae7e6216ffb395c2.png" src="../_images/c5923b6b192bdd41683a30a4841c9de7b2dde59a99c78eb5ae7e6216ffb395c2.png" />
-<img alt="../_images/4c2e0cfa12543fa332fa89f3c5c473cfd13f50fdcc469c919a7d8f4383f32e93.png" src="../_images/4c2e0cfa12543fa332fa89f3c5c473cfd13f50fdcc469c919a7d8f4383f32e93.png" />
+<img alt="../_images/e1c8c7919cfa0d356522ff14b3bc1f787e6dd096071a019730dad6a1ca038eb9.png" src="../_images/e1c8c7919cfa0d356522ff14b3bc1f787e6dd096071a019730dad6a1ca038eb9.png" />
+<img alt="../_images/38f9cdf681a5590f86e04d23c2fa350288e7a7ff1b4c69aef961f37ac0495dd3.png" src="../_images/38f9cdf681a5590f86e04d23c2fa350288e7a7ff1b4c69aef961f37ac0495dd3.png" />
 </div>
 </div>
 <p>The spacing between points is dependent on the laser scanning velocity. It is limited to there is no more than one voxel traveled between time steps. This is to prevent solidification issues in the convolution microstructure models. The position, time steps, and other parameters can be easily accessed. The first step has zero time and power to help initiate the simulation.</p>
