@@ -115,15 +115,11 @@ class LaserPath:
             The [x, y, z] position of the laser at the given time. Returns None
             if the laser is not active at the given time.
         """
-        # Find which scan segment contains this time
         active_scan = None
-        for i in range(self.n_scans):
-            if self.start_times[i] <= time <= self.end_times[i]:
-                active_scan = i
-                break
-
+        idx = np.searchsorted(self.start_times, time, side="right") - 1
+        if 0 <= idx < self.n_scans and self.start_times[idx] <= time <= self.end_times[idx]:
+            active_scan = idx
         if active_scan is None:
-            # Laser is not active at this time
             return None
 
         # Interpolate position within the active scan
@@ -132,7 +128,6 @@ class LaserPath:
         p0 = self.start_positions[active_scan]
         p1 = self.end_positions[active_scan]
 
-        # Linear interpolation
         fraction = (time - t0) / (t1 - t0)
         position = p0 + fraction * (p1 - p0)
 
@@ -409,106 +404,104 @@ class LaserPath:
 
         segments = []
         for i, offset in enumerate(hatch_offsets):
-            # Hatch line passes through a point at distance 'offset' along perp_dir
-            # from the origin and is parallel to scan_dir.
-            p0 = offset * perp_dir
+            reference_point = offset * perp_dir
 
             intersections = []
 
             # Edge 1: y = y_min (bottom edge)
             if abs(scan_dir[1]) > 1e-10:
-                t = (y_min - p0[1]) / scan_dir[1]
-                x = p0[0] + t * scan_dir[0]
+                t = (y_min - reference_point[1]) / scan_dir[1]
+                x = reference_point[0] + t * scan_dir[0]
                 if x_min <= x <= x_max:
                     intersections.append((x, y_min, t))
 
             # Edge 2: y = y_max (top edge)
             if abs(scan_dir[1]) > 1e-10:
-                t = (y_max - p0[1]) / scan_dir[1]
-                x = p0[0] + t * scan_dir[0]
+                t = (y_max - reference_point[1]) / scan_dir[1]
+                x = reference_point[0] + t * scan_dir[0]
                 if x_min <= x <= x_max:
                     intersections.append((x, y_max, t))
 
             # Edge 3: x = x_min (left edge)
             if abs(scan_dir[0]) > 1e-10:
-                t = (x_min - p0[0]) / scan_dir[0]
-                y = p0[1] + t * scan_dir[1]
+                t = (x_min - reference_point[0]) / scan_dir[0]
+                y = reference_point[1] + t * scan_dir[1]
                 if y_min <= y <= y_max:
                     intersections.append((x_min, y, t))
 
             # Edge 4: x = x_max (right edge)
             if abs(scan_dir[0]) > 1e-10:
-                t = (x_max - p0[0]) / scan_dir[0]
-                y = p0[1] + t * scan_dir[1]
+                t = (x_max - reference_point[0]) / scan_dir[0]
+                y = reference_point[1] + t * scan_dir[1]
                 if y_min <= y <= y_max:
                     intersections.append((x_max, y, t))
 
             # We should have exactly 2 intersections (entry and exit)
-            if len(intersections) >= 2:
-                # Sort by parameter t to get the correct order
-                intersections.sort(key=lambda pt: pt[2])
+            num_intersections = len(intersections)
+            if num_intersections < 2:
+                continue
+            elif num_intersections > 2:
+                raise ValueError("more than two intersections")
 
-                # Remove duplicate intersections (can happen at corners)
-                # Keep only intersections that are sufficiently distinct
-                unique_intersections = [intersections[0]]
-                for pt in intersections[1:]:
-                    # Check if this point is distinct from the last unique point
-                    last_pt = unique_intersections[-1]
-                    dist = np.sqrt(
-                        (pt[0] - last_pt[0]) ** 2 + (pt[1] - last_pt[1]) ** 2
-                    )
-                    if dist > 1e-9:  # Tolerance for distinct points
-                        unique_intersections.append(pt)
+            # Sort by parameter t to get the correct order
+            intersections.sort(key=lambda pt: pt[2])
 
-                # Only proceed if we have at least 2 distinct intersections
-                if len(unique_intersections) >= 2:
-                    # Take the first and last unique intersections
-                    start_pt = unique_intersections[0]
-                    end_pt = unique_intersections[-1]
+            # Remove duplicate intersections (can happen at corners)
+            # Keep only intersections that are sufficiently distinct
+            unique_intersections = [intersections[0]]
+            for pt in intersections[1:]:
+                # Check if this point is distinct from the last unique point
+                last_pt = unique_intersections[-1]
+                dist = np.sqrt(
+                    (pt[0] - last_pt[0]) ** 2 + (pt[1] - last_pt[1]) ** 2
+                )
+                if dist > 1e-9:  # Tolerance for distinct points
+                    unique_intersections.append(pt)
 
-                    # Determine scan direction for this hatch and apply offsets
-                    if bidirectional and i % 2 == 1:
-                        start_pos = (
-                            np.array([end_pt[0], end_pt[1]]) + start_offset * scan_dir
-                        )
-                        end_pos = (
-                            np.array([start_pt[0], start_pt[1]]) - end_offset * scan_dir
-                        )
+            # Only proceed if we have at least 2 distinct intersections
+            if len(unique_intersections) < 2:
+                continue
 
-                        scan_vector = end_pos - start_pos
-                        expected_projection = np.dot(scan_vector, scan_dir)
-                        if expected_projection > 0:
-                            # Points are in wrong order due to excessive negative offsets
-                            # Skip this scan entirely
-                            continue
+            start_pt = unique_intersections[0]
+            end_pt = unique_intersections[-1]
 
-                        start = [start_pos[0], start_pos[1], z_height]
-                        end = [end_pos[0], end_pos[1], z_height]
-                    else:
-                        start_pos = (
-                            np.array([start_pt[0], start_pt[1]])
-                            - start_offset * scan_dir
-                        )
-                        end_pos = (
-                            np.array([end_pt[0], end_pt[1]]) + end_offset * scan_dir
-                        )
+            # Determine scan direction for this hatch and apply offsets
+            if bidirectional and i % 2 == 1:
+                start_pos = (
+                    np.array([end_pt[0], end_pt[1]]) + start_offset * scan_dir
+                )
+                end_pos = (
+                    np.array([start_pt[0], start_pt[1]]) - end_offset * scan_dir
+                )
 
-                        scan_vector = end_pos - start_pos
-                        expected_projection = np.dot(scan_vector, scan_dir)
-                        if expected_projection < 0:
-                            # Points are in wrong order due to excessive negative offsets
-                            # Skip this scan entirely
-                            continue
+                scan_vector = start_pos - end_pos
 
-                        start = [start_pos[0], start_pos[1], z_height]
-                        end = [end_pos[0], end_pos[1], z_height]
+            else:
+                start_pos = (
+                    np.array([start_pt[0], start_pt[1]])
+                    - start_offset * scan_dir
+                )
+                end_pos = (
+                    np.array([end_pt[0], end_pt[1]]) + end_offset * scan_dir
+                )
 
-                    # Only add segment if it has non-zero length
-                    seg_length = np.linalg.norm(np.array(end) - np.array(start))
-                    if seg_length > 1e-10:
-                        segments.append(
-                            {"start": start, "end": end, "velocity": velocity}
-                        )
+                scan_vector = end_pos - start_pos
+
+            expected_projection = np.dot(scan_vector, scan_dir)
+            if expected_projection < 0:
+                # Points are in wrong order due to excessive negative offsets
+                # Skip this scan entirely
+                continue
+
+            start = [start_pos[0], start_pos[1], z_height]
+            end = [end_pos[0], end_pos[1], z_height]
+
+            # Only add segment if it has non-zero length
+            seg_length = np.linalg.norm(np.array(end) - np.array(start))
+            if seg_length > 1e-10:
+                segments.append(
+                    {"start": start, "end": end, "velocity": velocity}
+                )
 
         if len(segments) == 0:
             raise ValueError(
