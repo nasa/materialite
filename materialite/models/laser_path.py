@@ -307,6 +307,7 @@ class LaserPath:
         bidirectional=True,
         start_offset=0.0,
         end_offset=0.0,
+        domain_offset=0.0
     ):
         """
         Create a raster scan pattern at an arbitrary angle in the x-y plane.
@@ -344,6 +345,10 @@ class LaserPath:
             Distance to extend the end of each scan beyond the domain boundary
             in meters. Positive values extend the scan forward (beyond the
             intersection), negative values shorten it (end inside domain).
+        domain_offset : float, default 0.0
+            Distance from the provided bounds to limit the scans to. Positive 
+            values extend the scan outside the bounds, negative values 
+            shorten scans to inside the bounds.
 
         Returns
         -------
@@ -382,8 +387,13 @@ class LaserPath:
         ...     bidirectional=False,
         ... )
         """
-        x_min, x_max = x_bounds
-        y_min, y_max = y_bounds
+        x_bound_low, x_bound_high = x_bounds
+        y_bound_low, y_bound_high = y_bounds
+
+        x_min = x_bound_low - domain_offset
+        x_max = x_bound_high + domain_offset
+        y_min = y_bound_low - domain_offset
+        y_max = y_bound_high + domain_offset
 
         angle_rad = np.deg2rad(angle)
         scan_dir = np.array([np.cos(angle_rad), np.sin(angle_rad)])
@@ -391,10 +401,10 @@ class LaserPath:
 
         corners = np.array(
             [
-                [x_min, y_min],
-                [x_max, y_min],
-                [x_max, y_max],
-                [x_min, y_max],
+                [x_bound_low, y_bound_low],
+                [x_bound_high, y_bound_low],
+                [x_bound_high, y_bound_high],
+                [x_bound_low, y_bound_high],
             ]
         )
         projections = corners @ perp_dir
