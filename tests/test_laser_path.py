@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from materialite.models import LaserPath
+from materialite.models.laser_path import LaserPath
 from numpy.testing import assert_allclose, assert_array_equal
 
 
