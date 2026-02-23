@@ -17,6 +17,7 @@ import scipy
 from scipy.interpolate import RegularGridInterpolator
 from tqdm import trange
 
+from materialite import Material
 from materialite.models import Model
 
 
@@ -44,7 +45,7 @@ class ConvolutionModel(Model):
             "melt_range": 0,
             "vapor_range": 0,
         },
-        progress_bar=False,
+        progress_bar=True,
     ):
         self.save_frequency = save_frequency
         self.auto_assign_fields = auto_assign_fields
@@ -344,6 +345,25 @@ class ConvolutionModel(Model):
 
         return None
 
+    def get_material_from_snapshot(self, time_step):
+        snapshot_material = Material(dimensions=self.domain.original_dimensions, spacing=[self.dx, self.dx, self.dx])
+
+        temperature_super_set = self.temperature_history[time_step]
+        temperature_original_dimensions = temperature_super_set[self.domain.x_super_to_orig_indices[0]:self.domain.x_super_to_orig_indices[1],
+                                                                self.domain.y_super_to_orig_indices[0]:self.domain.y_super_to_orig_indices[1],
+                                                                :]
+        snapshot_material = snapshot_material.create_fields({'temperature': np.ravel(temperature_original_dimensions)})
+
+        phase_super_set = self.phase_history[time_step]
+        phase_original_dimensions = phase_super_set[self.domain.x_super_to_orig_indices[0]:self.domain.x_super_to_orig_indices[1],
+                                                    self.domain.y_super_to_orig_indices[0]:self.domain.y_super_to_orig_indices[1],
+                                                    :]
+        snapshot_material = snapshot_material.create_fields({'phase': np.ravel(phase_original_dimensions)})
+
+        snapshot_material.state['time'] = self.time_history[time_step]
+
+        return snapshot_material
+
     def _update_z_domain(self, laser):
         conditions = laser.get_current_beam_conditions()
         self.z_upper = int(np.round(conditions["z"] / self.dx))
@@ -570,6 +590,7 @@ class LaserBeam:
         T_ref=300,  # Kelvin
         time_between_scans=0.01,
         time_between_layers=0.0,
+        laser_step_voxel_fraction=0.9, #fraction of material spacing to step each laser position
         minimum_time_step=20e-6,
     ):
         self.beam_x_radius = beam_x_radius
@@ -600,6 +621,10 @@ class LaserBeam:
 
         self.time_between_scans = time_between_scans
         self.time_between_layers = time_between_layers
+        if laser_step_voxel_fraction>1:
+            print("Warning: laser step too coarse. Resetting laser_step_voxel_fraction to 0.9")
+            laser_step_voxel_fraction = 0.9
+        self.laser_step_voxel_fraction = laser_step_voxel_fraction
         self.minimum_time_step = minimum_time_step
 
         self.dx = material.spacing[0]
@@ -609,8 +634,9 @@ class LaserBeam:
 
         self.voxel_velocity = self.laser_velocity / self.dx
 
-        self.dt = self.dx / self.laser_velocity * 0.9
-        self.dt_between_lines = self.dt * 0
+        self.dt = self.dx / self.laser_velocity * self.laser_step_voxel_fraction
+        # self.dt_between_lines = self.dt * 0
+        self.dt_between_lines = 0.5 * self.dx * self.hatch_spacing / self.laser_velocity
         self.dt_short = self.dt_between_lines
 
         self.time_step = 0
