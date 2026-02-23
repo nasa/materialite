@@ -74,11 +74,12 @@ class LaserPath:
     ... )
     """
 
-    def __init__(self, start_positions, end_positions, start_times, end_times):
+    def __init__(self, start_positions, end_positions, start_times, end_times, powers):
         self.start_positions = np.atleast_2d(np.array(start_positions))
         self.end_positions = np.atleast_2d(np.array(end_positions))
         self.start_times = np.atleast_1d(np.array(start_times))
         self.end_times = np.atleast_1d(np.array(end_times))
+        self.powers = np.atleast_1d(np.array(powers))
 
         self.n_scans = len(self.start_times)
 
@@ -93,45 +94,91 @@ class LaserPath:
                 f"end_positions must have shape ({self.n_scans}, 3), "
                 f"got {self.end_positions.shape}"
             )
+        if len(self.start_times) != self.n_scans:
+            raise ValueError(
+                f"start_times must have length {self.n_scans}, got {len(self.start_times)}"
+            )
         if len(self.end_times) != self.n_scans:
             raise ValueError(
                 f"end_times must have length {self.n_scans}, got {len(self.end_times)}"
             )
+        if len(self.powers) != self.n_scans:
+            raise ValueError(
+                f"powers must have length {self.n_scans}, got {len(self.powers)}"
+            )
         if np.any(self.end_times <= self.start_times):
             raise ValueError("end_times must be greater than start_times for all scans")
+        if np.any(self.start_times[1:] < self.end_times[:-1]):
+            raise ValueError(
+                "scans must be sequential (i.e., start time of a scan should be after "
+                "end time of a previous scan)"
+            )
 
     def get_position(self, time):
         """
-        Get laser position at a given time.
+        Get laser position at given time(s).
 
         Parameters
         ----------
-        time : float
-            The time at which to compute the laser position.
+        time : float or array_like
+            The time(s) at which to compute the laser position.
 
         Returns
         -------
         ndarray
-            The [x, y, z] position of the laser at the given time. Returns None
-            if the laser is not active at the given time.
+            If time is scalar:
+                The [x, y, z] position of the laser at the given time. Returns [nan, nan, nan]
+                if the laser is not active at the given time.
+            If time is array_like:
+                Array of shape (n_times, 3) containing positions. For times when the
+                laser is not active, the position will be [nan, nan, nan].
         """
-        active_scan = None
-        idx = np.searchsorted(self.start_times, time, side="right") - 1
-        if 0 <= idx < self.n_scans and self.start_times[idx] <= time <= self.end_times[idx]:
-            active_scan = idx
-        if active_scan is None:
-            return None
+        time_array = np.atleast_1d(np.asarray(time))
+        is_scalar = np.ndim(time) == 0
 
-        # Interpolate position within the active scan
-        t0 = self.start_times[active_scan]
-        t1 = self.end_times[active_scan]
-        p0 = self.start_positions[active_scan]
-        p1 = self.end_positions[active_scan]
+        # Find which scan segment each time belongs to
+        indices = np.searchsorted(self.start_times, time_array, side="right") - 1
 
-        fraction = (time - t0) / (t1 - t0)
-        position = p0 + fraction * (p1 - p0)
+        # Check validity: index in range AND time within scan window
+        valid = np.zeros(len(time_array), dtype=bool)
 
-        return position
+        # Create a mask for valid indices
+        valid_idx_mask = (indices >= 0) & (indices < self.n_scans)
+
+        # For valid indices, check time bounds
+        if np.any(valid_idx_mask):
+            valid_idx = indices[valid_idx_mask]
+            valid_times = time_array[valid_idx_mask]
+
+            # Check if times are within the scan windows
+            time_in_window = (valid_times >= self.start_times[valid_idx]) & (
+                valid_times <= self.end_times[valid_idx]
+            )
+
+            valid[valid_idx_mask] = time_in_window
+
+        # Initialize output array with NaN
+        positions = np.full((len(time_array), 3), np.nan)
+
+        if np.any(valid):
+            # Get valid times and their corresponding scan indices
+            valid_indices = indices[valid]
+            valid_times = time_array[valid]
+
+            # Compute interpolation fractions
+            t0 = self.start_times[valid_indices]
+            t1 = self.end_times[valid_indices]
+            fractions = (valid_times - t0) / (t1 - t0)
+
+            # Interpolate positions
+            p0 = self.start_positions[valid_indices]
+            p1 = self.end_positions[valid_indices]
+            positions[valid] = p0 + fractions[:, np.newaxis] * (p1 - p0)
+
+        if is_scalar:
+            return positions[0]
+        else:
+            return positions
 
     @property
     def total_time(self):
@@ -203,15 +250,19 @@ class LaserPath:
         end_positions = paths[0].end_positions
         start_times = paths[0].start_times
         end_times = paths[0].end_times
+        powers = paths[0].powers
         for p in paths[1:]:
-            start_positions = np.concatenate([start_positions, p.start_positions], axis=0)
+            start_positions = np.concatenate(
+                [start_positions, p.start_positions], axis=0
+            )
             end_positions = np.concatenate([end_positions, p.end_positions], axis=0)
             start_times = np.concatenate([start_times, p.start_times], axis=0)
             end_times = np.concatenate([end_times, p.end_times], axis=0)
-        return cls(start_positions, end_positions, start_times, end_times)
+            powers = np.concatenate([powers, p.powers], axis=0)
+        return cls(start_positions, end_positions, start_times, end_times, powers)
 
     @classmethod
-    def single_line_scan(cls, start, end, velocity, start_time=0.0):
+    def single_line_scan(cls, start, end, velocity, power, start_time=0.0):
         """
         Create a single linear scan segment.
 
@@ -242,6 +293,7 @@ class LaserPath:
             end_positions=[end],
             start_times=[start_time],
             end_times=[end_time],
+            powers=[power],
         )
 
     @classmethod
@@ -259,6 +311,9 @@ class LaserPath:
             - "start": [x, y, z] start position
             - "end": [x, y, z] end position
             - "velocity": scanning velocity in m/s
+            - "power": laser power in W
+            - "time_delay": delay between the end of the previous segment and the
+              start of the current scan
         start_time : float, default 0.0
             Time at which the first scan begins.
 
@@ -279,6 +334,7 @@ class LaserPath:
         end_positions = []
         start_times = []
         end_times = []
+        powers = []
 
         current_time = start_time
 
@@ -286,6 +342,7 @@ class LaserPath:
             start = np.array(seg["start"])
             end = np.array(seg["end"])
             velocity = seg["velocity"]
+            current_time += seg.get("delay", 0.0)
 
             distance = np.linalg.norm(end - start)
             duration = distance / velocity
@@ -294,10 +351,11 @@ class LaserPath:
             end_positions.append(end)
             start_times.append(current_time)
             end_times.append(current_time + duration)
+            powers.append(seg["power"])
 
             current_time += duration
 
-        return cls(start_positions, end_positions, start_times, end_times)
+        return cls(start_positions, end_positions, start_times, end_times, powers)
 
     @classmethod
     def raster_scan(
@@ -308,6 +366,7 @@ class LaserPath:
         y_end,
         num_passes,
         velocity,
+        power,
         z_height=0.0,
         start_time=0.0,
         bidirectional=True,
@@ -362,7 +421,9 @@ class LaserPath:
                 start = [x_start, y, z_height]
                 end = [x_end, y, z_height]
 
-            segments.append({"start": start, "end": end, "velocity": velocity})
+            segments.append(
+                {"start": start, "end": end, "velocity": velocity, "power": power}
+            )
 
         return cls.from_segments(segments, start_time=start_time)
 
@@ -374,12 +435,14 @@ class LaserPath:
         x_bounds,
         y_bounds,
         velocity,
+        power,
         z_height=0.0,
         start_time=0.0,
         bidirectional=True,
         start_offset=0.0,
         end_offset=0.0,
-        domain_offset=0.0
+        domain_offset=0.0,
+        delay_between_scans=None,
     ):
         """
         Create a raster scan pattern at an arbitrary angle in the x-y plane.
@@ -418,9 +481,14 @@ class LaserPath:
             in meters. Positive values extend the scan forward (beyond the
             intersection), negative values shorten it (end inside domain).
         domain_offset : float, default 0.0
-            Distance from the provided bounds to limit the scans to. Positive 
-            values extend the scan outside the bounds, negative values 
+            Distance from the provided bounds to limit the scans to. Positive
+            values extend the scan outside the bounds, negative values
             shorten scans to inside the bounds.
+        delay_between_scans : float or None, default None
+            Delay between consecutive scans in seconds. If None, the delay is
+            automatically calculated based on the time required to move the laser
+            from the end of one scan to the start of the next scan at the given
+            velocity. If specified, the same delay is used between all scans.
 
         Returns
         -------
@@ -534,9 +602,7 @@ class LaserPath:
             for pt in intersections[1:]:
                 # Check if this point is distinct from the last unique point
                 last_pt = unique_intersections[-1]
-                dist = np.sqrt(
-                    (pt[0] - last_pt[0]) ** 2 + (pt[1] - last_pt[1]) ** 2
-                )
+                dist = np.sqrt((pt[0] - last_pt[0]) ** 2 + (pt[1] - last_pt[1]) ** 2)
                 if dist > 1e-9:  # Tolerance for distinct points
                     unique_intersections.append(pt)
 
@@ -549,23 +615,16 @@ class LaserPath:
 
             # Determine scan direction for this hatch and apply offsets
             if bidirectional and i % 2 == 1:
-                start_pos = (
-                    np.array([end_pt[0], end_pt[1]]) + start_offset * scan_dir
-                )
-                end_pos = (
-                    np.array([start_pt[0], start_pt[1]]) - end_offset * scan_dir
-                )
+                start_pos = np.array([end_pt[0], end_pt[1]]) + start_offset * scan_dir
+                end_pos = np.array([start_pt[0], start_pt[1]]) - end_offset * scan_dir
 
                 scan_vector = start_pos - end_pos
 
             else:
                 start_pos = (
-                    np.array([start_pt[0], start_pt[1]])
-                    - start_offset * scan_dir
+                    np.array([start_pt[0], start_pt[1]]) - start_offset * scan_dir
                 )
-                end_pos = (
-                    np.array([end_pt[0], end_pt[1]]) + end_offset * scan_dir
-                )
+                end_pos = np.array([end_pt[0], end_pt[1]]) + end_offset * scan_dir
 
                 scan_vector = end_pos - start_pos
 
@@ -581,8 +640,26 @@ class LaserPath:
             # Only add segment if it has non-zero length
             seg_length = np.linalg.norm(np.array(end) - np.array(start))
             if seg_length > 1e-10:
+                # Calculate delay from previous segment
+                if len(segments) > 0:
+                    if delay_between_scans is not None:
+                        delay = delay_between_scans
+                    else:
+                        prev_end = np.array(segments[-1]["end"])
+                        curr_start = np.array(start)
+                        travel_distance = np.linalg.norm(curr_start - prev_end)
+                        delay = travel_distance / velocity
+                else:
+                    delay = 0.0
+
                 segments.append(
-                    {"start": start, "end": end, "velocity": velocity}
+                    {
+                        "start": start,
+                        "end": end,
+                        "velocity": velocity,
+                        "power": power,
+                        "delay": delay,
+                    }
                 )
 
         if len(segments) == 0:
