@@ -88,6 +88,78 @@ def test_get_position_multi_segment():
     assert pos is None
 
 
+def test_from_list():
+    """Test combining multiple LaserPath objects into one using from_list."""
+    # Create three separate paths
+    path1 = LaserPath.single_line_scan(
+        start=[0, 0, 0], end=[0.01, 0, 0], velocity=0.5, start_time=0.0
+    )
+    
+    path2 = LaserPath.single_line_scan(
+        start=[0, 0.001, 0], end=[0.01, 0.001, 0], velocity=1.0, start_time=0.5
+    )
+    
+    segments = [
+        {"start": [0, 0.002, 0], "end": [0.01, 0.002, 0], "velocity": 0.5},
+        {"start": [0.01, 0.003, 0], "end": [0, 0.003, 0], "velocity": 0.5},
+    ]
+    path3 = LaserPath.from_segments(segments, start_time=1.0)
+    
+    # Combine all three paths
+    combined = LaserPath.from_list([path1, path2, path3])
+    
+    # Total scans should be sum of all individual paths
+    assert combined.n_scans == 4  # 1 + 1 + 2
+    
+    # Verify start positions are correctly concatenated
+    assert_array_equal(combined.start_positions[0], [0, 0, 0])  # From path1
+    assert_array_equal(combined.start_positions[1], [0, 0.001, 0])  # From path2
+    assert_array_equal(combined.start_positions[2], [0, 0.002, 0])  # From path3, scan 1
+    assert_array_equal(combined.start_positions[3], [0.01, 0.003, 0])  # From path3, scan 2
+    
+    # Verify end positions
+    assert_array_equal(combined.end_positions[0], [0.01, 0, 0])
+    assert_array_equal(combined.end_positions[1], [0.01, 0.001, 0])
+    
+    # Verify times are correctly concatenated
+    assert_allclose(combined.start_times[0], 0.0)
+    assert_allclose(combined.start_times[1], 0.5)
+    assert_allclose(combined.start_times[2], 1.0)
+    assert_allclose(combined.start_times[3], 1.02)
+    
+    # Verify get_position works across the combined path
+    # Position during first original path
+    pos = combined.get_position(0.01)
+    assert_allclose(pos, [0.005, 0, 0])
+    
+    # Position during second original path
+    pos = combined.get_position(0.505)
+    assert_allclose(pos, [0.005, 0.001, 0])
+    
+    # Position during third original path
+    pos = combined.get_position(1.01)
+    assert_allclose(pos, [0.005, 0.002, 0])
+    
+    # Total time should be the maximum end time
+    assert_allclose(combined.total_time, path3.total_time)
+
+
+def test_from_list_single_path():
+    """Test from_list with a single path in the list."""
+    path = LaserPath.single_line_scan(
+        start=[0, 0, 0], end=[0.01, 0, 0], velocity=0.5
+    )
+    
+    combined = LaserPath.from_list([path])
+    
+    # Should be identical to the original path
+    assert combined.n_scans == 1
+    assert_array_equal(combined.start_positions, path.start_positions)
+    assert_array_equal(combined.end_positions, path.end_positions)
+    assert_array_equal(combined.start_times, path.start_times)
+    assert_array_equal(combined.end_times, path.end_times)
+
+
 def test_raster_scan_bidirectional():
     """Test creating a bidirectional raster scan pattern."""
     path = LaserPath.raster_scan(

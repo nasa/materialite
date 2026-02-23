@@ -139,6 +139,78 @@ class LaserPath:
         return np.max(self.end_times)
 
     @classmethod
+    def from_list(cls, paths):
+        """
+        Combine multiple LaserPath objects into a single LaserPath.
+
+        This method concatenates multiple laser path objects by merging their
+        scan segments, start positions, end positions, and time arrays. The
+        resulting LaserPath contains all scan segments from all input paths
+        in the order they appear in the input list.
+
+        Parameters
+        ----------
+        paths : list of LaserPath
+            List of LaserPath objects to combine. Must contain at least one
+            LaserPath object.
+
+        Returns
+        -------
+        LaserPath
+            A new LaserPath object containing all scan segments from the
+            input paths.
+
+        Raises
+        ------
+        IndexError
+            If the paths list is empty.
+
+        Examples
+        --------
+        Combine two horizontal scans at different heights:
+
+        >>> path1 = LaserPath.single_line_scan(
+        ...     start=[0, 0, 0],
+        ...     end=[0.01, 0, 0],
+        ...     velocity=0.5
+        ... )
+        >>> path2 = LaserPath.single_line_scan(
+        ...     start=[0, 0, 0.001],
+        ...     end=[0.01, 0, 0.001],
+        ...     velocity=0.5,
+        ...     start_time=0.02
+        ... )
+        >>> combined_path = LaserPath.from_list([path1, path2])
+        >>> print(combined_path.n_scans)
+        2
+
+        Combine multiple raster scans with different angles:
+
+        >>> path1 = LaserPath.angled_raster_scan(
+        ...     angle=0, hatch_spacing=0.001,
+        ...     x_bounds=(0, 0.01), y_bounds=(0, 0.01),
+        ...     velocity=0.5
+        ... )
+        >>> path2 = LaserPath.angled_raster_scan(
+        ...     angle=90, hatch_spacing=0.001,
+        ...     x_bounds=(0, 0.01), y_bounds=(0, 0.01),
+        ...     velocity=0.5,
+        ...     start_time=path1.total_time
+        ... )
+        >>> combined_path = LaserPath.from_list([path1, path2])
+        """
+        start_positions = paths[0].start_positions
+        end_positions = paths[0].end_positions
+        start_times = paths[0].start_times
+        end_times = paths[0].end_times
+        for p in paths[1:]:
+            start_positions = np.concatenate([start_positions, p.start_positions], axis=0)
+            end_positions = np.concatenate([end_positions, p.end_positions], axis=0)
+            start_times = np.concatenate([start_times, p.start_times], axis=0)
+            end_times = np.concatenate([end_times, p.end_times], axis=0)
+        return cls(start_positions, end_positions, start_times, end_times)
+
+    @classmethod
     def single_line_scan(cls, start, end, velocity, start_time=0.0):
         """
         Create a single linear scan segment.
