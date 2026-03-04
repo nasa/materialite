@@ -449,7 +449,7 @@ class Tensor(ABC):
                     # Slice/fancy indexing keeps the dimension
                     remaining_dims.append(self.dims_str[i])
 
-            return "".join(remaining_dims) + self.dims_str[len(slice_):]
+            return "".join(remaining_dims) + self.dims_str[len(slice_) :]
         else:
             # Unknown slice type - assume it keeps dimensions
             return self.dims_str
@@ -692,6 +692,14 @@ class Scalar(Tensor):
         return Scalar(np.sqrt(self.components), self.dims_str)
 
     @property
+    def cos(self):
+        return Scalar(np.cos(self.components), self.dims_str)
+
+    @property
+    def sin(self):
+        return Scalar(np.sin(self.components), self.dims_str)
+
+    @property
     def cosh(self):
         return Scalar(np.cosh(self.components), self.dims_str)
 
@@ -924,6 +932,18 @@ class Vector(Tensor):
             optimize=True,
         )
         return Vector(components, dims=output_dims[:-1])
+
+    @property
+    def cross_product_tensor(self):
+        components = np.zeros(self.components.shape + (3,))
+        components[..., 0, 1] = -self.components[..., 2]
+        components[..., 0, 2] = self.components[..., 1]
+        components[..., 1, 0] = self.components[..., 2]
+        components[..., 1, 2] = -self.components[..., 0]
+        components[..., 2, 0] = -self.components[..., 1]
+        components[..., 2, 1] = self.components[..., 0]
+
+        return Order2Tensor(components, self.dims_str)
 
     def to_crystal_frame(self, orientations):
         output_dims, output_indices = self._get_transformation_indices(orientations)
@@ -1849,7 +1869,9 @@ class Orientation:
         plane = Vector(plane).unit
         direction = Vector(direction).unit
         if plane.shape != direction.shape:
-            raise ValueError("Must provide same number of plane(s) and direction(s) to construct Orientation(s) from Miller indices")
+            raise ValueError(
+                "Must provide same number of plane(s) and direction(s) to construct Orientation(s) from Miller indices"
+            )
         td = plane.cross(direction)
         rotation_matrix = np.stack(
             [direction.components, td.components, plane.components], axis=-1
@@ -1903,6 +1925,46 @@ class Orientation:
         rotation_matrix[..., 2, 2] = c2
 
         return cls(np.squeeze(rotation_matrix), dims)
+
+    @classmethod
+    def from_rotation_vector(cls, rotation_vector):
+        """
+        Construct an Orientation from a rotation vector (axis-angle representation).
+
+        The rotation vector is a vector where:
+        - The direction represents the axis of rotation
+        - The magnitude represents the angle of rotation (in radians)
+
+        The conversion uses Rodrigues' rotation formula:
+        R = I + sin(θ) * K + (1 - cos(θ)) * K²
+
+        where θ is the angle and K is the skew-symmetric matrix of the unit axis.
+
+        Parameters
+        ----------
+        rotation_vector : array_like
+            Rotation vector(s) with shape (..., 3) where the last dimension
+            contains the rotation vector components.
+
+        Returns
+        -------
+        Orientation
+            An Orientation object constructed from the rotation vector(s).
+        """
+
+        rotation_vector = Vector(rotation_vector)
+
+        angle = rotation_vector.norm
+
+        # Should probably handle zero rotation case here to avoid division by zero
+        if np.allclose(angle.components, 0.0):
+            return cls.identity()
+
+        K = rotation_vector.unit.cross_product_tensor
+
+        rotation = Order2Tensor.identity() + angle.sin * K + (1 - angle.cos) * K @ K
+
+        return cls(rotation.components, rotation.dims_str)
 
     @classmethod
     def random(cls, shape=1, rng=np.random.default_rng(), dims=None):
@@ -1967,6 +2029,74 @@ class Orientation:
     @property
     def euler_angles_in_degrees(self):
         return self.euler_angles * 180.0 / np.pi
+
+    @property
+    def rotation_vector(self):
+        """
+        Convert the rotation matrix to a rotation vector (axis-angle representation).
+
+        The rotation vector is a vector where the direction represents the axis
+        of rotation and the magnitude represents the angle in radians.
+
+        Returns
+        -------
+        ndarray
+            Rotation vector(s) with shape (..., 3).
+        """
+        R = self.rotation_matrix
+
+        # Compute angle from trace: trace(R) = 1 + 2*cos(θ)
+        trace = self.trace.components
+
+        # Just letting AI do its thing below for now but there are better ways
+        angle = np.arccos(np.clip((trace - 1.0) / 2.0, -1.0, 1.0))
+
+        # Extract axis from skew-symmetric part of R
+        # R - R^T = 2 * sin(θ) * K, where K is the skew-symmetric matrix of the axis
+        axis = np.zeros((*R.shape[:-2], 3))
+        axis[..., 0] = R[..., 2, 1] - R[..., 1, 2]
+        axis[..., 1] = R[..., 0, 2] - R[..., 2, 0]
+        axis[..., 2] = R[..., 1, 0] - R[..., 0, 1]
+
+        # Normalize axis (handle small angles where sin(θ) ≈ 0)
+        sin_angle = np.sin(angle)
+        small_angle = np.abs(sin_angle) < 1e-10
+
+        # For small angles, the axis direction doesn't matter (rotation is ~identity)
+        # For angles near π, use a different extraction method
+        near_pi = np.abs(angle - np.pi) < 1e-6
+
+        # Standard case: divide by 2*sin(θ)
+        axis_norm = 2.0 * sin_angle
+        axis = np.where(
+            small_angle[..., np.newaxis],
+            axis,  # Keep unnormalized for small angles (will be scaled by small angle anyway)
+            axis / np.where(small_angle, 1.0, axis_norm)[..., np.newaxis],
+        )
+
+        # Handle angles near π using diagonal elements
+        # For θ ≈ π: R_ii = 2*k_i^2 - 1, so k_i = sqrt((R_ii + 1) / 2)
+        if np.any(near_pi):
+            diag_axis = np.zeros_like(axis)
+            diag_axis[..., 0] = np.sqrt(np.clip((R[..., 0, 0] + 1.0) / 2.0, 0, 1))
+            diag_axis[..., 1] = np.sqrt(np.clip((R[..., 1, 1] + 1.0) / 2.0, 0, 1))
+            diag_axis[..., 2] = np.sqrt(np.clip((R[..., 2, 2] + 1.0) / 2.0, 0, 1))
+
+            # Determine signs from off-diagonal elements
+            # R_ij = 2*k_i*k_j for i ≠ j when θ = π
+            diag_axis[..., 1] = np.where(
+                R[..., 0, 1] < 0, -diag_axis[..., 1], diag_axis[..., 1]
+            )
+            diag_axis[..., 2] = np.where(
+                R[..., 0, 2] < 0, -diag_axis[..., 2], diag_axis[..., 2]
+            )
+
+            axis = np.where(near_pi[..., np.newaxis], diag_axis, axis)
+
+        # Scale axis by angle to get rotation vector
+        rotation_vector = axis * angle[..., np.newaxis]
+
+        return Vector(np.squeeze(rotation_vector), self.dims_str)
 
     @property
     def trace(self):
