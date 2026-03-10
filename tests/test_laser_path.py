@@ -208,6 +208,262 @@ def test_get_position_segment_boundaries():
     assert_allclose(positions[2], [0.0, 0.001, 0.0])  # End of segment 2
 
 
+def test_get_scan_indices_single_scan():
+    """Test getting scan indices at different times for a single scan."""
+    path = LaserPath.single_line_scan(
+        start=[0, 0, 0], end=[0.01, 0, 0], power=300, velocity=0.5
+    )
+
+    # Scalar inputs
+    # At start time
+    idx = path.get_scan_indices(0.0)
+    assert idx == 0
+
+    # At midpoint
+    idx = path.get_scan_indices(0.01)
+    assert idx == 0
+
+    # At end time
+    idx = path.get_scan_indices(0.02)
+    assert idx == 0
+
+    # Before start (laser not active)
+    idx = path.get_scan_indices(-0.01)
+    assert idx == -1
+
+    # After end (laser not active)
+    idx = path.get_scan_indices(0.03)
+    assert idx == -1
+
+    # Vectorized inputs
+    # Multiple valid times
+    times = np.array([0.0, 0.01, 0.02])
+    indices = path.get_scan_indices(times)
+    assert_array_equal(indices, [0, 0, 0])
+
+    # Mix of valid and invalid times
+    times = np.array([-0.01, 0.0, 0.01, 0.02, 0.03])
+    indices = path.get_scan_indices(times)
+    assert_array_equal(indices, [-1, 0, 0, 0, -1])
+
+    # All invalid times
+    times = np.array([-0.1, -0.01, 0.03, 0.1])
+    indices = path.get_scan_indices(times)
+    assert_array_equal(indices, [-1, -1, -1, -1])
+
+    # Single-element array (should return array, not scalar)
+    times = np.array([0.01])
+    indices = path.get_scan_indices(times)
+    assert indices.shape == (1,)
+    assert indices[0] == 0
+
+    # Empty array
+    times = np.array([])
+    indices = path.get_scan_indices(times)
+    assert indices.shape == (0,)
+
+
+def test_get_scan_indices_multi_segment():
+    """Test getting scan indices across multiple segments."""
+    segments = [
+        {"start": [0, 0, 0], "end": [0.01, 0, 0], "velocity": 0.5, "power": 300},
+        {
+            "start": [0.01, 0.001, 0],
+            "end": [0, 0.001, 0],
+            "velocity": 0.5,
+            "power": 400,
+        },
+        {
+            "start": [0, 0.002, 0],
+            "end": [0.01, 0.002, 0],
+            "velocity": 1.0,
+            "power": 500,
+        },
+    ]
+
+    path = LaserPath.from_segments(segments)
+
+    # Scalar inputs
+    # During first segment
+    idx = path.get_scan_indices(0.01)
+    assert idx == 0
+
+    # During second segment
+    idx = path.get_scan_indices(0.03)
+    assert idx == 1
+
+    # During third segment
+    idx = path.get_scan_indices(0.045)
+    assert idx == 2
+
+    # After all segments
+    idx = path.get_scan_indices(0.06)
+    assert idx == -1
+
+    # Before all segments
+    idx = path.get_scan_indices(-0.01)
+    assert idx == -1
+
+    # Vectorized inputs
+    # Times spanning all segments
+    times = np.array([0.0, 0.01, 0.02, 0.03, 0.04, 0.045, 0.05])
+    indices = path.get_scan_indices(times)
+    # Segment 0: 0.0 to 0.02
+    # Segment 1: 0.02 to 0.04
+    # Segment 2: 0.04 to 0.05
+    assert_array_equal(indices, [0, 0, 1, 1, 2, 2, 2])
+
+    # Times with gaps and invalid periods
+    times = np.array([-0.01, 0.015, 0.035, 0.055])
+    indices = path.get_scan_indices(times)
+    assert_array_equal(indices, [-1, 0, 1, -1])
+
+    # All times in first segment
+    times = np.array([0.0, 0.005, 0.01, 0.015, 0.019])
+    indices = path.get_scan_indices(times)
+    assert_array_equal(indices, [0, 0, 0, 0, 0])
+
+    # All times in second segment (note: t=0.04 is at boundary, returns segment 2)
+    times = np.array([0.02, 0.03, 0.039])
+    indices = path.get_scan_indices(times)
+    assert_array_equal(indices, [1, 1, 1])
+
+
+def test_get_scan_indices_segment_boundaries():
+    """Test get_scan_indices behavior at segment boundaries.
+    
+    When segments are consecutive (end time of one = start time of next),
+    the index at the boundary should be the second segment.
+    """
+    segments = [
+        {"start": [0, 0, 0], "end": [0.01, 0, 0], "velocity": 0.5, "power": 300},
+        {
+            "start": [0.01, 0.001, 0],
+            "end": [0, 0.001, 0],
+            "velocity": 0.5,
+            "power": 400,
+        },
+    ]
+
+    path = LaserPath.from_segments(segments)
+
+    # At the exact boundary between segments (t=0.02)
+    # This should return the index of the second segment
+    idx = path.get_scan_indices(0.02)
+    assert idx == 1
+
+    # Test with vectorized input including boundary
+    times = np.array([0.0, 0.02, 0.04])
+    indices = path.get_scan_indices(times)
+    assert_array_equal(indices, [0, 1, 1])
+
+
+def test_get_scan_indices_access_properties():
+    """Test using get_scan_indices to access scan properties."""
+    segments = [
+        {"start": [0, 0, 0], "end": [0.01, 0, 0], "velocity": 0.5, "power": 300},
+        {
+            "start": [0.01, 0.001, 0],
+            "end": [0, 0.001, 0],
+            "velocity": 0.5,
+            "power": 400,
+        },
+        {
+            "start": [0, 0.002, 0],
+            "end": [0.01, 0.002, 0],
+            "velocity": 1.0,
+            "power": 500,
+        },
+    ]
+
+    path = LaserPath.from_segments(segments)
+
+    # Test accessing properties for different times
+    time = 0.01  # First segment
+    idx = path.get_scan_indices(time)
+    assert idx >= 0
+    assert path.powers[idx] == 300
+    assert_array_equal(path.start_positions[idx], [0, 0, 0])
+    assert_array_equal(path.end_positions[idx], [0.01, 0, 0])
+
+    time = 0.03  # Second segment
+    idx = path.get_scan_indices(time)
+    assert idx >= 0
+    assert path.powers[idx] == 400
+    assert_array_equal(path.start_positions[idx], [0.01, 0.001, 0])
+    assert_array_equal(path.end_positions[idx], [0, 0.001, 0])
+
+    time = 0.045  # Third segment
+    idx = path.get_scan_indices(time)
+    assert idx >= 0
+    assert path.powers[idx] == 500
+    assert_array_equal(path.start_positions[idx], [0, 0.002, 0])
+    assert_array_equal(path.end_positions[idx], [0.01, 0.002, 0])
+
+    # Test with vectorized input
+    times = np.array([0.01, 0.03, 0.045])
+    indices = path.get_scan_indices(times)
+    powers = path.powers[indices]
+    assert_array_equal(powers, [300, 400, 500])
+
+
+def test_get_scan_indices_with_gaps():
+    """Test get_scan_indices when there are gaps between segments."""
+    # Create non-consecutive segments with gaps
+    path1 = LaserPath.single_line_scan(
+        start=[0, 0, 0], end=[0.01, 0, 0], velocity=0.5, power=300, start_time=0.0
+    )
+    path2 = LaserPath.single_line_scan(
+        start=[0, 0.001, 0],
+        end=[0.01, 0.001, 0],
+        velocity=0.5,
+        power=400,
+        start_time=0.1,  # Gap from 0.02 to 0.1
+    )
+    path3 = LaserPath.single_line_scan(
+        start=[0, 0.002, 0],
+        end=[0.01, 0.002, 0],
+        velocity=0.5,
+        power=500,
+        start_time=0.2,  # Gap from 0.12 to 0.2
+    )
+
+    combined = LaserPath.from_list([path1, path2, path3])
+
+    # Scalar inputs in gaps should return -1
+    idx = combined.get_scan_indices(0.05)  # In gap between first and second
+    assert idx == -1
+
+    idx = combined.get_scan_indices(0.15)  # In gap between second and third
+    assert idx == -1
+
+    # Vectorized inputs
+    times = np.array([0.0, 0.01, 0.05, 0.1, 0.11, 0.15, 0.2, 0.21])
+    indices = combined.get_scan_indices(times)
+    # Segment 0: 0.0 to 0.02
+    # Gap: 0.02 to 0.1
+    # Segment 1: 0.1 to 0.12
+    # Gap: 0.12 to 0.2
+    # Segment 2: 0.2 to 0.22
+    assert_array_equal(indices, [0, 0, -1, 1, 1, -1, 2, 2])
+
+
+def test_get_scan_indices_dtype():
+    """Test that get_scan_indices returns correct integer types."""
+    path = LaserPath.single_line_scan(
+        start=[0, 0, 0], end=[0.01, 0, 0], power=300, velocity=0.5
+    )
+
+    # Scalar should return Python int
+    idx = path.get_scan_indices(0.01)
+    assert isinstance(idx, int)
+
+    # Array should return numpy array with int32 dtype
+    times = np.array([0.0, 0.01, 0.02])
+    indices = path.get_scan_indices(times)
+    assert indices.dtype == np.int32
+
+
 def test_from_list():
     """Test combining multiple LaserPath objects into one using from_list."""
     # Create three separate paths

@@ -180,6 +180,76 @@ class LaserPath:
         else:
             return positions
 
+    def get_scan_indices(self, time):
+        """
+        Get the scan segment index/indices at given time(s).
+
+        This method returns the index of the active scan segment for each
+        given time. For times when the laser is not active (before the first
+        scan, after the last scan, or between scans), it returns -1.
+
+        Parameters
+        ----------
+        time : float or array_like
+            The time(s) at which to determine the active scan segment.
+
+        Returns
+        -------
+        int or ndarray
+            If time is scalar:
+                The scan segment index (0 to n_scans-1), or -1 if laser is
+                not active at the given time.
+            If time is array_like:
+                Array of shape (n_times,) containing scan indices. Returns -1
+                for times when the laser is not active.
+
+        Examples
+        --------
+        >>> path = LaserPath.single_line_scan(
+        ...     start=[0, 0, 0], end=[0.01, 0, 0],
+        ...     velocity=0.5, power=100
+        ... )
+        >>> # Single time
+        >>> idx = path.get_scan_indices(0.01)
+        >>> # Multiple times
+        >>> indices = path.get_scan_indices([0.0, 0.01, 0.1])
+        >>> # Access scan properties
+        >>> idx = path.get_scan_indices(0.01)
+        >>> if idx >= 0:
+        ...     power = path.powers[idx]
+        ...     start = path.start_positions[idx]
+        ...     end = path.end_positions[idx]
+        """
+        time_array = np.atleast_1d(np.asarray(time))
+        is_scalar = np.ndim(time) == 0
+
+        # Find which scan segment each time belongs to
+        indices = np.searchsorted(self.start_times, time_array, side="right") - 1
+
+        # Check validity: index in range AND time within scan window
+        valid_idx_mask = (indices >= 0) & (indices < self.n_scans)
+
+        # Initialize output with -1 (inactive)
+        scan_indices = np.full(len(time_array), -1, dtype=np.int32)
+
+        # For valid indices, check if times are within scan windows
+        if np.any(valid_idx_mask):
+            valid_idx = indices[valid_idx_mask]
+            valid_times = time_array[valid_idx_mask]
+
+            # Check if times are within the scan windows
+            time_in_window = (valid_times >= self.start_times[valid_idx]) & (
+                valid_times <= self.end_times[valid_idx]
+            )
+
+            # Set the scan indices where time is in window
+            scan_indices[valid_idx_mask] = np.where(time_in_window, valid_idx, -1)
+
+        if is_scalar:
+            return int(scan_indices[0])
+        else:
+            return scan_indices
+
     @property
     def total_time(self):
         """Total time spanned by all scan segments."""
