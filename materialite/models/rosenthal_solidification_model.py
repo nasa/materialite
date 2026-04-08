@@ -26,69 +26,40 @@ from materialite.tensor import Scalar, Vector, Orientation
 def _potts_monte_carlo_flips(
     grain_ids, voxel_status, neighbors, mobility_values, selected_voxels
 ):
-    """
-    Numba-compiled function to perform Potts Monte Carlo flips.
-
-    Parameters
-    ----------
-    grain_ids : ndarray
-        Grain ID array (will be modified in-place)
-    voxel_status : ndarray
-        Voxel status array (0=unaffected, 1=mushy, 2=liquid, 3=solid)
-    neighbors : ndarray
-        Neighbor indices (shape: num_points x 27)
-    mobility_values : ndarray
-        Mobility values for each voxel
-    selected_voxels : ndarray
-        Indices of voxels selected for flip attempts
-
-    Returns
-    -------
-    None
-        grain_ids is modified in-place
-    """
     for voxel_idx in selected_voxels:
         # Skip if voxel is not solid
         if voxel_status[voxel_idx] != 3:
             continue
 
-        # Get valid neighbors for this voxel
         neighbor_list = neighbors[voxel_idx]
         valid_neighbors = neighbor_list[neighbor_list != -1]
 
         if len(valid_neighbors) == 0:
             continue
 
-        # Randomly select one neighbor and get its grain ID
         selected_neighbor = valid_neighbors[np.random.randint(0, len(valid_neighbors))]
         proposed_grain_id = grain_ids[selected_neighbor]
 
-        # Skip if neighbor has same grain ID (no change)
         current_grain_id = grain_ids[voxel_idx]
         if proposed_grain_id == current_grain_id:
             continue
 
-        # Calculate current energy (number of dissimilar neighbors)
+        # Do flip attempt
         current_energy = 0
         for neighbor_idx in valid_neighbors:
             if grain_ids[neighbor_idx] != current_grain_id:
                 current_energy += 1
 
-        # Calculate new energy if flip were to occur
         new_energy = 0
         for neighbor_idx in valid_neighbors:
             if grain_ids[neighbor_idx] != proposed_grain_id:
                 new_energy += 1
 
-        # Energy change
         delta_energy = new_energy - current_energy
 
-        # Accept/reject decision
         if delta_energy > 0:
-            # Energy increases: reject the flip
             continue
         else:
-            # Energy decreases or stays same: accept with probability = mobility
             if np.random.rand() < mobility_values[voxel_idx]:
                 grain_ids[voxel_idx] = proposed_grain_id
     return grain_ids
@@ -109,71 +80,83 @@ class RosenthalSolidificationModel(Model):
 
     Parameters
     ----------
+    laser_path : LaserPath
+        LaserPath object defining the laser scanning trajectory. The path determines
+        the laser position, velocity, and power at each time step during the simulation.
     initial_temperature : float, default 300
         Base temperature of the material in Kelvin.
-    laser_power : float, default 37
-        Laser power in Watts.
-    laser_velocity : float, default 0.5
-        Scanning velocity in meters per second.
-    diffusivity : float, default 6e-6
-        Material thermal diffusivity in m²/s.
-    conductivity : float, default 10
-        Material thermal conductivity in W/(m·K).
-    absorptivity : float, default 0.5
-        Laser absorption coefficient (dimensionless, 0-1).
-    melt_temperature : float, default 1500
-        Maximum temperature cap in Kelvin (typically the melt temperature).
-    laser_path : LaserPath, optional
-        LaserPath object defining the laser scanning trajectory. If not provided,
-        a simple linear scan is created from laser_start_position, laser_velocity,
-        and laser_path_direction (legacy parameters).
-    laser_start_position : list of float, default [0.0, 0.0, 0.0]
-        (Legacy) Initial position [x, y, z] of the laser in meters. Only used if
-        laser_path is not provided.
-    laser_velocity : float, default 0.5
-        (Legacy) Scanning velocity in m/s. Only used if laser_path is not provided.
-    laser_path_direction : str, default "x"
-        (Legacy) Direction of laser movement ("x", "y", or "z"). Only used if
-        laser_path is not provided.
-    time_steps : int, optional
-        Number of time steps to simulate. If not provided, automatically calculated
-        from laser_path.total_time and time_step_duration.
+    thermophysical_properties : dict, optional
+        Dictionary containing material thermal properties with the following keys:
+
+        - "conductivity" (float, default 10.0): Thermal conductivity in W/(m·K)
+        - "diffusivity" (float, default 5.0e-6): Thermal diffusivity in m²/s
+        - "absorptivity" (float, default 0.5): Laser absorption coefficient (0-1)
+        - "melt_temperature" (float, default 1500.0): Melting temperature in K
+    solidification_properties : dict, optional
+        Dictionary containing solidification kinetics parameters with the following keys:
+
+        - "prefactor" (float, default 1.0e-5): Prefactor for capture distance calculation
+        - "exponent" (float, default 2.0): Exponent for undercooling dependence in
+          capture distance calculation
+    potts_properties : dict, optional
+        Dictionary containing Potts model parameters for grain coarsening with the
+        following keys:
+
+        - "Q" (float, default 285000): Activation energy for grain boundary mobility
+        - "K_0" (float, default 0.2994): Reference mobility constant
+        - "K_MC" (float, default 0.27695): Monte Carlo mobility constant
     time_step_duration : float, default 0.001
         Duration of each time step in seconds.
-    save_history : bool, default False
-        Whether to save temperature at each time step. If True, the temperature
-        field will be a Scalar with dims="pt" (shape: num_points x num_time_steps)
-        containing the full history. If False, the temperature field will be a
-        Scalar with dims="p" containing only the final temperature. Time stamps
-        are stored in material.state["time_history"].
+    time_steps : int, optional
+        Number of time steps to simulate. If None (default), automatically calculated
+        from laser_path.total_time and time_step_duration.
+    output_times : list of float, optional
+        Specific times (in seconds) at which to save temperature and grain history.
+        If provided, temperature_history and grain_history fields will be created
+        with dimensions "pt" (points x times). If None (default), only the final
+        state is saved. The laser_path.total_time is automatically appended if not
+        already included.
+    smoothing_steps : int, default 3
+        Number of Monte Carlo smoothing steps to apply to newly solidified voxels
+        for grain structure refinement.
+    z_scale_factor : float, default 0.6
+        Scaling factor applied to the z-component of displacement when calculating
+        distances from the laser position. Used to account for anisotropic heat
+        transfer in the build direction.
 
     Examples
     --------
     >>> from materialite import Material
     >>> from materialite.models import RosenthalSolidificationModel
+    >>> from materialite.models.laser_path import LaserPath
     >>>
     >>> # Create a material
     >>> material = Material(dimensions=[50, 50, 50], spacing=[0.001, 0.001, 0.001])
     >>>
+    >>> # Define a laser path
+    >>> laser_path = LaserPath.single_line_scan(
+    ...     start=[0, 0.005, 0.005],
+    ...     end=[0.01, 0.005, 0.005],
+    ...     velocity=0.5,
+    ...     power=50
+    ... )
+    >>>
     >>> # Create and run the model
     >>> model = RosenthalSolidificationModel(
-    ...     laser_power=50,
-    ...     laser_velocity=0.5,
+    ...     laser_path=laser_path,
     ...     time_steps=100,
-    ...     save_history=True
+    ...     output_times=[0.005, 0.01, 0.015, 0.02]
     ... )
     >>> new_material = model.run(material)
     >>>
-    >>> # Access final temperature
-    >>> final_temp = new_material.extract("temperature")
+    >>> # Access final temperature (final state)
+    >>> final_temp = new_material.extract("temperature")  # Scalar with dims="pt"
     >>>
-    >>> # Access temperature
-    >>> final_temp = new_material.extract("temperature")  # Scalar with dims="p" or "pt"
-    >>>
-    >>> # If save_history=True, access full history
-    >>> if model.save_history:
+    >>> # Access time history if output_times was specified
+    >>> if model.output_times is not None:
     ...     temp_history = new_material.extract("temperature")  # Scalar with dims="pt"
-    ...     time_history = new_material.state["time_history"]  # Array of times
+    ...     grain_history = new_material.extract("grain_history")  # Scalar with dims="pt"
+    ...     time_history = new_material.state["time_history"]  # Array of output times
 
     Notes
     -----
@@ -228,7 +211,7 @@ class RosenthalSolidificationModel(Model):
         self.smoothing_steps = smoothing_steps
         self.potts_properties = potts_properties
         self.z_scale_factor = z_scale_factor
-        # Determine time_steps if not provided
+
         if time_steps is None:
             self.time_steps = (
                 int(np.ceil(self.laser_path.total_time / time_step_duration)) + 1
@@ -248,32 +231,10 @@ class RosenthalSolidificationModel(Model):
         material: Material,
         grain_id_label: str = "grain",
     ):
-        """
-        Run the Rosenthal temperature simulation.
-
-        Parameters
-        ----------
-        material : Material
-            The material object containing the spatial domain.
-        grain_id_label : str, default "grain"
-            Label for the grain ID field in the material.
-        Returns
-        -------
-        Material
-            New material with temperature field. If save_history is True, the
-            temperature field is a Scalar with dims="pt" containing full history.
-            If False, it's a Scalar with dims="p" containing final temperature.
-            Time history array is stored in material.state["time_history"].
-        """
-        # Extract positions as a Vector (shape: num_points x 3)
         positions = Vector(material.extract(["x", "y", "z"]), dims="p")
-        # Extract other fields from Material
-        grain_ids = material.extract(
-            grain_id_label
-        )  # numpy array of shape (num_points,)
+        grain_ids = material.extract(grain_id_label)
 
-        # Get neighbors for solidification and Potts model calculations
-        neighbors, num_neighbors, distances = _get_neighbors(material)
+        neighbors, distances = _get_neighbors(material)
         capture_distances = np.zeros(material.num_points)
 
         # Initialize indices for liquid and mushy zone sites
@@ -311,22 +272,12 @@ class RosenthalSolidificationModel(Model):
             else:
                 laser_position = laser_positions_array[time_step]
 
-                # Create mask for voxels at or below current laser z-position
                 laser_z = laser_position.components[2]
                 active_mask = positions.components[:, 2] <= laser_z + 1.0e-9
 
                 if scan_idx != old_scan_idx:
                     scan_direction = scan_directions[scan_idx]
                     perp_direction = Vector([0, 0, 1]).cross(scan_direction)
-                    scan_orientation = Orientation(
-                        np.array(
-                            [
-                                scan_direction.components,
-                                perp_direction.components,
-                                [0, 0, 1],
-                            ]
-                        )
-                    )
                     velocity = scan_velocities[scan_idx]
                     old_scan_idx = scan_idx
 
@@ -336,23 +287,15 @@ class RosenthalSolidificationModel(Model):
                 displacement = Vector(displacement, dims="p")
 
                 x_prime = displacement * scan_direction
-                y_prime = displacement * perp_direction
-                z_prime = Scalar(displacement.components[:, -1], dims="p")
                 distance = displacement.norm
 
                 temperature = self.rosenthal_temperature(
                     x_prime=x_prime,
-                    y_prime=y_prime,
-                    z_prime=z_prime,
                     R=distance,
                     Qp=powers[scan_idx],
                     v=velocity,
                 )
-                # temperature_gradient = temperature_gradient.to_specimen_frame(
-                #    scan_orientation
-                # )
 
-                # Apply z-mask: set temperature to ambient for voxels above scan
                 temperature[~active_mask] = self.initial_temperature
 
                 voxel_status = self._update_liquid_and_mushy_voxels(
@@ -414,30 +357,10 @@ class RosenthalSolidificationModel(Model):
     def _coarsen_microstructure(
         self, voxel_status, grain_ids, temperature, neighbors, active_mask
     ):
-        """
-        Apply Potts Monte Carlo algorithm to simulate grain coarsening.
-
-        Parameters
-        ----------
-        voxel_status : ndarray
-            Status array (0=unaffected, 1=mushy, 2=liquid, 3=solid)
-        grain_ids : ndarray
-            Grain ID for each voxel
-        temperature : Scalar
-            Current temperature field
-        neighbors : ndarray
-            Neighbor indices for each voxel (shape: num_points x 27)
-        active_mask : ndarray
-            Boolean mask for voxels at or below current laser z-position
-
-        Returns
-        -------
-        grain_ids : ndarray
-            Updated grain IDs after attempted flips
-        """
         Q = self.potts_properties["Q"]
         K_0 = self.potts_properties["K_0"]
         K_MC = self.potts_properties["K_MC"]
+
         mobility = (
             Q
             * (temperature - self.melt_temperature)
@@ -451,18 +374,13 @@ class RosenthalSolidificationModel(Model):
             / self.time_step_duration
         )
 
-        # Get indices of active voxels
         active_indices = np.where(active_mask)[0]
-
         if len(active_indices) == 0:
             return grain_ids
-
-        # Randomly select voxels from active voxels only
         selected_voxels = active_indices[
             np.random.randint(0, len(active_indices), size=num_flips)
         ]
 
-        # Call numba-compiled function for efficient flip attempts
         grain_ids = _potts_monte_carlo_flips(
             grain_ids, voxel_status, neighbors, mobility.components, selected_voxels
         )
@@ -472,8 +390,6 @@ class RosenthalSolidificationModel(Model):
     def rosenthal_temperature(
         self,
         x_prime: Scalar,
-        y_prime: Scalar,
-        z_prime: Scalar,
         R: Scalar,
         Qp: float,
         v: float,
@@ -527,24 +443,16 @@ class RosenthalSolidificationModel(Model):
             / (self.absorptivity * Qp)
         )
 
-        # Avoid division by zero by setting a minimum value for R
         idx = np.argmin(R.components)
         if R.components[idx] == 0:
             R[idx] = 1.0e-15
         R_inv = R ** (-1)
-        R_inv_factor = 1.0 + R_inv / M
 
         temperature_norm = R_inv / N * (-M * (x_prime + R)).apply(np.exp)
         temperature = (
             temperature_norm * (self.melt_temperature - self.initial_temperature)
             + self.initial_temperature
         )
-        # dTdx = -temperature_norm * (1 + x_prime * R_inv * R_inv_factor)
-        # dTdy = -temperature_norm * y_prime * R_inv * R_inv_factor
-        # dTdz = -temperature_norm * z_prime * R_inv * R_inv_factor
-        # temperature_gradient = Vector(
-        #    np.c_[dTdx.components, dTdy.components, dTdz.components], dims="p"
-        # ).unit
 
         temperature[temperature.components > self.melt_temperature] = (
             self.melt_temperature
@@ -553,23 +461,6 @@ class RosenthalSolidificationModel(Model):
         return temperature
 
     def _update_liquid_and_mushy_voxels(self, voxel_status, temperature, active_mask):
-        """
-        Update voxel status based on temperature.
-
-        Parameters
-        ----------
-        voxel_status : ndarray
-            Status array (0=unaffected, 1=mushy, 2=liquid, 3=solid)
-        temperature : Scalar
-            Current temperature field
-        active_mask : ndarray
-            Boolean mask for voxels at or below current laser z-position
-
-        Returns
-        -------
-        voxel_status : ndarray
-            Updated status array
-        """
         # mushy: 1, liquid: 2, solid: 3
         # Only update voxels within the active mask
         liquid_idx = (temperature.components >= self.melt_temperature) & active_mask
@@ -592,35 +483,6 @@ class RosenthalSolidificationModel(Model):
         distances,
         active_mask,
     ):
-        """
-        Solidify voxels in the mushy zone based on undercooling and neighbor proximity.
-
-        Parameters
-        ----------
-        voxel_status : ndarray
-            Status array (0=unaffected, 1=mushy, 2=liquid, 3=solid)
-        grain_ids : ndarray
-            Grain ID for each voxel
-        temperature : Scalar
-            Current temperature field
-        capture_distances : ndarray
-            Current capture distance for each voxel (accumulated over time)
-        neighbors : ndarray
-            Neighbor indices for each voxel (shape: num_points x 27)
-        distances : ndarray
-            Distances to neighbors for each voxel
-        active_mask : ndarray
-            Boolean mask for voxels at or below current laser z-position
-
-        Returns
-        -------
-        voxel_status : ndarray
-            Updated voxel status array
-        grain_ids : ndarray
-            Updated grain IDs
-        capture_distances : ndarray
-            Updated capture distances
-        """
         # Find voxels in mushy zone that are also in active region
         mushy_mask = (voxel_status == 1) & active_mask
         mushy_indices = np.where(mushy_mask)[0]
@@ -628,19 +490,12 @@ class RosenthalSolidificationModel(Model):
         if len(mushy_indices) == 0:
             return voxel_status, grain_ids, capture_distances, mushy_indices
 
-        # Compute undercooling for mushy voxels (melt temp - current temp)
+        # Update capture distances
         undercooling = self.melt_temperature - temperature.components[mushy_mask]
-
-        # Compute change in capture distance for this time step
         delta_capture = (
             self.a * (undercooling**self.b) * self.time_step_duration / 5.0e-6
         )
-
-        # Update capture distances for mushy voxels
         capture_distances[mushy_mask] += delta_capture
-
-        # Vectorized neighbor processing for all mushy voxels
-        # Get all neighbor data for mushy voxels at once
         mushy_neighbors = neighbors[mushy_indices]  # (num_mushy, 27)
         mushy_distances = distances[mushy_indices]  # (num_mushy, 27)
 
@@ -655,7 +510,6 @@ class RosenthalSolidificationModel(Model):
             safe_neighbors
         ]  # Neighbor must also be in active region
 
-        # Combine all conditions to find eligible neighbors
         eligible_mask = valid_mask & within_capture & is_solid & is_active
 
         # Random selection via argmax trick (one neighbor per mushy voxel)
@@ -663,11 +517,9 @@ class RosenthalSolidificationModel(Model):
         random_vals[~eligible_mask] = -np.inf
         selected_idx = np.argmax(random_vals, axis=1)
 
-        # Update only voxels that have at least one eligible neighbor
+        # Update grain IDs and voxel status for voxels with eligible neighbors
         has_eligible = eligible_mask.any(axis=1)
         selected_neighbors = safe_neighbors[np.arange(len(mushy_indices)), selected_idx]
-
-        # Update grain IDs and voxel status for voxels with eligible neighbors
         grain_ids[mushy_indices[has_eligible]] = grain_ids[
             selected_neighbors[has_eligible]
         ]
@@ -713,6 +565,4 @@ def _get_neighbors(material, neighborhood_distance=np.sqrt(3)):
     neighbors[np.isinf(distances)] = -1
     neighbors = np.roll(neighbors, -1)
     distances = np.roll(distances, -1)
-
-    num_neighbors = np.sum(neighbors != -1, axis=1)
-    return neighbors, num_neighbors, distances
+    return neighbors, distances
