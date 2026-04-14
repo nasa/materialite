@@ -141,36 +141,30 @@ class LaserPath:
 
         # Check validity: index in range AND time within scan window
         valid = np.zeros(len(time_array), dtype=bool)
-
-        # Create a mask for valid indices
         valid_idx_mask = (indices >= 0) & (indices < self.n_scans)
 
-        # For valid indices, check time bounds
+        # Check if times at valid indices are within scan windows
         if np.any(valid_idx_mask):
             valid_idx = indices[valid_idx_mask]
             valid_times = time_array[valid_idx_mask]
 
-            # Check if times are within the scan windows
             time_in_window = (valid_times >= self.start_times[valid_idx]) & (
                 valid_times <= self.end_times[valid_idx]
             )
 
             valid[valid_idx_mask] = time_in_window
 
-        # Initialize output array with NaN
         positions = np.full((len(time_array), 3), np.nan)
 
+        # Interpolate to find positions at valid times
         if np.any(valid):
-            # Get valid times and their corresponding scan indices
             valid_indices = indices[valid]
             valid_times = time_array[valid]
 
-            # Compute interpolation fractions
             t0 = self.start_times[valid_indices]
             t1 = self.end_times[valid_indices]
             fractions = (valid_times - t0) / (t1 - t0)
 
-            # Interpolate positions
             p0 = self.start_positions[valid_indices]
             p1 = self.end_positions[valid_indices]
             positions[valid] = p0 + fractions[:, np.newaxis] * (p1 - p0)
@@ -228,21 +222,17 @@ class LaserPath:
 
         # Check validity: index in range AND time within scan window
         valid_idx_mask = (indices >= 0) & (indices < self.n_scans)
-
-        # Initialize output with -1 (inactive)
         scan_indices = np.full(len(time_array), -1, dtype=np.int32)
 
-        # For valid indices, check if times are within scan windows
+        # Check if times at valid indices are within scan windows
         if np.any(valid_idx_mask):
             valid_idx = indices[valid_idx_mask]
             valid_times = time_array[valid_idx_mask]
 
-            # Check if times are within the scan windows
             time_in_window = (valid_times >= self.start_times[valid_idx]) & (
                 valid_times <= self.end_times[valid_idx]
             )
 
-            # Set the scan indices where time is in window
             scan_indices[valid_idx_mask] = np.where(time_in_window, valid_idx, -1)
 
         if is_scalar:
@@ -339,13 +329,13 @@ class LaserPath:
         Parameters
         ----------
         start : array_like
-            Starting position [x, y, z] in meters.
+            Starting position [x, y, z].
         end : array_like
-            Ending position [x, y, z] in meters.
+            Ending position [x, y, z].
         velocity : float
-            Laser velocity in m/s.
+            Laser velocity.
         start_time : float, default 0.0
-            Time at which the scan begins in seconds.
+            Time at which the scan begins.
 
         Returns
         -------
@@ -380,8 +370,8 @@ class LaserPath:
             List of segment specifications. Each dict should contain:
             - "start": [x, y, z] start position
             - "end": [x, y, z] end position
-            - "velocity": scanning velocity in m/s
-            - "power": laser power in W
+            - "velocity": scanning velocity
+            - "power": laser power
             - "time_delay": delay between the end of the previous segment and the
               start of the current scan
         start_time : float, default 0.0
@@ -457,7 +447,7 @@ class LaserPath:
         num_passes : int
             Number of scan passes (lines) in the y direction.
         velocity : float
-            Laser velocity in m/s.
+            Laser velocity.
         z_height : float, default 0.0
             Height (z coordinate) at which scanning occurs.
         start_time : float, default 0.0
@@ -528,34 +518,34 @@ class LaserPath:
             Angle of scan direction in degrees. 0° scans along the x-axis,
             90° scans along the y-axis. Positive angles rotate counterclockwise.
         hatch_spacing : float
-            Perpendicular distance between parallel scan lines in meters.
+            Perpendicular distance between parallel scan lines.
         x_bounds : tuple of float
-            (x_min, x_max) bounds of the rectangular domain in meters.
+            (x_min, x_max) bounds of the rectangular domain.
         y_bounds : tuple of float
-            (y_min, y_max) bounds of the rectangular domain in meters.
+            (y_min, y_max) bounds of the rectangular domain.
         velocity : float
-            Laser scanning velocity in m/s.
+            Laser scanning velocity.
         z_height : float, default 0.0
-            Height (z-coordinate) at which all scans occur in meters.
+            Height (z-coordinate) at which all scans occur.
         start_time : float, default 0.0
-            Time at which the first scan begins in seconds.
+            Time at which the first scan begins.
         bidirectional : bool, default True
             If True, alternates scan direction for consecutive hatches (typical
             raster pattern). If False, all scans proceed in the same direction.
         start_offset : float, default 0.0
-            Distance to extend the start of each scan beyond the domain boundary
-            in meters. Positive values extend the scan backward (before the
+            Distance to extend the start of each scan beyond the domain boundary.
+            Positive values extend the scan backward (before the
             intersection), negative values shorten it (start inside domain).
         end_offset : float, default 0.0
-            Distance to extend the end of each scan beyond the domain boundary
-            in meters. Positive values extend the scan forward (beyond the
+            Distance to extend the end of each scan beyond the domain boundary.
+            Positive values extend the scan forward (beyond the
             intersection), negative values shorten it (end inside domain).
         domain_offset : float, default 0.0
             Distance from the provided bounds to limit the scans to. Positive
             values extend the scan outside the bounds, negative values
             shorten scans to inside the bounds.
         delay_between_scans : float or None, default None
-            Delay between consecutive scans in seconds. If None, the delay is
+            Delay between consecutive scans. If None, the delay is
             automatically calculated based on the time required to move the laser
             from the end of one scan to the start of the next scan at the given
             velocity. If specified, the same delay is used between all scans.
@@ -663,17 +653,16 @@ class LaserPath:
             elif num_intersections > 2:
                 raise ValueError("more than two intersections")
 
-            # Sort by parameter t to get the correct order
+            # Sort by parameter t (time) to get the correct order
             intersections.sort(key=lambda pt: pt[2])
 
             # Remove duplicate intersections (can happen at corners)
             # Keep only intersections that are sufficiently distinct
             unique_intersections = [intersections[0]]
             for pt in intersections[1:]:
-                # Check if this point is distinct from the last unique point
                 last_pt = unique_intersections[-1]
                 dist = np.sqrt((pt[0] - last_pt[0]) ** 2 + (pt[1] - last_pt[1]) ** 2)
-                if dist > 1e-9:  # Tolerance for distinct points
+                if dist > 1e-9:
                     unique_intersections.append(pt)
 
             # Only proceed if we have at least 2 distinct intersections
