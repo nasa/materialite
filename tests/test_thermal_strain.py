@@ -13,11 +13,11 @@ from materialite.models.small_strain_fft import (
     linear,
 )
 from materialite.models.small_strain_fft.temperature_history import TemperatureHistory
-from materialite.util import repeat_data
 from numpy.testing import assert_allclose
 
 from materialite import (
     Box,
+    Sphere,
     Material,
     Scalar,
     Order2SymmetricTensor,
@@ -278,3 +278,53 @@ def test_elastic_viscoplastic(thermal_expansion_coefficients, delta_T):
 
     assert_allclose(stress_thermal, stress_basic, atol=1.0e-13)
     assert_allclose(strain_thermal, strain_basic, atol=1.0e-13)
+
+
+def test_eshelby_problem():
+    expected_stress = -280.3136365
+    material = (
+        Material([256, 256, 1], sizes=[1023, 1023, 0])
+        .create_uniform_field("phase", 1)
+        .create_uniform_field("orientation", Orientation.identity())
+    )
+    times = np.array([0, 1])
+    temperature1 = Scalar([0, 1000.0], dims="t")
+    temperature2 = Scalar([0, 1500.0], dims="t")
+    sphere = Sphere(radius=43, centroid=material.sizes / 2)
+    regional_fields = {"phase": [1, 2], "temperature_history": [temperature1, temperature2]}
+    material = material.insert_feature(sphere, fields={"phase": 2}).create_regional_fields(
+        "phase", regional_fields
+    )
+    pointwise_temperature = material.extract("temperature_history")
+    temperature_history = TemperatureHistory(temperatures=pointwise_temperature, times=times)
+
+    alpha = 10.0e-6
+    thermal_expansion_coefficients = Order2SymmetricTensor([alpha, alpha, alpha, 0, 0, 0])
+    E = 65400.0
+    nu = 0.42
+    stiffness = Order4SymmetricTensor.from_isotropic_constants(
+        modulus=65400.0, shear_modulus=E / (2 * (1 + nu))
+    )
+    elastic_model = Elastic(stiffness, thermal_expansion_coefficients)
+    strain_rate = Order2SymmetricTensor.zero()
+    stress_rate = Order2SymmetricTensor.zero()
+    stress_mask = np.array([1, 1, 1, 1, 1, 1])
+    load_schedule = LoadSchedule.from_constant_rates(
+        strain_rate=strain_rate, stress_rate=stress_rate, stress_mask=stress_mask
+    )
+    model = SmallStrainFFT(
+        load_schedule=load_schedule,
+        end_time=1.0,
+        initial_time_increment=1.0,
+        constitutive_model=elastic_model,
+        temperature_history=temperature_history,
+    )
+    material = model(
+        material,
+        linear_solver_tolerance=1.0e-14,
+        global_tolerance=1.0,
+        strain_correction_tolerance=1.0,
+    )
+    inclusion_idx = material.get_region_indices("phase")[2]
+    mean_stress_inclusion = material.extract("stress")[inclusion_idx].mean().components[0]
+    assert_allclose(mean_stress_inclusion, expected_stress, atol=1)
