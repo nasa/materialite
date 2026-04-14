@@ -201,10 +201,13 @@ def test_temperature_field_shape(small_material, model):
 def test_custom_grain_id_label(small_material, laser_path):
     """Test using a custom grain ID field label."""
     rng = np.random.default_rng(42)
+    small_material = small_material.create_fields(
+        {"grain_custom": small_material.extract("grain") + 1000}
+    )
     material_custom = Material(dimensions=[10, 10, 10], spacing=[0.001, 0.001, 0.001])
     material_custom = material_custom.create_voronoi(
         num_regions=5, label="grain_custom", rng=rng
-    )
+    ).remove_field("grain")
 
     model = RosenthalSolidificationModel(
         laser_path=laser_path,
@@ -215,9 +218,7 @@ def test_custom_grain_id_label(small_material, laser_path):
     new_material = model.run(material_custom, grain_id_label="grain_custom")
 
     assert "grain_custom" in list(new_material.fields)
-    assert "temperature" in list(
-        new_material.fields
-    )
+    assert "temperature" in list(new_material.fields)
 
 
 def test_laser_movement(small_material):
@@ -278,7 +279,9 @@ def test_model_with_raster_scan(small_material):
     temperature = new_material.extract("temperature")
     assert isinstance(temperature, Scalar)
     assert temperature.dims_str == "pt"
-    assert_array_equal(output_times + [laser_path.total_time], new_material.state["time_history"])
+    assert_array_equal(
+        output_times + [laser_path.total_time], new_material.state["time_history"]
+    )
 
 
 def test_model_with_multi_segment_path(small_material):
