@@ -80,6 +80,8 @@ class SmallStrainFFT(Model):
             time_idx = 0
             output_times = np.append(output_times, np.inf)
             next_output_time = output_times[time_idx]
+            if next_output_time < time + self.initial_time_increment:
+                self.initial_time_increment = next_output_time - time
         else:
             next_output_time = np.inf
         new_state = defaultdict(list)
@@ -360,19 +362,15 @@ class SmallStrainFFT(Model):
             out=np.zeros_like(rotated_frequencies),
             where=rotated_frequency_norms != 0,
         )
-        q = normalized_rotated_frequencies
+        k = normalized_rotated_frequencies
         if Nx % 2 == 0:
-            q[:, Nx // 2, :, :] = 0.0
+            k[:, Nx // 2, :, :] = 0.0
         if Ny % 2 == 0:
-            q[:, :, Ny // 2, :] = 0.0
+            k[:, :, Ny // 2, :] = 0.0
         if Nz % 2 == 0:
-            q[:, :, :, Nz // 2] = 0.0
-        A = np.real(
-            np.einsum("im, jxyz, lxyz -> xyzijlm", np.eye(3), q, q, optimize=True)
-        )
-        B = np.real(
-            np.einsum("ixyz, jxyz, lxyz, mxyz -> xyzijlm", q, q, q, q, optimize=True)
-        )
+            k[:, :, :, Nz // 2] = 0.0
+        A = np.einsum("im, jxyz, lxyz -> xyzijlm", np.eye(3), k, k, optimize=True)
+        B = np.einsum("ixyz, jxyz, lxyz, mxyz -> xyzijlm", k, k, k, k, optimize=True)
         Ghat4 = (
             0.5
             * (
