@@ -13,10 +13,9 @@
 import random
 
 import numpy as np
+from materialite.models import Model
 from numba import jit
 from scipy import spatial
-
-from materialite.models import Model
 
 
 class GrainCoarseningModel(Model):
@@ -95,7 +94,7 @@ class GrainCoarseningModel(Model):
                 neighbors,
                 num_neighbors,
                 self.num_flip_attempts,
-                self.max_spin,
+                self.max_grain_id,
                 material.num_points,
                 self.seed,
                 self.record_frequency,
@@ -166,7 +165,7 @@ class GrainCoarseningModel(Model):
                 spin_field[sample_point] = test_spin
                 successful_flip_attempts += 1
             else:
-                dE = 0.5 * (current_energy - test_energy)
+                dE = 0.5 * (test_energy - current_energy)
                 if (
                     np.exp(-dE / kbTs) * mobility_field[sample_point]
                     > probability_check

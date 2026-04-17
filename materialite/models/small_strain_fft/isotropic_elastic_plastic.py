@@ -22,6 +22,7 @@ class IsotropicElasticPlastic:
         yield_stress,
         hardening_function,
         hardening_properties,
+        thermal_expansion_coefficients=None,
     ):
         self.modulus = modulus
         self.shear_modulus = shear_modulus
@@ -35,6 +36,7 @@ class IsotropicElasticPlastic:
         self.yield_stress = Scalar(yield_stress)
         self.hardening_function = hardening_function
         self.hardening_properties = hardening_properties
+        self.thermal_expansion_coefficients = thermal_expansion_coefficients
         self.state_variables = dict()
         self.available_state_variables = [
             "yield_stresses",
@@ -94,6 +96,9 @@ class IsotropicElasticPlastic:
                 dev_predictor_stresses
                 + mean_stresses * Order2SymmetricTensor.identity()
             )
+            self.state_variables["eq_plastic_strains"] = old_eq_plastic_strains
+            self.state_variables["plastic_strains"] = old_plastic_strains
+            self.state_variables["yield_stresses"] = old_yield_stresses
             return stresses, stiffnesses, 1
 
         eq_plastic_strain_increments = Scalar(0.0)
@@ -181,6 +186,14 @@ class IsotropicElasticPlastic:
         else:
             outputs = dict()
         return outputs
+
+    def calculate_thermal_strain(self, temperature_increment):
+        if self.thermal_expansion_coefficients is None:
+            raise ValueError(
+                "Thermal expansion coefficients not defined for this material."
+            )
+        else:
+            return self.thermal_expansion_coefficients * temperature_increment
 
     def __repr__(self):
         return (

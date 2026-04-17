@@ -14,5 +14,7 @@ from materialite.models.model import Model
 
 from .decoupled_crystal_elasticity import DecoupledCrystalElasticity
 from .grain_coarsening_model import GrainCoarseningModel
+from .laser_path import LaserPath
+from .rosenthal_solidification_model import RosenthalSolidificationModel
 from .taylor_model import TaylorModel
 from .crop import Crop

@@ -17,12 +17,12 @@ import cupyx.scipy.ndimage
 import matplotlib.pyplot as plt
 import numba
 import numpy as np
+from materialite.models import Model
 from scipy import spatial
 from scipy.interpolate import RegularGridInterpolator
 from tqdm import trange
 
 from materialite import Material
-from materialite.models import Model
 
 
 class ConvolutionMicrostructureGPUModel(Model):
@@ -855,6 +855,13 @@ class ConvolutionMicrostructureGPUModel(Model):
                 self.phase_history.update(
                     {self.time_step: np.copy(cp.asnumpy(self._phase.super_set))}
                 )
+
+                # Need this to relink the data from the vector to the array
+                if hasattr(self._spin, "sub_vector"):
+                    self._spin.sub_set[:] = self._spin.sub_vector.reshape(
+                        self._x.sub_set.shape
+                    )
+
                 self.spin_history.update(
                     {self.time_step: np.copy(cp.asnumpy(self._spin.super_set))}
                 )
@@ -917,6 +924,12 @@ class ConvolutionMicrostructureGPUModel(Model):
 
     def _update_z_domain(self, laser):
         conditions = laser.get_current_beam_conditions()
+        # Reshape and assign to tie back together
+        if hasattr(self._spin, "sub_vector"):
+            self._spin.sub_set[:] = self._spin.sub_vector.reshape(self._x.sub_set.shape)
+            self._grab_distance.sub_set[:] = self._grab_distance.sub_vector.reshape(
+                self._x.sub_set.shape
+            )
         self.z_upper = int(np.round(conditions["z"] / self.dx))
         self.z_lower = int(self.z_upper - self.z_range)
         self.domain._set_sub_z_range(self.z_lower, self.z_upper)

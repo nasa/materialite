@@ -1,6 +1,6 @@
 import numpy as np
 import pytest  # Includes: tmp_path, mocker
-from materialite import Material, Orientation
+from materialite import Material, Orientation, Scalar, Order2SymmetricTensor
 from materialite.models.small_strain_fft import (
     IsotropicElasticPlastic,
     LoadSchedule,
@@ -9,6 +9,7 @@ from materialite.models.small_strain_fft import (
     perfect_plasticity,
     voce,
 )
+from materialite.models.small_strain_fft.temperature_history import TemperatureHistory
 from numpy.testing import assert_allclose
 
 
@@ -42,6 +43,37 @@ def test_with_perfect_plasticity(material, load_schedule):
         load_schedule=load_schedule,
         end_time=end_time,
         initial_time_increment=time_increment,
+        constitutive_model=constitutive_model,
+    )
+    output_times = (np.arange(num_time_steps) + 1) * time_increment
+    material = model(
+        material,
+        output_times=output_times,
+    )
+    stress = material.extract("stress")
+    mean_stress_norm = stress[:, -1].mean().norm.components
+    axial_stresses = stress.mean("p").components[:, 2]
+    assert_allclose(mean_stress_norm, expected_mean_stress_norm)
+    assert_allclose(axial_stresses[9:], expected_mean_stress_norm)
+
+
+def test_time_incrementation_perfect_plasticity(material, load_schedule):
+    expected_mean_stress_norm = 150.0
+    modulus = 150000.0
+    shear_modulus = 60000.0
+    yield_stress = 150.0
+    constitutive_model = IsotropicElasticPlastic(
+        modulus, shear_modulus, yield_stress, perfect_plasticity, None
+    )
+    time_increment = 1.0e-4
+    end_time = 15.0e-4
+    num_time_steps = 15
+    # Set the initial time increment to be larger than the first output time 
+    # to test that the model adjusts the time increment to hit the output time
+    model = SmallStrainFFT(
+        load_schedule=load_schedule,
+        end_time=end_time,
+        initial_time_increment=end_time,
         constitutive_model=constitutive_model,
     )
     output_times = (np.arange(num_time_steps) + 1) * time_increment

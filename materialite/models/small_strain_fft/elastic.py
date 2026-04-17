@@ -14,8 +14,9 @@ import numpy as np
 
 
 class Elastic:
-    def __init__(self, stiffness):
+    def __init__(self, stiffness, thermal_expansion_coefficients=None):
         self.stiffness = stiffness
+        self.thermal_expansion_coefficients = thermal_expansion_coefficients
         self.state_variables = dict()
         self.available_state_variables = None
         self._state_variable_info = dict()
@@ -24,6 +25,10 @@ class Elastic:
         self.state_variables["stiffnesses"] = self.stiffness.to_specimen_frame(
             orientations
         )
+        if self.thermal_expansion_coefficients is not None:
+            self.state_variables["thermal_expansion_coefficients"] = (
+                self.thermal_expansion_coefficients.to_specimen_frame(orientations)
+            )
         return self.state_variables["stiffnesses"]
 
     def calculate_stress_and_tangent(self, strain, guess_stress, time_increment):
@@ -44,6 +49,15 @@ class Elastic:
         else:
             outputs = dict()
         return outputs
+
+    def calculate_thermal_strain(self, temperature_increment):
+        if self.thermal_expansion_coefficients is None:
+            raise ValueError(
+                "Thermal expansion coefficients not defined for this material."
+            )
+        else:
+            coefficients = self.state_variables["thermal_expansion_coefficients"]
+            return coefficients * temperature_increment
 
     def __repr__(self):
         return f"Elastic(stiffness={np.round(self.stiffness.voigt, 3)})"
