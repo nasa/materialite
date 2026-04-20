@@ -390,33 +390,81 @@ class Material:
             {new_label: np.where(self.extract(label) > threshold, high, low)}
         )
 
+    def sample_from(self, source_material):
+        """
+        Sample all field values from another material using nearest neighbor.
+
+        Parameters
+        ----------
+        source_material : Material
+            Material to sample values from.
+
+        Returns
+        -------
+        Material
+            New material with all sampled fields added.
+        """
+
+        source_points = source_material.extract(["x", "y", "z"])
+        target_points = self.extract(["x", "y", "z"])
+
+        # Find nearest neighbor for each target point
+        _, indices = spatial.cKDTree(source_points).query(target_points, k=1)
+
+        # Sample all fields at the nearest neighbor indices of the source material
+        sampled_fields = {}
+        for label in [
+            col
+            for col in source_material.fields.columns
+            if col not in ["x", "y", "z", "x_id", "y_id", "z_id"]
+        ]:
+            source_values = source_material.extract(label)
+            sampled_fields[label] = source_values[indices]
+
+        # Regional fields also should be handled here
+
+        return self.create_fields(sampled_fields)
+
     def create_voronoi(
         self,
-        num_regions=10,
+        num_regions=None,
         label="region",
         rng=np.random.default_rng(),
         periodic=False,
+        seeds=None,
     ):
         """
         Create Voronoi regions in the material.
 
         Parameters
         ----------
-        num_regions : int, default 10
-            Number of Voronoi regions to create.
+        num_regions : int, optional
+            Number of Voronoi regions to create (ignored if seeds provided).
         label : str, default "region"
             Name for the region field.
         rng : numpy.random.Generator
             Random number generator for seed points.
         periodic : bool, default False
             Whether to enforce periodic boundary conditions.
+        seeds : array-like, shape (N, 3), optional
+            Seed points (centroids) for Voronoi regions. If provided,
+            num_regions is ignored.
 
         Returns
         -------
         Material
             New material with Voronoi regions added.
         """
-        voronoi_points = rng.random((num_regions, 3)) * self.sizes + self.origin
+
+        if seeds is not None:
+            # voronoi_points = np.asarray(seeds)
+            voronoi_points = Vector(seeds).components
+            num_regions = len(voronoi_points)
+        else:
+            if num_regions is None:
+                num_regions = 10
+            voronoi_points = rng.random((num_regions, 3)) * self.sizes + self.origin
+
         material_points = self.fields[["x", "y", "z"]].to_numpy()
 
         if periodic:
@@ -701,6 +749,42 @@ class Material:
             for region, indices in regions.groupby(regions).groups.items()
         }
 
+    def region_centroids(self, region_label="region", centroid_label="centroid"):
+        """
+        Compute centroids for each region and add to regional fields.
+
+        Parameters
+        ----------
+        region_label : str, default "region"
+            Name of the field containing region IDs.
+        centroid_label : str, default "centroid"
+            Name for the centroid field.
+
+        Returns
+        -------
+        Material
+            New material with centroid added to regional fields.
+        """
+        centroids = self.fields.groupby(region_label)[["x", "y", "z"]].mean()
+
+        # If region field exists, ensure all region IDs are present
+        if region_label in self._regional_fields:
+            all_ids = self._regional_fields[region_label][region_label].to_numpy()
+            # Reindex to include all IDs, filling missing with zeros
+            centroids = centroids.reindex(all_ids, fill_value=0.0)
+
+        regional_fields = pd.DataFrame(
+            {
+                region_label: centroids.index.to_numpy(),
+                centroid_label: Vector(centroids.to_numpy()),
+            }
+        )
+
+        return self.create_regional_fields(
+            region_label=region_label,
+            regional_fields=regional_fields,
+        )
+
     def plot(
         self,
         label,
@@ -735,6 +819,14 @@ class Material:
         opacity : float, default 1.0
             Transparency level.
         """
+        if len(np.where(self.dimensions == 1)[0]) == 1:
+            return self._plot_slice(
+                label,
+                component=component,
+                colormap=colormap,
+                color_lims=color_lims,
+            )
+
         fields = self.get_fields().sort_values(by=["z", "y", "x"])
 
         # Determine slices to grab components of the field
@@ -835,7 +927,7 @@ class Material:
         else:
             raise ValueError(f"{kind} is not a valid plot kind")
 
-    def plot_slice(
+    def _plot_slice(
         self,
         label,
         component=None,
@@ -873,14 +965,6 @@ class Material:
         fig, ax : matplotlib Figure and Axes
             If ax was provided, fig will be None
         """
-
-        # Check for exactly one singleton dimension
-        if len(np.where(self.dimensions == 1)[0]) != 1:
-            raise ValueError(
-                f"plot_slice requires exactly one singleton dimension, "
-                f"but dimensions are {self.dimensions}"
-            )
-
         fields = self.get_fields()
 
         # Determine slices to grab components of the field
@@ -985,65 +1069,7 @@ class Material:
 
         return fig, ax
 
-    def compare_slice_plots(
-        self,
-        label1,
-        label2,
-        component=None,
-        colormap="coolwarm",
-        color_lims=None,
-        figsize=(12, 6),
-    ):
-        """
-        Compare 2D slices from Material with one singleton dimension.
-
-        Parameters
-        ----------
-        label1 : str
-            First field name to plot
-        label2 : str
-            Second field name to plot
-        component : int or list, optional
-            Component(s) to plot for multi-component fields
-        colormap : str, default "coolwarm"
-            Colormap name
-        color_lims : tuple, optional
-            Color scale limits (min, max)
-        figsize : tuple, default (12, 6)
-            Figure size
-
-        Returns
-        -------
-        fig, axes : matplotlib Figure and Axes array
-        """
-
-        fig, axes = plt.subplots(1, 2, figsize=figsize)
-
-        self.plot_slice(
-            label1,
-            component=component,
-            colormap=colormap,
-            color_lims=color_lims,
-            ax=axes[0],
-        )
-
-        self.plot_slice(
-            label2,
-            component=component,
-            colormap=colormap,
-            color_lims=color_lims,
-            ax=axes[1],
-        )
-
-        for ax in axes:
-            ax.set_aspect("equal", adjustable="box")
-
-        plt.tight_layout()
-        plt.show()
-
-        return fig, axes
-
-    def apply(self, func, *func_args, out=None, adapter=None, **func_kwargs):
+    def apply(self, func, *func_args, out=None, adapter="3D", **func_kwargs):
         """
         Apply function with automatic field extraction and optional field creation.
 
@@ -1198,14 +1224,14 @@ class Material:
             f"x_id <= {points_above[0]} and y_id <= {points_above[1]} and z_id <= {points_above[2]}"
         )
 
-    def crop_by_range(self, x_range=None, y_range=None, z_range=None):
+    def crop(self, x=None, y=None, z=None):
         """
         Crop the material by coordinate ranges. The returned material will include points at both
         endpoints of the provided ranges (i.e., the endpoints are inclusive).
 
         Parameters
         ----------
-        x_range, y_range, z_range : tuple, optional
+        x, y, z : tuple, optional
             Coordinate ranges (min, max) for each direction.
 
         Returns
@@ -1214,9 +1240,9 @@ class Material:
             Cropped material.
         """
         fields = self.fields.copy()
-        x_range = (self.origin[0], np.inf) if x_range is None else x_range
-        y_range = (self.origin[1], np.inf) if y_range is None else y_range
-        z_range = (self.origin[2], np.inf) if z_range is None else z_range
+        x_range = (self.origin[0], np.inf) if x is None else x
+        y_range = (self.origin[1], np.inf) if y is None else y
+        z_range = (self.origin[2], np.inf) if z is None else z
         fields = fields.query(
             f"x >= {x_range[0]} and x <= {x_range[1]} and y >= {y_range[0]} and y <= {y_range[1]} and z >= {z_range[0]} and z <= {z_range[1]}"
         )
@@ -1236,15 +1262,15 @@ class Material:
             new_material = new_material.create_regional_fields(k, v)
         return new_material
 
-    def crop_by_id_range(self, x_id_range=None, y_id_range=None, z_id_range=None):
+    def crop_by_id(self, x=None, y=None, z=None):
         """
         Crop the material by point ID ranges. The returned material will include points at both
         endpoints of the provided ranges (i.e., the endpoints are inclusive).
 
         Parameters
         ----------
-        x_id_range, y_id_range, z_id_range : tuple, optional
-            Point ID ranges (min, max) for each direction.
+        x, y, z : tuple, optional
+            Point ID ranges (start, end) for each direction.
 
         Returns
         -------
@@ -1252,9 +1278,9 @@ class Material:
             Cropped material.
         """
         fields = self.fields.copy()
-        x_id_range = (fields.x_id.min(), np.inf) if x_id_range is None else x_id_range
-        y_id_range = (fields.y_id.min(), np.inf) if y_id_range is None else y_id_range
-        z_id_range = (fields.z_id.min(), np.inf) if z_id_range is None else z_id_range
+        x_id_range = (fields.x_id.min(), np.inf) if x is None else x
+        y_id_range = (fields.y_id.min(), np.inf) if y is None else y
+        z_id_range = (fields.z_id.min(), np.inf) if z is None else z
         fields = fields.query(
             f"x_id >= {x_id_range[0]} and x_id <= {x_id_range[1]} and y_id >= {y_id_range[0]} and y_id <= {y_id_range[1]} and z_id >= {z_id_range[0]} and z_id <= {z_id_range[1]}"
         )
@@ -1273,6 +1299,43 @@ class Material:
         for k, v in self._regional_fields.items():
             new_material = new_material.create_regional_fields(k, v)
         return new_material
+
+    def __getitem__(self, key):
+        # Support numpy-style index notation as a shorthand for crop_by_id.
+        # Each axis accepts a slice or an integer:
+        #   material[a:b, :, n]  →  crop_by_id(x=(a, b-1), z=(n, n))
+        # Slices follow Python convention (stop is exclusive).
+        if not isinstance(key, tuple):
+            key = (key,)
+        if len(key) > 3:
+            raise IndexError(
+                "Material indexing supports at most 3 dimensions (x, y, z)"
+            )
+        # Pad missing trailing axes with full-range slices
+        key = key + (slice(None),) * (3 - len(key))
+
+        def _to_range(idx, max_id):
+            if isinstance(idx, slice):
+                if idx.step is not None:
+                    raise NotImplementedError(
+                        "Step slices are not supported in Material indexing"
+                    )
+                if idx.start is None and idx.stop is None:
+                    return None
+                start = idx.start if idx.start is not None else 0
+                stop = (idx.stop - 1) if idx.stop is not None else max_id
+                return (start, stop)
+            elif isinstance(idx, (int, np.integer)):
+                return (int(idx), int(idx))
+            else:
+                raise TypeError(f"Unsupported index type: {type(idx)}")
+
+        max_ids = self._dimensions - 1
+        return self.crop_by_id(
+            x=_to_range(key[0], max_ids[0]),
+            y=_to_range(key[1], max_ids[1]),
+            z=_to_range(key[2], max_ids[2]),
+        )
 
     def chop_by_point_count(self, x=None, y=None, z=None):
         """
@@ -1396,7 +1459,7 @@ class Material:
 
         if not np.array_equal(valid_dimensions, self.dimensions):
             warnings.warn(
-                "Outputting to EVP-FFT with dimensions that are not powers of 2. Use Material.crop_by_range() or Material.crop_by_id_range() if the dimensions must be powers of 2."
+                "Outputting to EVP-FFT with dimensions that are not powers of 2. Use Material.crop() or Material.crop_by_id() if the dimensions must be powers of 2."
             )
         if euler_angles_to_degrees:
             euler_angles = self.extract(orientation_label).euler_angles_in_degrees

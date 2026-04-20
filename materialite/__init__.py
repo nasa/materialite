@@ -26,3 +26,4 @@ from .slip_system import SlipSystem
 from .json_operations import read_from_json, write_to_json
 from .get_ipf_colors import get_ipf_colors, get_ipf, add_ipf_colors_field
 from .importers import import_dream3d, import_evpfft, import_spparks, import_vgstudio
+from .models import Crop

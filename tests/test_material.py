@@ -1,10 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest  # Includes: tmp_path
-from materialite.util import power_of_two_below
-from numpy.testing import assert_allclose, assert_array_equal
-from pandas.testing import assert_frame_equal
-
 from materialite import (
     Box,
     Material,
@@ -15,6 +11,9 @@ from materialite import (
     Vector,
     import_dream3d,
 )
+from materialite.util import power_of_two_below
+from numpy.testing import assert_allclose, assert_array_equal
+from pandas.testing import assert_frame_equal
 
 
 @pytest.fixture
@@ -593,8 +592,8 @@ def test_export_to_evpfft(tmp_path, expected_evpfft_file_contents):
     orientations = Orientation.from_euler_angles(
         material.extract(["euler_angles_1", "euler_angles_2", "euler_angles_3"]),
     )
-    material = material.create_fields({"orientation": orientations}).crop_by_id_range(
-        x_id_range=(-np.inf, 1), y_id_range=(-np.inf, 1), z_id_range=(-np.inf, 3)
+    material = material.create_fields({"orientation": orientations}).crop_by_id(
+        x=(-np.inf, 1), y=(-np.inf, 1), z=(-np.inf, 3)
     )
 
     output_filename = tmp_path / "fields.txt"
@@ -809,6 +808,17 @@ def test_create_voronoi():
     assert_array_equal(material.fields.region.to_numpy(), expected_point_regions)
 
 
+def test_create_voronoi_with_seeds():
+    seeds = np.array([[1.0, 1.0, 1.0], [2.0, 3.0, 4.0], [1.5, 2.0, 2.5]])
+    expected_point_regions = np.array(
+        [0, 0, 2, 2, 0, 2, 2, 1, 2, 2, 2, 1, 0, 2, 2, 2, 0, 2, 2, 1, 2, 2, 1, 1]
+    )
+    material = Material(dimensions=[2, 3, 4], origin=[1, 1, 1]).create_voronoi(
+        seeds=seeds
+    )
+    assert_array_equal(material.fields.region.to_numpy(), expected_point_regions)
+
+
 def test_create_voronoi_periodic():
     material = Material(dimensions=[2, 3, 4], origin=[1, 1, 1]).create_voronoi(
         num_regions=3, rng=np.random.default_rng(12345), periodic=True
@@ -876,16 +886,14 @@ def test_dimensions_and_origin_of_cropped_material(
     material, x_range, y_range, z_range, dimensions, origin
 ):
     material = Material(spacing=[2, 3, 4])
-    submaterial = material.crop_by_range(
-        x_range=x_range, y_range=y_range, z_range=z_range
-    )
+    submaterial = material.crop(x=x_range, y=y_range, z=z_range)
     assert_array_equal(submaterial.dimensions, dimensions)
     assert_array_equal(submaterial.origin, origin)
 
 
 def test_material_is_unchanged_when_crop_has_no_input(material):
     material = material.create_random_integer_field("field", 0, 100)
-    submaterial = material.crop_by_range()
+    submaterial = material.crop()
     assert_array_equal(submaterial.dimensions, material.dimensions)
     assert_array_equal(submaterial.origin, material.origin)
     assert_frame_equal(material.fields, submaterial.fields, check_like=True)
@@ -904,22 +912,20 @@ def test_dimensions_and_origin_of_cropped_by_id_material(
     x_id_range, y_id_range, z_id_range, dimensions, origin
 ):
     material = Material(spacing=[2, 3, 4])
-    submaterial = material.crop_by_id_range(
-        x_id_range=x_id_range, y_id_range=y_id_range, z_id_range=z_id_range
-    )
+    submaterial = material.crop_by_id(x=x_id_range, y=y_id_range, z=z_id_range)
     assert_array_equal(submaterial.dimensions, dimensions)
     assert_array_equal(submaterial.origin, origin)
 
 
 def test_sizes_of_cropped_by_id_material():
     material = Material(dimensions=[1077, 1077, 1], spacing=[0.00148, 0.00148, 1])
-    submaterial = material.crop_by_id_range(x_id_range=(50, 200), y_id_range=(0, 100))
+    submaterial = material.crop_by_id(x=(50, 200), y=(0, 100))
     assert_array_equal(submaterial.dimensions, [151, 101, 1])
     assert_allclose(submaterial.spacing, [0.00148, 0.00148, 1])
 
 
 def test_dimensions_and_origin_of_cropped_material(material):
-    submaterial = material.crop_by_range(x_range=(1, 1), y_range=(2, 5), z_range=(5, 6))
+    submaterial = material.crop(x=(1, 1), y=(2, 5), z=(5, 6))
     assert_array_equal(submaterial.dimensions, [1, 4, 2])
     assert_array_equal(submaterial.origin, [1, 2, 5])
 
@@ -938,6 +944,49 @@ def test_material_is_unchanged_when_chopped_by_point_count_is_used_with_no_input
     assert_array_equal(submaterial.dimensions, material.dimensions)
     assert_array_equal(submaterial.origin, material.origin)
     assert_frame_equal(material.fields, submaterial.fields, check_like=True)
+
+
+@pytest.mark.parametrize(
+    "key, expected_dims",
+    [
+        # single integer collapses that axis to 1 point
+        ((slice(None), slice(None), 0), [16, 16, 1]),
+        # slice uses exclusive stop (Python convention)
+        ((slice(None), slice(1, 3), slice(None)), [16, 2, 16]),
+        # mixed int and slice
+        ((slice(1, 5), slice(None), 2), [4, 16, 1]),
+        # all axes sliced
+        ((slice(0, 4), slice(2, 6), slice(1, 7)), [4, 4, 6]),
+        # full-range slice is a no-op
+        ((slice(None), slice(None), slice(None)), [16, 16, 16]),
+    ],
+)
+def test_getitem(material, key, expected_dims):
+    submaterial = material[key]
+    assert_array_equal(submaterial.dimensions, expected_dims)
+
+
+def test_getitem_shorthand(material):
+    submaterial = material[:, 1:2, 0]
+    assert_array_equal(submaterial.dimensions, [16, 1, 1])
+
+
+def test_getitem_equivalent_to_crop_by_id(material):
+    submaterial = material[:, 1:3, 0:8]
+    expected = material.crop_by_id(y=(1, 2), z=(0, 7))
+    assert_array_equal(submaterial.dimensions, expected.dimensions)
+    assert_array_equal(submaterial.origin, expected.origin)
+    assert_frame_equal(submaterial.fields, expected.fields, check_like=True)
+
+
+def test_getitem_too_many_dims(material):
+    with pytest.raises(IndexError):
+        material[0, 0, 0, 0]
+
+
+def test_getitem_step_raises(material):
+    with pytest.raises(NotImplementedError):
+        material[::2]
 
 
 def test_create_regional_fields(small_material):
@@ -1036,6 +1085,15 @@ def test_regional_field_error_if_new_regional_field_does_not_have_same_keys(
         _ = small_material.create_regional_fields("x", df).create_regional_fields(
             "x", bad_df
         )
+
+
+def test_region_centroids(small_material):
+    new_material = small_material.region_centroids(
+        region_label="x", centroid_label="centroid"
+    )
+    centroids = new_material.extract_regional_field("x", "centroid")
+    expected = np.array([[0.0, 1.0, 1.5], [1.0, 1.0, 1.5]])
+    assert_allclose(centroids.components, expected)
 
 
 def test_update_regional_field(small_material):

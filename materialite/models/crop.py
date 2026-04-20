@@ -1,10 +1,20 @@
 import numpy as np
 from materialite.models import Model
 
+_AXIS_LABELS = ("x", "y", "z")
+
+
+def _normalize_axis(axis):
+    if axis in (0, "x", "X"):
+        return 0
+    elif axis in (1, "y", "Y"):
+        return 1
+    elif axis in (2, "z", "Z"):
+        return 2
+    raise ValueError(f"axis must be 0, 1, 2, 'x', 'y', or 'z', got {axis!r}")
+
 
 class Crop(Model):
-    """Model for extracting regions from materials"""
-
     def __init__(self, crop_fn):
         self.crop_fn = crop_fn
 
@@ -13,125 +23,117 @@ class Crop(Model):
 
     @classmethod
     def from_slice_by_id(cls, axis="z", index=0):
-        """Extract single slice at index along axis"""
-        axis_map = {
-            "x": "x_id_range",
-            "y": "y_id_range",
-            "z": "z_id_range",
-            "X": "x_id_range",
-            "Y": "y_id_range",
-            "Z": "z_id_range",
-            0: "x_id_range",
-            1: "y_id_range",
-            2: "z_id_range",
-        }
-        range_key = axis_map[axis]
+        label = _AXIS_LABELS[_normalize_axis(axis)]
 
         def crop(material):
-            return material.crop_by_id_range(**{range_key: (index, index)})
+            return material.crop_by_id(**{label: (index, index)})
 
         return cls(crop)
 
     @classmethod
-    def from_box_by_id(
-        cls, x_length=None, y_length=None, z_length=None, center_id=None
-    ):
-        """Extract box region with specified lengths centered at point."""
+    def from_box_by_id(cls, dimensions=None, center_id=None):
+        # dimensions: a 3-element iterable [x_size, y_size, z_size].
+        # Any element that is None spans the full range for that axis.
+        # If dimensions itself is None, the material is returned unchanged.
+        # Captured before the closure to avoid UnboundLocalError.
+        _center_id = center_id
+        _dimensions = dimensions
 
         def crop(material):
-
-            # Default to material center if not specified
-            center_id = material.center_id if center_id is None else np.array(center_id)
-
-            ranges = {}
-
-            if x_length is not None:
-                x_start_id = center_id[0] - x_length // 2
-                x_end_id = x_start_id + x_length - 1
-                ranges["x_id_range"] = (x_start_id, x_end_id)
-
-            if y_length is not None:
-                y_start_id = center_id[1] - y_length // 2
-                y_end_id = y_start_id + y_length - 1
-                ranges["y_id_range"] = (y_start_id, y_end_id)
-
-            if z_length is not None:
-                z_start_id = center_id[2] - z_length // 2
-                z_end_id = z_start_id + z_length - 1
-                ranges["z_id_range"] = (z_start_id, z_end_id)
-
-            return material.crop_by_id_range(**ranges) if ranges else material
+            c = material.center_id if _center_id is None else np.array(_center_id)
+            sizes = [None, None, None] if _dimensions is None else list(_dimensions)
+            kwargs = {}
+            for i, (size, label) in enumerate(zip(sizes, _AXIS_LABELS)):
+                if size is not None:
+                    start = c[i] - size // 2
+                    kwargs[label] = (start, start + size - 1)
+            return material.crop_by_id(**kwargs) if kwargs else material
 
         return cls(crop)
 
     @classmethod
-    def from_ranges(cls, x_range=None, y_range=None, z_range=None):
-        """Extract region by coordinate ranges (min, max)"""
+    def from_crop(cls, x=None, y=None, z=None):
+        def crop(material):
+            return material.crop(x=x, y=y, z=z)
+
+        return cls(crop)
+
+    @classmethod
+    def from_crop_by_id(cls, x=None, y=None, z=None):
+        def crop(material):
+            return material.crop_by_id(x=x, y=y, z=z)
+
+        return cls(crop)
+
+    @classmethod
+    def from_fraction(cls, fractions=None, centered=True):
+        # fractions: a 3-element iterable [x_fraction, y_fraction, z_fraction].
+        # Each value in (0, 1] selects that fraction of the domain.
+        # Uses "round half up" so that 0.5 on an odd-dimensional axis
+        # produces a crop centered at center_id rather than one point off.
+        _fractions = [1.0, 1.0, 1.0] if fractions is None else list(fractions)
 
         def crop(material):
-            return material.crop_by_range(
-                x_range=x_range, y_range=y_range, z_range=z_range
+            dims = material.dimensions
+            counts = [
+                max(1, min(dims[i], int(dims[i] * _fractions[i] + 0.5)))
+                for i in range(3)
+            ]
+            starts = (
+                [(dims[i] - counts[i]) // 2 for i in range(3)]
+                if centered
+                else [0, 0, 0]
+            )
+            return material.crop_by_id(
+                x=(starts[0], starts[0] + counts[0] - 1),
+                y=(starts[1], starts[1] + counts[1] - 1),
+                z=(starts[2], starts[2] + counts[2] - 1),
             )
 
         return cls(crop)
 
     @classmethod
-    def from_ranges_by_id(cls, x_id_range=None, y_id_range=None, z_id_range=None):
-        """Extract region by index ranges (start, end) inclusive"""
+    def from_clip(cls, normal="z", value=0.0, keep="low"):
+        # Physical-coordinate counterpart to from_clip_by_id.
+        # Cuts at a physical coordinate value rather than a grid index.
+        _KEEP_HIGH = {"above", "positive", "high"}
+        _KEEP_LOW = {"below", "negative", "low"}
+        if keep not in _KEEP_HIGH | _KEEP_LOW:
+            raise ValueError(
+                f"keep must be one of {sorted(_KEEP_HIGH | _KEEP_LOW)}, got {keep!r}"
+            )
+
+        keep_high = keep in _KEEP_HIGH
+        label = _AXIS_LABELS[_normalize_axis(normal)]
 
         def crop(material):
-            return material.crop_by_id_range(
-                x_id_range=x_id_range, y_id_range=y_id_range, z_id_range=z_id_range
-            )
+            coord_range = (value, np.inf) if keep_high else (-np.inf, value)
+            return material.crop(**{label: coord_range})
 
         return cls(crop)
 
     @classmethod
-    def from_fraction_by_id(
-        cls, x_fraction=1.0, y_fraction=1.0, z_fraction=1.0, centered=True
-    ):
-        """Extract fraction of domain by indices, centered or from origin"""
-
-        def crop(material):
-            dimensions = material.dimensions
-
-            num_x_points = int(dimensions[0] * x_fraction)
-            num_y_points = int(dimensions[1] * y_fraction)
-            num_z_points = int(dimensions[2] * z_fraction)
-
-            if centered:
-                x_start = (dimensions[0] - num_x_points) // 2
-                y_start = (dimensions[1] - num_y_points) // 2
-                z_start = (dimensions[2] - num_z_points) // 2
-            else:
-                x_start = y_start = z_start = 0
-
-            return material.crop_by_id_range(
-                x_id_range=(x_start, x_start + num_x_points - 1),
-                y_id_range=(y_start, y_start + num_y_points - 1),
-                z_id_range=(z_start, z_start + num_z_points - 1),
+    def from_clip_by_id(cls, normal="z", index=0, keep="low"):
+        # `normal` specifies the axis perpendicular to the cutting plane.
+        # e.g. normal="z" cuts the xy-plane at the given z index.
+        #
+        # Synonyms accepted.
+        # "above" / "positive" / "high"  → keep indices >= index (the high-index side)
+        # "below" / "negative" / "low"   → keep indices <= index (the low-index side)
+        _KEEP_HIGH = {"above", "positive", "high"}
+        _KEEP_LOW = {"below", "negative", "low"}
+        if keep not in _KEEP_HIGH | _KEEP_LOW:
+            raise ValueError(
+                f"keep must be one of {sorted(_KEEP_HIGH | _KEEP_LOW)}, got {keep!r}"
             )
 
-        return cls(crop)
-
-    @classmethod
-    def from_clip_by_id(cls, axis="z", index=0, keep="above"):
-        """Clip material at orthogonal plane (remove everything on one side)."""
-        axis_map = {"x": "x_id_range", "y": "y_id_range", "z": "z_id_range"}
-        range_key = axis_map[axis.lower()]
+        keep_high = keep in _KEEP_HIGH
+        dim_index = _normalize_axis(normal)
+        label = _AXIS_LABELS[dim_index]
 
         def crop(material):
-            dimensions = material.dimensions
-            axis_index = {"x": 0, "y": 1, "z": 2}[axis.lower()]
-            max_index = dimensions[axis_index] - 1
-
-            if keep == "above":
-                id_range = (index, max_index)
-            elif keep == "below":
-                id_range = (0, index)
-            else:
-                raise ValueError(f"keep must be 'above' or 'below', got {keep}")
-
-            return material.crop_by_id_range(**{range_key: id_range})
+            max_index = material.dimensions[dim_index] - 1
+            id_range = (index, max_index) if keep_high else (0, index)
+            return material.crop_by_id(**{label: id_range})
 
         return cls(crop)
