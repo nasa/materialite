@@ -1953,14 +1953,13 @@ class Orientation:
         """
 
         rotation_vector = Vector(rotation_vector)
-
         angle = rotation_vector.norm
 
-        # Should probably handle zero rotation case here to avoid division by zero
-        if np.allclose(angle.components, 0.0):
-            return cls.identity()
+        # A bit hacky for now to avoid nans
+        safer_angle = angle + 1e-12
+        unit_axis = rotation_vector / safer_angle
 
-        K = rotation_vector.unit.cross_product_tensor
+        K = unit_axis.cross_product_tensor
 
         rotation = Order2Tensor.identity() + angle.sin * K + (1 - angle.cos) * K @ K
 
@@ -2101,6 +2100,14 @@ class Orientation:
     @property
     def trace(self):
         return Scalar(np.einsum("...ii -> ...", self.rotation_matrix), self.dims_str)
+
+    @property
+    def inverse(self):
+        return Orientation(np.swapaxes(self.rotation_matrix, -1, -2), self.dims_str)
+
+    @property
+    def inv(self):
+        return self.inverse
 
     def __repr__(self):
         dimensions = ", ".join([DIM_NAMES(i) for i in self.dims_str])
