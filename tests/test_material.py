@@ -715,6 +715,30 @@ def test_power_of_two_below():
     )
 
 
+def test_sample_from(small_material):
+    source = small_material.create_fields(
+        {"value": np.arange(small_material.num_points)}
+    )
+    target = Material(
+        dimensions=small_material.dimensions,
+        origin=small_material.origin,
+        spacing=small_material.spacing,
+    )
+    result = target.sample_from(source)
+    assert_array_equal(result.extract("value"), source.extract("value"))
+
+
+def test_sample_from_coarser_source():
+    source = Material(dimensions=[2, 2, 2]).create_fields({"value": np.arange(8)})
+    target = Material(dimensions=[3, 3, 3])
+    result = target.sample_from(source)
+    # Source value at (xs, ys, zs) = xs*4 + ys*2 + zs.
+    # Target coords {0,1,2} map to nearest source coords {0,1,1}, so the expected
+    # values repeat the edge entries for each axis that overshoots the source domain.
+    expected = np.array([0, 1, 1, 2, 3, 3, 2, 3, 3, 4, 5, 5, 6, 7, 7, 6, 7, 7, 4, 5, 5, 6, 7, 7, 6, 7, 7]) # fmt: skip
+    assert_array_equal(result.extract("value"), expected)
+
+
 def test_create_single_field(material):
     field = np.ones(16**3)
     name = "ones"
