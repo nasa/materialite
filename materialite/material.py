@@ -1470,6 +1470,65 @@ class Material:
         )
         return material
 
+    def translate(self, offset):
+        """
+        Translate the material by shifting all coordinates by an offset.
+
+        Parameters
+        ----------
+        offset : float or array-like
+            Translation vector [dx, dy, dz]. A scalar is applied uniformly
+            to all axes.
+
+        Returns
+        -------
+        Material
+            New material with shifted coordinates and origin.
+        """
+        offset = np.asarray(offset, dtype=float)
+        if offset.shape == ():
+            offset = np.full(3, float(offset))
+        material = self.copy()
+        material._origin = material._origin + offset
+        material.fields = material.fields.assign(
+            x=material.fields.x + offset[0],
+            y=material.fields.y + offset[1],
+            z=material.fields.z + offset[2],
+        )
+        return material
+
+    def scale(self, factor):
+        """
+        Scale the material domain relative to its origin.
+
+        The origin is held fixed; all other coordinates are scaled away from
+        it. Spacing and sizes are updated proportionally.
+
+        Parameters
+        ----------
+        factor : float or array-like
+            Scale factor(s). A scalar is applied uniformly to all axes;
+            a 3-element array scales each axis independently [sx, sy, sz].
+
+        Returns
+        -------
+        Material
+            New material with scaled coordinates, spacing, and sizes.
+        """
+        factor = np.asarray(factor, dtype=float)
+        if factor.shape == ():
+            factor = np.full(3, float(factor))
+        material = self.copy()
+        material._spacing = material._spacing * factor
+        material._sizes = material._sizes * factor
+        origin = material._origin
+        material.fields = material.fields.assign(
+            x=origin[0] + (material.fields.x - origin[0]) * factor[0],
+            y=origin[1] + (material.fields.y - origin[1]) * factor[1],
+            z=origin[2] + (material.fields.z - origin[2]) * factor[2],
+        )
+        return material
+
     def export_to_vtk(self, output="fields.vtk", labels=None):
         """
         Export material data to VTK format file.

@@ -1204,3 +1204,78 @@ def test_update_regional_field(small_material):
         expected_regional_field,
         check_dtype=False,
     )
+
+
+def test_translate(initialized_material):
+    offset = np.array([1.0, 2.0, 3.0])
+    translated = initialized_material.translate(offset)
+
+    assert_allclose(translated.origin, initialized_material.origin + offset)
+    assert_allclose(translated.spacing, initialized_material.spacing)
+    assert_allclose(translated.sizes, initialized_material.sizes)
+    assert_allclose(
+        translated.extract("x"), initialized_material.extract("x") + offset[0]
+    )
+    assert_allclose(
+        translated.extract("y"), initialized_material.extract("y") + offset[1]
+    )
+    assert_allclose(
+        translated.extract("z"), initialized_material.extract("z") + offset[2]
+    )
+
+
+def test_translate_scalar(initialized_material):
+    offset = 5.0
+    translated = initialized_material.translate(offset)
+
+    assert_allclose(translated.origin, initialized_material.origin + offset)
+    assert_allclose(translated.extract("x"), initialized_material.extract("x") + offset)
+    assert_allclose(translated.extract("y"), initialized_material.extract("y") + offset)
+    assert_allclose(translated.extract("z"), initialized_material.extract("z") + offset)
+
+
+def test_translate_preserves_non_coordinate_fields(small_material):
+    material = small_material.create_fields(
+        {"phase": np.arange(small_material.num_points)}
+    )
+    translated = material.translate([1.0, 2.0, 3.0])
+    assert_array_equal(translated.extract("phase"), material.extract("phase"))
+
+
+def test_scale(initialized_material):
+    factor = np.array([2.0, 3.0, 4.0])
+    scaled = initialized_material.scale(factor)
+
+    assert_allclose(scaled.origin, initialized_material.origin)
+    assert_allclose(scaled.spacing, initialized_material.spacing * factor)
+    assert_allclose(scaled.sizes, initialized_material.sizes * factor)
+    origin = initialized_material.origin
+    assert_allclose(
+        scaled.extract("x"),
+        origin[0] + (initialized_material.extract("x") - origin[0]) * factor[0],
+    )
+    assert_allclose(
+        scaled.extract("y"),
+        origin[1] + (initialized_material.extract("y") - origin[1]) * factor[1],
+    )
+    assert_allclose(
+        scaled.extract("z"),
+        origin[2] + (initialized_material.extract("z") - origin[2]) * factor[2],
+    )
+
+
+def test_scale_scalar(small_material):
+    factor = 2.0
+    scaled = small_material.scale(factor)
+
+    assert_allclose(scaled.origin, small_material.origin)
+    assert_allclose(scaled.spacing, small_material.spacing * factor)
+    assert_allclose(scaled.sizes, small_material.sizes * factor)
+
+
+def test_scale_preserves_non_coordinate_fields(small_material):
+    material = small_material.create_fields(
+        {"phase": np.arange(small_material.num_points)}
+    )
+    scaled = material.scale(2.0)
+    assert_array_equal(scaled.extract("phase"), material.extract("phase"))
