@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest  # Includes: tmp_path
+from materialite.util import power_of_two_below
+from numpy.testing import assert_allclose, assert_array_equal
+from pandas.testing import assert_frame_equal
+
 from materialite import (
     Box,
     Material,
@@ -11,9 +15,6 @@ from materialite import (
     Vector,
     import_dream3d,
 )
-from materialite.util import power_of_two_below
-from numpy.testing import assert_allclose, assert_array_equal
-from pandas.testing import assert_frame_equal
 
 
 @pytest.fixture
@@ -183,14 +184,14 @@ def test_center(material, small_material, initialized_material):
     assert_array_equal(initialized_material.center, initialized_center)
 
 
-def test_far_corner(material, small_material, initialized_material):
-    default_far = material.origin + material.sizes
-    small_far = small_material.origin + small_material.sizes
-    initialized_far = initialized_material.origin + initialized_material.sizes
+def test_max_corner(material, small_material, initialized_material):
+    default_max = material.origin + material.sizes
+    small_max = small_material.origin + small_material.sizes
+    initialized_max = initialized_material.origin + initialized_material.sizes
 
-    assert_array_equal(material.far_corner, default_far)
-    assert_array_equal(small_material.far_corner, small_far)
-    assert_array_equal(initialized_material.far_corner, initialized_far)
+    assert_array_equal(material.max_corner, default_max)
+    assert_array_equal(small_material.max_corner, small_max)
+    assert_array_equal(initialized_material.max_corner, initialized_max)
 
 
 def test_corners(material, small_material, initialized_material):
@@ -205,10 +206,10 @@ def test_corners(material, small_material, initialized_material):
         initialized_material.corners[0, 0, 0], initialized_material.origin
     )
 
-    assert_array_equal(material.corners[1, 1, 1], material.far_corner)
-    assert_array_equal(small_material.corners[1, 1, 1], small_material.far_corner)
+    assert_array_equal(material.corners[1, 1, 1], material.max_corner)
+    assert_array_equal(small_material.corners[1, 1, 1], small_material.max_corner)
     assert_array_equal(
-        initialized_material.corners[1, 1, 1], initialized_material.far_corner
+        initialized_material.corners[1, 1, 1], initialized_material.max_corner
     )
 
     expected_100 = material.origin + [material.sizes[0], 0, 0]
@@ -301,6 +302,70 @@ def test_init_material_one_xyz():
     assert_frame_equal(material.fields, expected_fields, check_dtype=False)
 
 
+def test_from_image_default_dimensions():
+    # 2 rows × 3 cols image; convention='image' transposes to (3, 2), giving dims=[3, 2, 1]
+    image = np.ones((2, 3))
+    material = Material.from_image(image)
+    assert_array_equal(material.dimensions, [3, 2, 1])
+    assert_array_equal(material.spacing, [1.0, 1.0, 1.0])
+    assert "intensity" in material.fields.columns
+
+
+def test_from_image_cartesian_convention_data():
+    # With convention='cartesian', no transform is applied; axis 0 = x, axis 1 = y
+    image = np.array([[1, 2], [3, 4], [5, 6]])  # shape (3, 2) → dims=[3, 2, 1]
+    material = Material.from_image(image, convention="cartesian")
+    assert_array_equal(material.dimensions, [3, 2, 1])
+    assert_array_equal(material.extract("intensity"), image.flatten())
+
+
+def test_from_image_image_convention_data():
+    # Row 0 is the top of the image (high y); after transform it maps to y=1 (max)
+    image = np.array([[0, 1, 2], [3, 4, 5]])  # shape (2 rows, 3 cols)
+    material = Material.from_image(image)  # convention='image'
+    # After transpose + y-flip: (x=0,y=0)→3, (x=0,y=1)→0, (x=1,y=0)→4, ...
+    expected = np.array([3, 0, 4, 1, 5, 2])
+    assert_array_equal(material.extract("intensity"), expected)
+
+
+def test_from_image_custom_label_and_spacing():
+    image = np.ones((4, 5))
+    material = Material.from_image(image, label="phase", spacing=[2.0, 3.0])
+    assert "phase" in material.fields.columns
+    # convention='image' transposes (4,5)→(5,4): x=5, y=4; spacing matches
+    assert_array_equal(material.spacing[:2], [2.0, 3.0])
+
+
+def test_from_image_extrude():
+    image = np.ones((3, 4))
+    material = Material.from_image(image, extrude=5, convention="cartesian")
+    # cartesian: n0=3→x, n1=4→y, extrude=5→z
+    assert_array_equal(material.dimensions, [3, 4, 5])
+    assert_array_equal(material.extract("intensity"), np.ones(3 * 4 * 5))
+
+
+def test_from_image_non_default_plane():
+    image = np.ones((3, 4))
+    material = Material.from_image(image, plane="xz", convention="cartesian")
+    # n0=3→x, n1=4→z, extrude=1→y; dims=[3, 1, 4]
+    assert_array_equal(material.dimensions, [3, 1, 4])
+
+
+def test_from_image_invalid_convention():
+    with pytest.raises(ValueError):
+        Material.from_image(np.ones((3, 3)), convention="bad")
+
+
+def test_from_image_invalid_plane():
+    with pytest.raises(ValueError):
+        Material.from_image(np.ones((3, 3)), plane="ab")
+
+
+def test_from_image_non_2d_raises():
+    with pytest.raises(ValueError):
+        Material.from_image(np.ones((3, 3, 3)))
+
+
 def test_initialize_sphere():
     sphere = Sphere(radius=1, centroid=[2, 2, 2])
     assert sphere.radius.components == 1
@@ -357,7 +422,7 @@ def test_insert_feature():
 
 def test_insert_multiple_spheres(small_material):
     spheres = Sphere(
-        radius=[0.8, 0.8], centroid=[small_material.origin, small_material.far_corner]
+        radius=[0.8, 0.8], centroid=[small_material.origin, small_material.max_corner]
     )
 
     material = small_material.create_fields({"phase": 0}).insert_feature(

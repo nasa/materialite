@@ -66,41 +66,116 @@ class Material:
         self._regional_fields = dict()
 
     @classmethod
-    def from_image(cls, image, spacing=1, label="intensity", flip_y=True):
+    def from_image(
+        cls,
+        image,
+        spacing=1,
+        label="intensity",
+        convention="image",
+        plane="xy",
+        extrude=1,
+    ):
         """
-        Create a Material from an image by adding a singleton z-dimension.
+        Create a Material from a 2D image.
+
         Parameters
         ----------
         image : 2D array-like
             Input image data.
         spacing : float or list, default 1
-            Spacing in x and y directions.
+            Spacing between points in the two non-extruded directions. Can be a
+            scalar (uniform) or a list of two values matching the ``plane`` axes
+            in order.
         label : str, default 'intensity'
             Label for the image intensity field.
-        flip_y : bool, default False
-            Whether to flip the image in the y-direction.
+        convention : {'image', 'plot', 'cartesian'}, default 'image'
+            The array convention of the input, combining axis ordering and origin:
+
+            - ``'image'``: Row-column ordering, origin at top-left. Used by PIL,
+              OpenCV, and ``matplotlib.imread``. Array axis 0 is rows (decreasing
+              y), axis 1 is columns (increasing x).
+            - ``'plot'``: Row-column ordering, origin at bottom-left. Matches
+              ``matplotlib.imshow(origin='lower')``. Array axis 0 is rows
+              (increasing y), axis 1 is columns (increasing x).
+            - ``'cartesian'``: Array axes already match the declared ``plane``
+              axes in order, origin at bottom-left. No transformation is applied.
+              Use this when the array is already in the Material's coordinate system.
+        plane : str, default 'xy'
+            The material plane the image represents, as two distinct axes from
+            ``{'x', 'y', 'z'}`` (e.g. ``'xy'``, ``'zx'``, ``'yz'``). The first
+            character names the material axis for the image's first axis after
+            convention transforms; the second names the axis for the image's second
+            axis. The remaining axis is the extrusion direction.
+        extrude : int, default 1
+            Number of layers to extrude the image along the axis normal to
+            ``plane``. ``extrude=1`` produces a single-layer (2D) material.
+            Values greater than 1 tile the image uniformly to create a 3D volume.
+
         Returns
         -------
         Material
-            New Material instance with singleton z-dimension.
-        """
+            New Material instance.
 
-        if isinstance(spacing, (int, float)):
-            spacing = [spacing, spacing]
-        elif len(spacing) == 2:
-            spacing = [spacing[0], spacing[1], 1]
+        """
+        convention = convention.lower()
+        plane = plane.lower()
+
+        if convention not in ("image", "plot", "cartesian"):
+            raise ValueError(
+                f"convention must be one of ('image', 'plot', 'cartesian'), got '{convention}'"
+            )
+        if (
+            len(plane) != 2
+            or not all(c in "xyz" for c in plane)
+            or plane[0] == plane[1]
+        ):
+            raise ValueError(
+                f"plane must be two distinct axes from 'x', 'y', 'z' (e.g. 'xy', 'zx'), got '{plane}'"
+            )
+        if not isinstance(extrude, (int, np.integer)) or extrude < 1:
+            raise ValueError(f"extrude must be a positive integer, got {extrude}")
 
         image = np.array(image)
+        if image.ndim != 2:
+            raise ValueError(f"image must be 2D, got shape {image.shape}")
 
-        # Images typically have a row-column format, so change to x-y
-        if flip_y:
-            image = np.flipud(image).T
+        # Normalize spacing to s0, s1
+        if np.isscalar(spacing):
+            s0 = s1 = float(spacing)
+        else:
+            spacing = list(spacing)
+            if len(spacing) != 2:
+                raise ValueError(
+                    f"spacing must be a scalar or list of 2 values, got {len(spacing)}"
+                )
+            s0, s1 = spacing
 
-        return cls(
-            dimensions=[image.shape[0], image.shape[1], 1],
-            spacing=[spacing[0], spacing[1], 1],
-            fields={label: image.flatten()},
-        )
+        # Transform to canonical form: axis 0 = plane[0], axis 1 = plane[1], origin bottom-left
+        if convention == "image":
+            image = np.flipud(image).T  # flip row origin, then swap axes
+        elif convention == "plot":
+            image = image.T  # swap axes only
+        # 'cartesian': already correct
+
+        n0, n1 = image.shape
+
+        # Map plane characters to material axis indices (x=0, y=1, z=2)
+        axis_map = {"x": 0, "y": 1, "z": 2}
+        a, b = axis_map[plane[0]], axis_map[plane[1]]
+        c = 3 - a - b  # extrude axis (0+1+2=3)
+
+        # Assemble dimensions and spacing in (x, y, z) order
+        dimensions = [0, 0, 0]
+        dimensions[a], dimensions[b], dimensions[c] = n0, n1, extrude
+
+        spacing_3D = [1.0, 1.0, 1.0]
+        spacing_3D[a], spacing_3D[b] = s0, s1
+
+        # Tile along extrude axis then permute source (a, b, c) → material (x, y, z)
+        img_3d = np.tile(image[:, :, np.newaxis], (1, 1, extrude))
+        data = img_3d.transpose(np.argsort([a, b, c])).flatten()
+
+        return cls(dimensions=dimensions, spacing=spacing_3D, fields={label: data})
 
     @property
     def origin(self):
@@ -133,8 +208,13 @@ class Material:
         return (self.dimensions - 1) // 2
 
     @property
-    def far_corner(self):
-        """Far corner of the domain."""
+    def min_corner(self):
+        """Min corner of the domain."""
+        return self.origin.copy()
+
+    @property
+    def max_corner(self):
+        """Max corner of the domain."""
         return self.origin + self.sizes
 
     @property
