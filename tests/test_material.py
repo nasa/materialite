@@ -1279,3 +1279,21 @@ def test_scale_preserves_non_coordinate_fields(small_material):
     )
     scaled = material.scale(2.0)
     assert_array_equal(scaled.extract("phase"), material.extract("phase"))
+
+
+def test_apply_no_return_gives_raw_result(small_material):
+    result = small_material.apply(np.sum, "x", format_=None)
+    assert result == small_material.extract("x").sum()
+
+
+def test_apply_creates_field(small_material):
+    material = small_material.apply(lambda arr: arr * 2, "x", return_="x2", format_=None)
+    assert_allclose(material.extract("x2"), small_material.extract("x") * 2)
+
+
+def test_apply_auto_detects_scipy_ndimage(small_material):
+    from scipy.ndimage import uniform_filter
+
+    material = small_material.apply(uniform_filter, "x", return_="x_smooth")
+    assert "x_smooth" in material.fields.columns
+    assert len(material.extract("x_smooth")) == small_material.num_points

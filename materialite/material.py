@@ -1149,7 +1149,7 @@ class Material:
 
         return fig, ax
 
-    def apply(self, func, *func_args, out=None, adapter="3D", **func_kwargs):
+    def apply(self, func, *func_args, return_=None, format_="auto", **func_kwargs):
         """
         Apply function with automatic field extraction and optional field creation.
 
@@ -1159,13 +1159,15 @@ class Material:
             Function to apply to the extracted fields
         *func_args : str or any
             Field labels (str) to extract or raw values to pass to function
-        out : str or iterable of str, optional
+        return_ : str or iterable of str, optional
             If provided, create field(s) with these labels containing the result(s)
-        adapter : str or None, optional
-            How to reshape fields before/after function application:
-            - None: No reshaping, pass flat arrays (default)
+        format_ : str or None, optional
+            How to format fields before/after function application:
+            - 'auto': Auto-detect from the function's module (default). Uses
+              'image' for skimage functions, '3d' for scipy.ndimage functions,
+              and no formatting otherwise.
+            - None: No formatting, pass flat arrays
             - '3d': Reshape to (D, H, W) for volumetric operations
-            - 'tomopy': Reshape to (1, H, W) for tomopy-style operations
             - 'image': Reshape to (H, W) for 2D image operations
         **func_kwargs : str or any
             Field labels (str) to extract or raw values to pass as keyword arguments
@@ -1173,40 +1175,34 @@ class Material:
         Returns:
         --------
         Material or result
-            New Material with added field(s) if `out` is specified, otherwise the raw result
+            New Material with added field(s) if `return_` is specified, otherwise the raw result
 
-        Examples:
-        ---------
-        >>> # 3D volumetric smoothing
-        >>> mat = material.apply(filters.gaussian, 'attenuation', sigma=2.0,
-        ...                      adapter='3d', out='smooth')
-
-        >>> # 2D image processing on slice
-        >>> mat = slice_material.apply(filters.median, 'attenuation',
-        ...                            adapter='image', out='filtered')
-
-        >>> # TomoPy operations
-        >>> mat = slice_material.apply(tomopy.remove_ring, 'attenuation',
-        ...                            adapter='tomopy', out='clean')
         """
 
-        # Map string shortcuts to adapter instances
-        adapter_map = {
-            None: NoReshape(),
-            "3d": Reshape3D(),
-            "3D": Reshape3D(),
-            "tomopy": ReshapeTomopy(),
-            "image": ReshapeImage(),
+        # Map string shortcuts to formatter instances
+        format_map = {
+            None: NoFormatter(),
+            "3d": Formatter3D(),
+            "3D": Formatter3D(),
+            "image": ImageFormatter(),
         }
 
-        # Validate and get adapter instance
-        if adapter not in adapter_map:
+        # Resolve auto-detection before validation
+        if format_ == "auto":
+            module = getattr(func, "__module__", "") or ""
+            if module.startswith("skimage"):
+                formatter = ImageFormatter()
+            elif module.startswith("scipy.ndimage"):
+                formatter = Formatter3D()
+            else:
+                formatter = NoFormatter()
+        elif format_ not in format_map:
             raise ValueError(
-                f"Unknown adapter '{adapter}'. "
-                f"Valid options: {list(adapter_map.keys())}"
+                f"Unknown format '{format_}'. "
+                f"Valid options: {list(format_map.keys())}"
             )
-
-        adapter_obj = adapter_map[adapter]
+        else:
+            formatter = format_map[format_]
         field_labels = self.get_fields().columns
 
         # Extract fields and track which args/kwargs are fields vs raw values
@@ -1229,13 +1225,13 @@ class Material:
             for k, v in func_kwargs.items()
         }
 
-        # Apply adapter to reshape only the extracted fields (not raw values)
+        # Apply formatter to format only the extracted fields (not raw values)
         args = [
-            adapter_obj.reshape_field(val, self.dimensions) if is_field else val
+            formatter.format_field(val, self.dimensions) if is_field else val
             for val, is_field in extracted_args
         ]
         kwargs = {
-            k: adapter_obj.reshape_field(val, self.dimensions) if is_field else val
+            k: formatter.format_field(val, self.dimensions) if is_field else val
             for k, (val, is_field) in extracted_kwargs.items()
         }
 
@@ -1243,33 +1239,33 @@ class Material:
         result = func(*args, **kwargs)
 
         # Early return if no output field specified
-        if out is None:
+        if return_ is None:
             return result
 
-        # Reshape result back to flat arrays for Material storage
+        # Format result back to flat arrays for Material storage
         # Handle both single outputs and tuple/list outputs
         if isinstance(result, tuple):
             result = tuple(
-                adapter_obj.reshape_result(r) if isinstance(r, np.ndarray) else r
+                formatter.format_result(r) if isinstance(r, np.ndarray) else r
                 for r in result
             )
         elif isinstance(result, np.ndarray):
-            result = adapter_obj.reshape_result(result)
+            result = formatter.format_result(result)
 
-        # Normalize out to list for uniform handling
-        out_labels = [out] if isinstance(out, str) else list(out)
+        # Normalize return_ to list for uniform handling
+        return_labels = [return_] if isinstance(return_, str) else list(return_)
 
         # Create fields dictionary
-        if len(out_labels) == 1:
+        if len(return_labels) == 1:
             # Single output: assign entire result to the field
-            fields = {out_labels[0]: result}
+            fields = {return_labels[0]: result}
         else:
             # Multiple outputs: unpack result and match to labels
             try:
-                fields = dict(zip(out_labels, result))
+                fields = dict(zip(return_labels, result))
             except TypeError as e:
                 raise ValueError(
-                    f"Cannot unpack result into {len(out_labels)} fields. "
+                    f"Cannot unpack result into {len(return_labels)} fields. "
                     f"Result must be iterable with matching length. "
                     f"Error: {e}"
                 )
@@ -1767,9 +1763,9 @@ class Box(Feature):
         return np.logical_and(np.all(above_min, axis=-1), np.all(below_max, axis=-1))
 
 
-class ReshapeAdapter(ABC):
+class FieldFormatter(ABC):
     """
-    Abstract base class for field reshaping strategies.
+    Abstract base class for field formatting strategies.
 
     Strategies define how to transform flat C-ordered field arrays into
     formats expected by different processing libraries, and how to convert
@@ -1777,28 +1773,28 @@ class ReshapeAdapter(ABC):
     """
 
     @abstractmethod
-    def reshape_field(self, field, dimensions):
+    def format_field(self, field, dimensions):
         """
-        Reshape a flat field array to the required format.
+        Format a flat field array to the required shape.
 
         Parameters
         ----------
         field : ndarray
-            Flat 1D array to reshape
+            Flat 1D array to format
         dimensions : ndarray
             Material dimensions (nx, ny, nz)
 
         Returns
         -------
         ndarray
-            Reshaped array in the format needed by the target function
+            Formatted array in the shape needed by the target function
         """
         pass
 
     @abstractmethod
-    def reshape_result(self, result):
+    def format_result(self, result):
         """
-        Reshape function result back to flat 1D array.
+        Format function result back to flat 1D array.
 
         Parameters
         ----------
@@ -1813,67 +1809,46 @@ class ReshapeAdapter(ABC):
         pass
 
 
-class NoReshape(ReshapeAdapter):
+class NoFormatter(FieldFormatter):
     """Pass fields as flat arrays (default behavior)."""
 
-    def reshape_field(self, field, dimensions):
+    def format_field(self, field, dimensions):
         return field
 
-    def reshape_result(self, result):
+    def format_result(self, result):
         return result
 
 
-class Reshape3D(ReshapeAdapter):
+class Formatter3D(FieldFormatter):
     """
-    Reshape to full 3D volume (D, H, W).
+    Format to full 3D volume (nx, ny, nz).
 
     Used for volumetric operations on 3D data (e.g., scipy.ndimage,
     skimage filters on volumes).
     """
 
-    def reshape_field(self, field, dimensions):
+    def format_field(self, field, dimensions):
         return field.reshape(dimensions)
 
-    def reshape_result(self, result):
+    def format_result(self, result):
         return result.ravel()
 
 
-class ReshapeTomopy(ReshapeAdapter):
+class ImageFormatter(FieldFormatter):
     """
-    Reshape to tomopy-style (1, H, W) for single-layer operations.
-
-    TomoPy expects a batch dimension even for single slices. Requires
-    exactly one singleton dimension in the Material.
-    """
-
-    def reshape_field(self, field, dimensions):
-        singleton_dims = np.where(dimensions == 1)[0]
-        if len(singleton_dims) != 1:
-            raise ValueError(
-                f"ReshapeTomopy requires one singleton dimension, got {dimensions}"
-            )
-        squeezed = field.reshape(dimensions).squeeze()
-        return squeezed[np.newaxis, :, :]  # Add batch dimension
-
-    def reshape_result(self, result):
-        return result.squeeze().ravel()
-
-
-class ReshapeImage(ReshapeAdapter):
-    """
-    Reshape to 2D image (H, W) for skimage-style operations.
+    Format to 2D image (H, W) for skimage-style operations.
 
     Most skimage functions expect pure 2D arrays. Requires exactly one
     singleton dimension in the Material.
     """
 
-    def reshape_field(self, field, dimensions):
+    def format_field(self, field, dimensions):
         singleton_dims = np.where(dimensions == 1)[0]
         if len(singleton_dims) != 1:
             raise ValueError(
-                f"ReshapeImage requires one singleton dimension, got {dimensions}"
+                f"ImageFormatter requires one singleton dimension, got {dimensions}"
             )
         return field.reshape(dimensions).squeeze()
 
-    def reshape_result(self, result):
+    def format_result(self, result):
         return result.ravel()
