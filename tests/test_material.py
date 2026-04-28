@@ -1287,7 +1287,9 @@ def test_apply_no_return_gives_raw_result(small_material):
 
 
 def test_apply_creates_field(small_material):
-    material = small_material.apply(lambda arr: arr * 2, "x", return_="x2", format_=None)
+    material = small_material.apply(
+        lambda arr: arr * 2, "x", return_="x2", format_=None
+    )
     assert_allclose(material.extract("x2"), small_material.extract("x") * 2)
 
 
@@ -1314,7 +1316,9 @@ def test_apply_uses_num_points_in_function(small_material):
     material = small_material.apply(
         random_field, "num_points", return_="sequential", format_=None
     )
-    assert_array_equal(material.extract("sequential"), np.arange(small_material.num_points))
+    assert_array_equal(
+        material.extract("sequential"), np.arange(small_material.num_points)
+    )
 
 
 def test_apply_mixes_fields_and_attributes(small_material):
@@ -1323,7 +1327,9 @@ def test_apply_mixes_fields_and_attributes(small_material):
     def scale_by_size(field, num_pts):
         return field * num_pts
 
-    material = small_material.create_fields({"value": np.ones(small_material.num_points)})
+    material = small_material.create_fields(
+        {"value": np.ones(small_material.num_points)}
+    )
     result = material.apply(
         scale_by_size, "value", "num_points", return_="scaled", format_=None
     )
@@ -1333,7 +1339,9 @@ def test_apply_mixes_fields_and_attributes(small_material):
 def test_apply_fields_take_precedence_over_attributes(small_material):
     """Test that field names take precedence over attribute names."""
     # Create a field named 'spacing' which shadows the spacing attribute
-    material = small_material.create_fields({"spacing": np.arange(small_material.num_points)})
+    material = small_material.create_fields(
+        {"spacing": np.arange(small_material.num_points)}
+    )
 
     result = material.apply(lambda s: s, "spacing", format_=None)
     # Should extract the field, not the attribute

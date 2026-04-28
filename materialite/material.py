@@ -1223,9 +1223,7 @@ class Material:
 
         # Extract fields/attributes and track which args/kwargs need formatting
         # Format: each becomes (value, needs_formatting_boolean)
-        extracted_args = [
-            self._resolve_arg(arg, field_labels) for arg in func_args
-        ]
+        extracted_args = [self._resolve_arg(arg, field_labels) for arg in func_args]
 
         extracted_kwargs = {
             k: self._resolve_arg(v, field_labels) for k, v in func_kwargs.items()
