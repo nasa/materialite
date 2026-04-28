@@ -23,7 +23,7 @@ import scipy.sparse.linalg as sp
 from materialite.models import Model
 from materialite.models.small_strain_fft import Multiphase
 from materialite.tensor import Order2SymmetricTensor, Order4SymmetricTensor
-from numpy.fft import fftfreq, fftn, ifftn
+from numpy.fft import fftfreq, rfftfreq, rfftn, irfftn
 
 
 class SmallStrainFFT(Model):
@@ -58,6 +58,7 @@ class SmallStrainFFT(Model):
         self._dimensions = None
         self._num_points = None
         self._projection = None
+        self._G_type = None
 
     def run(
         self,
@@ -70,7 +71,9 @@ class SmallStrainFFT(Model):
         strain_correction_tolerance=1.0e-2,
         linear_solver_tolerance=1.0e-5,
         postprocessor=None,
+        G_type="corners",
     ):
+        self._G_type = G_type
         self._sizes = material.sizes
         self._dimensions = material.dimensions
         self._num_points = material.num_points
@@ -334,41 +337,8 @@ class SmallStrainFFT(Model):
         return fluctuation_strain
 
     def _get_projection_operator(self):
-        Nx, Ny, Nz = self._dimensions
-        qx = fftfreq(Nx)
-        qy = fftfreq(Ny)
-        qz = fftfreq(Nz)
-        frequencies = np.array(np.meshgrid(qx, qy, qz, indexing="ij")) * 2 * np.pi
-        rotated_frequencies = np.zeros_like(frequencies)
-        rotated_frequencies[0, ...] = (
-            np.sin(frequencies[0, ...] / 2)
-            * np.cos(frequencies[1, ...] / 2)
-            * np.cos(frequencies[2, ...] / 2)
-        )
-        rotated_frequencies[1, ...] = (
-            np.sin(frequencies[1, ...] / 2)
-            * np.cos(frequencies[0, ...] / 2)
-            * np.cos(frequencies[2, ...] / 2)
-        )
-        rotated_frequencies[2, ...] = (
-            np.sin(frequencies[2, ...] / 2)
-            * np.cos(frequencies[0, ...] / 2)
-            * np.cos(frequencies[1, ...] / 2)
-        )
-        rotated_frequency_norms = np.linalg.norm(rotated_frequencies, axis=0)
-        normalized_rotated_frequencies = np.divide(
-            rotated_frequencies,
-            rotated_frequency_norms,
-            out=np.zeros_like(rotated_frequencies),
-            where=rotated_frequency_norms != 0,
-        )
-        k = normalized_rotated_frequencies
-        if Nx % 2 == 0:
-            k[:, Nx // 2, :, :] = 0.0
-        if Ny % 2 == 0:
-            k[:, :, Ny // 2, :] = 0.0
-        if Nz % 2 == 0:
-            k[:, :, :, Nz // 2] = 0.0
+        k = self._frequencies()
+        freq_points = k.shape[1:]
         A = np.einsum("im, jxyz, lxyz -> xyzijlm", np.eye(3), k, k, optimize=True)
         B = np.einsum("ixyz, jxyz, lxyz, mxyz -> xyzijlm", k, k, k, k, optimize=True)
         Ghat4 = (
@@ -382,14 +352,133 @@ class SmallStrainFFT(Model):
             - B
         )
         tensor = Order4SymmetricTensor.from_cartesian(
-            Ghat4.reshape((self._num_points, 3, 3, 3, 3)), "p"
+            Ghat4.reshape((np.prod(freq_points), 3, 3, 3, 3)), "p"
         )
         if not np.array_equal(self.load_schedule.stress_mask, np.zeros(6)):
             stress_bc = np.zeros((6, 6))
             indices = np.nonzero(self.load_schedule.stress_mask)[0]
             stress_bc[indices, indices] = 1
             tensor[0] = Order4SymmetricTensor(stress_bc)
-        return tensor.components.reshape((*self._dimensions, 6, 6))
+        return tensor.components.reshape((*freq_points, 6, 6))
+
+    def _frequencies(self):
+        Nx, Ny, Nz = self._dimensions
+        qx = fftfreq(Nx)
+        qy = fftfreq(Ny)
+        qz = rfftfreq(Nz)
+        if Nz % 2 == 0:
+            qz[-1] = -qz[-1]
+        frequencies = np.array(np.meshgrid(qx, qy, qz, indexing="ij")) * 2 * np.pi
+        new_frequencies = np.zeros_like(frequencies)
+        q0 = frequencies[0, ...]
+        q1 = frequencies[1, ...]
+        q2 = frequencies[2, ...]
+        if self._G_type == "continuous":
+            new_frequencies = frequencies
+        elif self._G_type == "corners":
+            c0 = np.cos(q0 / 2)
+            c1 = np.cos(q1 / 2)
+            c2 = np.cos(q2 / 2)
+            new_frequencies[0, ...] = 2 * np.sin(q0 / 2) * c1 * c2
+            new_frequencies[1, ...] = 2 * np.sin(q1 / 2) * c0 * c2
+            new_frequencies[2, ...] = 2 * np.sin(q2 / 2) * c0 * c1
+        elif self._G_type == "edges":
+            c0 = np.cos(q0 / 2)
+            c1 = np.cos(q1 / 2)
+            c2 = np.cos(q2 / 2)
+            new_frequencies[0, ...] = np.sin(q0 / 2) * (c1 + c2)
+            new_frequencies[1, ...] = np.sin(q1 / 2) * (c0 + c2)
+            new_frequencies[2, ...] = np.sin(q2 / 2) * (c0 + c1)
+        elif self._G_type == "edges_corners":
+            # pseudoinverse -> w = 0.6
+            w = 0.1
+            c0 = np.cos(q0 / 2)
+            c1 = np.cos(q1 / 2)
+            c2 = np.cos(q2 / 2)
+            new_frequencies[0, ...] = np.sin(q0 / 2) * (
+                2 * (1 - w) * c1 * c2 + w * (c1 + c2)
+            )
+            new_frequencies[1, ...] = np.sin(q1 / 2) * (
+                2 * (1 - w) * c0 * c2 + w * (c0 + c2)
+            )
+            new_frequencies[2, ...] = np.sin(q2 / 2) * (
+                2 * (1 - w) * c0 * c1 + w * (c0 + c1)
+            )
+        elif self._G_type == "centers_edges_corners":
+            wc = 0.25
+            we = 0.25
+            wx = 1 - wc - we
+            c0 = np.cos(q0 / 2)
+            c1 = np.cos(q1 / 2)
+            c2 = np.cos(q2 / 2)
+            new_frequencies[0, ...] = np.sin(q0 / 2) * (
+                2 * wx * c1 * c2 + we * (c1 + c2)
+            ) + wc * np.sin(q0)
+            new_frequencies[1, ...] = np.sin(q1 / 2) * (
+                2 * wx * c0 * c2 + we * (c0 + c2)
+            ) + wc * np.sin(q1)
+            new_frequencies[2, ...] = np.sin(q2 / 2) * (
+                2 * wx * c0 * c1 + we * (c0 + c1)
+            ) + wc * np.sin(q2)
+        elif self._G_type == "centers":
+            new_frequencies[0, ...] = np.sin(q0)
+            new_frequencies[1, ...] = np.sin(q1)
+            new_frequencies[2, ...] = np.sin(q2)
+        elif self._G_type == "centers_corners":
+            w = 0.1
+            c0 = np.cos(q0 / 2)
+            c1 = np.cos(q1 / 2)
+            c2 = np.cos(q2 / 2)
+            new_frequencies[0, ...] = (
+                w * np.sin(q0) + 2 * (1 - w) * np.sin(q0 / 2) * c1 * c2
+            )
+            new_frequencies[1, ...] = (
+                w * np.sin(q1) + 2 * (1 - w) * np.sin(q1 / 2) * c0 * c2
+            )
+            new_frequencies[2, ...] = (
+                w * np.sin(q2) + 2 * (1 - w) * np.sin(q2 / 2) * c0 * c1
+            )
+        elif self._G_type == "cont_corners":
+            w = 0.1
+            c0 = np.cos(q0 / 2)
+            c1 = np.cos(q1 / 2)
+            c2 = np.cos(q2 / 2)
+            new_frequencies[0, ...] = np.sin(q0 / 2) * (2 * (1 - w) * c1 * c2) + w * q0
+            new_frequencies[1, ...] = np.sin(q1 / 2) * (2 * (1 - w) * c0 * c2) + w * q1
+            new_frequencies[2, ...] = np.sin(q2 / 2) * (2 * (1 - w) * c0 * c1) + w * q2
+        elif self._G_type == "corners_fourth_order":
+            c00 = np.cos(q0 / 2)
+            c10 = np.cos(q1 / 2)
+            c20 = np.cos(q2 / 2)
+            c01 = np.cos(q0)
+            c11 = np.cos(q1)
+            c21 = np.cos(q2)
+            new_frequencies[0, ...] = (
+                1 / 3 * (8 * np.sin(q0 / 2) * c10 * c20 - np.sin(q0) * c11 * c21)
+            )
+            new_frequencies[1, ...] = (
+                1 / 3 * (8 * np.sin(q1 / 2) * c00 * c20 - np.sin(q1) * c01 * c21)
+            )
+            new_frequencies[2, ...] = (
+                1 / 3 * (8 * np.sin(q2 / 2) * c00 * c10 - np.sin(q2) * c01 * c11)
+            )
+        else:
+            raise ValueError(f"invalid G_type: {self._G_type}")
+        new_frequency_norms = np.linalg.norm(new_frequencies, axis=0)
+        normalized_new_frequencies = np.divide(
+            new_frequencies,
+            new_frequency_norms,
+            out=np.zeros_like(new_frequencies),
+            where=new_frequency_norms != 0,
+        )
+        k = normalized_new_frequencies
+        if Nx % 2 == 0:
+            k[:, Nx // 2, :, :] = 0.0
+        if Ny % 2 == 0:
+            k[:, :, Ny // 2, :] = 0.0
+        if Nz % 2 == 0:
+            k[:, :, :, -1] = 0.0
+        return k
 
     def _left_hand_side(self, deps, d_sigma_d_epsilon):
         stress_guess = d_sigma_d_epsilon @ Order2SymmetricTensor(
@@ -399,11 +488,11 @@ class SmallStrainFFT(Model):
 
     def _apply_projection_tensor(self, tensor):
         tensor_grid = tensor.components.reshape((*self._dimensions, 6))
-        fourier_tensor = fftn(tensor_grid, axes=(0, 1, 2))
+        fourier_tensor = rfftn(tensor_grid, axes=(0, 1, 2))
         fourier_product = np.einsum(
             "xyzij, xyzj -> xyzi", self._projection, fourier_tensor, optimize=True
         )
-        return ifftn(fourier_product, axes=(0, 1, 2)).real.ravel()
+        return irfftn(fourier_product, tensor_grid.shape[:-1], axes=(0, 1, 2)).real.ravel()
 
     def _get_constitutive_model(self, material, phase_label, constitutive_model):
         if phase_label is not None and constitutive_model is not None:
