@@ -1158,7 +1158,8 @@ class Material:
         func : callable
             Function to apply to the extracted fields
         *func_args : str or any
-            Field labels (str) to extract or raw values to pass to function
+            Field labels (str) to extract, Material attribute names (str) to access,
+            or raw values to pass to function
         return_ : str or iterable of str, optional
             If provided, create field(s) with these labels containing the result(s)
         format_ : str or None, optional
@@ -1170,13 +1171,28 @@ class Material:
             - '3d': Reshape to (D, H, W) for volumetric operations
             - 'image': Reshape to (H, W) for 2D image operations
         **func_kwargs : str or any
-            Field labels (str) to extract or raw values to pass as keyword arguments
+            Field labels (str) to extract, Material attribute names (str) to access,
+            or raw values to pass as keyword arguments
 
         Returns:
         --------
         Material or result
             New Material with added field(s) if `return_` is specified, otherwise the raw result
 
+        Notes:
+        ------
+        String arguments are automatically resolved in the following order:
+        1. If the string matches a field label, that field is extracted
+        2. If the string matches a Material attribute (e.g., 'num_points', 'dimensions'),
+           that attribute value is accessed
+        3. Otherwise, the string is passed as-is to the function
+
+        Examples:
+        ---------
+        >>> # Access Material attributes in functions
+        >>> material.apply(np.random.integers, 0, 10, size="num_points", return_="random")
+        >>> # Mix fields and attributes
+        >>> material.apply(some_func, "field1", low=0, high="dimensions", return_="result")
         """
 
         # Map string shortcuts to formatter instances
@@ -1205,34 +1221,24 @@ class Material:
             formatter = format_map[format_]
         field_labels = self.get_fields().columns
 
-        # Extract fields and track which args/kwargs are fields vs raw values
-        # Format: each becomes (value, is_field_boolean)
+        # Extract fields/attributes and track which args/kwargs need formatting
+        # Format: each becomes (value, needs_formatting_boolean)
         extracted_args = [
-            (
-                (self.extract(arg), True)
-                if isinstance(arg, str) and arg in field_labels
-                else (arg, False)
-            )
-            for arg in func_args
+            self._resolve_arg(arg, field_labels) for arg in func_args
         ]
 
         extracted_kwargs = {
-            k: (
-                (self.extract(v), True)
-                if isinstance(v, str) and v in field_labels
-                else (v, False)
-            )
-            for k, v in func_kwargs.items()
+            k: self._resolve_arg(v, field_labels) for k, v in func_kwargs.items()
         }
 
-        # Apply formatter to format only the extracted fields (not raw values)
+        # Apply formatter to format only the extracted fields (not attributes or raw values)
         args = [
-            formatter.format_field(val, self.dimensions) if is_field else val
-            for val, is_field in extracted_args
+            formatter.format_field(val, self.dimensions) if needs_formatting else val
+            for val, needs_formatting in extracted_args
         ]
         kwargs = {
-            k: formatter.format_field(val, self.dimensions) if is_field else val
-            for k, (val, is_field) in extracted_kwargs.items()
+            k: formatter.format_field(val, self.dimensions) if needs_formatting else val
+            for k, (val, needs_formatting) in extracted_kwargs.items()
         }
 
         # Run the function
@@ -1271,6 +1277,40 @@ class Material:
                 )
 
         return self.create_fields(fields)
+
+    def _resolve_arg(self, arg, field_labels):
+        """
+        Resolve a string argument to a field, attribute, or pass through as-is.
+
+        Parameters
+        ----------
+        arg : any
+            Argument to resolve
+        field_labels : Index
+            Available field labels
+
+        Returns
+        -------
+        tuple
+            (resolved_value, needs_formatting) where needs_formatting is True
+            only if the value came from a field extraction
+        """
+        if not isinstance(arg, str):
+            return (arg, False)
+
+        # Check if it's a field label first
+        if arg in field_labels:
+            return (self.extract(arg), True)
+
+        # Check if it's a Material attribute (property or simple attribute)
+        if hasattr(self, arg) and not arg.startswith("_"):
+            attr = getattr(self, arg)
+            # Exclude methods but include properties and simple attributes
+            if not callable(attr):
+                return (attr, False)
+
+        # Pass through as-is
+        return (arg, False)
 
     def pipe(self, func, *args, **kwargs):
         """

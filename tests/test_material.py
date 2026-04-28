@@ -1297,3 +1297,109 @@ def test_apply_auto_detects_scipy_ndimage(small_material):
     material = small_material.apply(uniform_filter, "x", return_="x_smooth")
     assert "x_smooth" in material.fields.columns
     assert len(material.extract("x_smooth")) == small_material.num_points
+
+
+def test_apply_accesses_num_points_attribute(small_material):
+    """Test that apply() can access the num_points attribute."""
+    result = small_material.apply(lambda n: n, "num_points", format_=None)
+    assert result == small_material.num_points
+
+
+def test_apply_uses_num_points_in_function(small_material):
+    """Test that num_points attribute can be used in array generation."""
+
+    def random_field(num_points):
+        return np.arange(num_points)
+
+    material = small_material.apply(
+        random_field, "num_points", return_="sequential", format_=None
+    )
+    assert_array_equal(material.extract("sequential"), np.arange(small_material.num_points))
+
+
+def test_apply_mixes_fields_and_attributes(small_material):
+    """Test that apply() can use both fields and attributes in the same call."""
+
+    def scale_by_size(field, num_pts):
+        return field * num_pts
+
+    material = small_material.create_fields({"value": np.ones(small_material.num_points)})
+    result = material.apply(
+        scale_by_size, "value", "num_points", return_="scaled", format_=None
+    )
+    assert_allclose(result.extract("scaled"), small_material.num_points)
+
+
+def test_apply_fields_take_precedence_over_attributes(small_material):
+    """Test that field names take precedence over attribute names."""
+    # Create a field named 'spacing' which shadows the spacing attribute
+    material = small_material.create_fields({"spacing": np.arange(small_material.num_points)})
+
+    result = material.apply(lambda s: s, "spacing", format_=None)
+    # Should extract the field, not the attribute
+    assert_array_equal(result, np.arange(small_material.num_points))
+    assert not np.array_equal(result, material.spacing)
+
+
+def test_apply_string_not_field_or_attribute_passes_through(small_material):
+    """Test that strings that don't match fields or attributes are passed as-is."""
+
+    def echo(text):
+        return text
+
+    result = small_material.apply(echo, "hello_world", format_=None)
+    assert result == "hello_world"
+
+
+def test_apply_attributes_not_formatted(small_material):
+    """Test that attributes are not formatted like fields (no reshape)."""
+
+    def check_types(field, dims):
+        # field should be reshaped to 3D when format_='3d'
+        # dims should remain unchanged (not reshaped)
+        return field.shape, dims.shape
+
+    field_shape, dims_shape = small_material.apply(
+        check_types, "x", "dimensions", format_="3d"
+    )
+
+    assert field_shape == tuple(small_material.dimensions)
+    assert dims_shape == (3,)  # dimensions is a 1D array, not reshaped
+
+
+def test_apply_kwargs_work_with_attributes(small_material):
+    """Test that attributes work in keyword arguments."""
+
+    def create_array(low, high, size):
+        return np.full(size, (low + high) / 2)
+
+    material = small_material.apply(
+        create_array, low=0, high=10, size="num_points", return_="avg", format_=None
+    )
+    assert_allclose(material.extract("avg"), np.full(small_material.num_points, 5))
+
+
+def test_apply_mixed_positional_and_keyword_attributes(small_material):
+    """Test mixing positional and keyword attributes."""
+
+    def compute(dims, num=None):
+        return np.prod(dims) == num
+
+    result = small_material.apply(compute, "dimensions", num="num_points", format_=None)
+    assert result == True
+
+
+def test_apply_does_not_expose_private_attributes(small_material):
+    """Test that private attributes (starting with _) are not accessible."""
+    # _dimensions is a private attribute, should not be resolved
+    result = small_material.apply(lambda x: x, "_dimensions", format_=None)
+    # Should pass through as a string, not resolve to the private attribute
+    assert result == "_dimensions"
+
+
+def test_apply_does_not_expose_methods(small_material):
+    """Test that methods are not accessible (only properties and simple attributes)."""
+    # 'copy' is a method, should not be resolved
+    result = small_material.apply(lambda x: x, "copy", format_=None)
+    # Should pass through as a string, not resolve to the method
+    assert result == "copy"
