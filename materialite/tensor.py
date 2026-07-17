@@ -449,7 +449,7 @@ class Tensor(ABC):
                     # Slice/fancy indexing keeps the dimension
                     remaining_dims.append(self.dims_str[i])
 
-            return "".join(remaining_dims) + self.dims_str[len(slice_):]
+            return "".join(remaining_dims) + self.dims_str[len(slice_) :]
         else:
             # Unknown slice type - assume it keeps dimensions
             return self.dims_str
@@ -1010,7 +1010,7 @@ class Order2Tensor(Tensor):
 
     @property
     def sym(self):
-        return Order2SymmetricTensor.from_cartesian(
+        return Order2SymmetricTensor._from_cartesian(
             0.5 * (self + self.T).components, self.dims_str
         )
 
@@ -1146,7 +1146,7 @@ class Order2SymmetricTensor(Tensor):
 
     @classmethod
     def identity(cls):
-        return cls.from_cartesian(np.identity(3))
+        return cls._from_cartesian(np.identity(3))
 
     @classmethod
     def zero(cls):
@@ -1170,6 +1170,10 @@ class Order2SymmetricTensor(Tensor):
             raise ValueError(
                 "tried to create Order2SymmetricTensor using non-symmetric input"
             )
+        return cls(cartesian_to_reduced(matrices, cls._basis), dims)
+
+    @classmethod
+    def _from_cartesian(cls, matrices, dims=None):
         return cls(cartesian_to_reduced(matrices, cls._basis), dims)
 
     @classmethod
@@ -1231,7 +1235,7 @@ class Order2SymmetricTensor(Tensor):
 
     @property
     def inverse(self):
-        return Order2SymmetricTensor.from_cartesian(inv(self.cartesian), self.dims_str)
+        return Order2SymmetricTensor._from_cartesian(inv(self.cartesian), self.dims_str)
 
     @property
     def inv(self):
@@ -1366,7 +1370,7 @@ class Order2SymmetricTensor(Tensor):
             self.cartesian,
             optimize=True,
         )
-        return Order2SymmetricTensor.from_cartesian(components, output_dims)
+        return Order2SymmetricTensor._from_cartesian(components, output_dims)
 
     def to_specimen_frame(self, orientations):
         output_dims, output_indices, self_indices = self._get_transformation_indices(
@@ -1381,7 +1385,7 @@ class Order2SymmetricTensor(Tensor):
             self.cartesian,
             optimize=True,
         )
-        return Order2SymmetricTensor.from_cartesian(components, output_dims)
+        return Order2SymmetricTensor._from_cartesian(components, output_dims)
 
     def _get_transformation_indices(self, orientations):
         output_dims = order_dims(self.dims_str, orientations.dims_str)
@@ -1397,7 +1401,7 @@ class Order4SymmetricTensor(Tensor):
     _mul_lookup = {"mn": "mn"}
     _matmul_lookup = {
         "n": ["mn", "n", "m", Order2SymmetricTensor],
-        "ij": ["ijkl", "kl", "ij", Order2SymmetricTensor.from_cartesian],
+        "ij": ["ijkl", "kl", "ij", Order2SymmetricTensor._from_cartesian],
         "mn": ["mn", "no", "mo", None],
     }
 
@@ -1849,7 +1853,9 @@ class Orientation:
         plane = Vector(plane).unit
         direction = Vector(direction).unit
         if plane.shape != direction.shape:
-            raise ValueError("Must provide same number of plane(s) and direction(s) to construct Orientation(s) from Miller indices")
+            raise ValueError(
+                "Must provide same number of plane(s) and direction(s) to construct Orientation(s) from Miller indices"
+            )
         td = plane.cross(direction)
         rotation_matrix = np.stack(
             [direction.components, td.components, plane.components], axis=-1
