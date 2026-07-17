@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from scipy.sparse.linalg._isolve.utils import make_system
 
@@ -6,6 +8,7 @@ def minres(A, b, x0=None, rtol=1e-5, atol=None, maxiter=None, callback=None):
     """
     Minimal Residual method for solving Ax = b where A is a linear operator.
     """
+    logger = logging.getLogger("minres")
     A, _, x, b = make_system(A, None, x0, b)
     matvec = A.matvec
     xtype = x.dtype
@@ -43,6 +46,7 @@ def minres(A, b, x0=None, rtol=1e-5, atol=None, maxiter=None, callback=None):
     off_off_diag = 0.0
     max_diag = 0.0
     min_diag = np.inf
+    logger.debug("Iteration  Residual norm")
 
     for k in range(maxiter):
         # Lanczos step
@@ -79,6 +83,8 @@ def minres(A, b, x0=None, rtol=1e-5, atol=None, maxiter=None, callback=None):
         min_diag = np.min([min_diag, np.abs(diag)])
         condition_number = max_diag / min_diag
         residual_norm_difference = old_residual_norm - residual_norm
+        if k < 5 or (k + 1) % 10 == 0:
+            logger.debug(f"{(k + 1):8d} {residual_norm / b_norm:16.8e}")
 
         if callback is not None:
             callback(x)
