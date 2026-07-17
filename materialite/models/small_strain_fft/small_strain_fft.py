@@ -170,7 +170,13 @@ class SmallStrainFFT(Model):
                     mean_von_mises_stress = stress.mean().dev.norm.components * np.sqrt(
                         1.5
                     )
-                    equilibrium_error = np.max(np.abs(b))
+                    stress_normalizer = self._get_stress_normalizer(
+                        mean_von_mises_stress,
+                        summed_von_mises_stress,
+                        ref_stress,
+                        time_step_id,
+                    )
+                    equilibrium_error = np.max(np.abs(b)) / stress_normalizer
                     self._logger.debug(f"equilibrium error: {equilibrium_error}")
                     guess_stress = stress.copy()
                     all_constit_iters.append(constit_iters)
@@ -199,16 +205,12 @@ class SmallStrainFFT(Model):
                 # Check convergence
                 # Equilibrium
                 mean_von_mises_stress = stress.mean().dev.norm.components * np.sqrt(1.5)
-                time_avg_von_mises_stress = (
-                    summed_von_mises_stress + mean_von_mises_stress
-                ) / (time_step_id + 1)
-                if mean_von_mises_stress < 1.0e-10 * time_avg_von_mises_stress:
-                    mean_von_mises_stress = time_avg_von_mises_stress
-                # Deal with case where all mean stresses are zero (e.g., free thermal expansion)
-                if mean_von_mises_stress < ref_stress:
-                    stress_normalizer = ref_stress
-                else:
-                    stress_normalizer = mean_von_mises_stress
+                stress_normalizer = self._get_stress_normalizer(
+                    mean_von_mises_stress,
+                    summed_von_mises_stress,
+                    ref_stress,
+                    time_step_id,
+                )
                 equilibrium_error = np.max(np.abs(b)) / stress_normalizer
 
                 # Strain correction (mapped to stress to filter out zero-stiffness points)
@@ -303,6 +305,19 @@ class SmallStrainFFT(Model):
             new_material.state.update(new_state)
 
         return new_material
+    
+    def _get_stress_normalizer(self, mean_von_mises_stress, summed_von_mises_stress, ref_stress, time_step_id):
+        time_avg_von_mises_stress = (
+            summed_von_mises_stress + mean_von_mises_stress
+        ) / (time_step_id + 1)
+        if mean_von_mises_stress < 1.0e-10 * time_avg_von_mises_stress:
+            mean_von_mises_stress = time_avg_von_mises_stress
+        # Deal with case where all mean stresses are zero (e.g., free thermal expansion)
+        if mean_von_mises_stress < ref_stress:
+            stress_normalizer = ref_stress
+        else:
+            stress_normalizer = mean_von_mises_stress
+        return stress_normalizer
 
     def _get_new_time_increment(
         self,
