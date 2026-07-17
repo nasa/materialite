@@ -129,7 +129,8 @@ def test_evp_with_linear_hardening_defect(
     material_with_defect, evp_linear, load_schedule
 ):
     # evpfft mean stress norm: 354.8037
-    expected_mean_stress_norm = 361.276725
+    # expected_mean_stress_norm = 361.276725 (Willot)
+    expected_mean_stress_norm = 358.71158
     material_linear = assign_constitutive_models(material_with_defect, evp_linear)
 
     model = SmallStrainFFT(
@@ -146,7 +147,8 @@ def test_evp_with_linear_hardening_defect(
 
 def test_evp_with_voce_hardening(material_no_defect, evp_voce, load_schedule):
     # evpfft mean stress norm: 540.14502
-    expected_mean_stress_norm = 541.043871
+    # expected_mean_stress_norm = 541.043871 (Willot)
+    expected_mean_stress_norm = 540.741396
 
     model = SmallStrainFFT(
         load_schedule=load_schedule,
@@ -162,7 +164,8 @@ def test_evp_with_voce_hardening(material_no_defect, evp_voce, load_schedule):
 
 
 def test_evp_with_af_hardening(material_no_defect, evp_af, load_schedule):
-    expected_mean_stress_norm = 539.345343
+    # expected_mean_stress_norm = 539.345343 (Willot)
+    expected_mean_stress_norm = 539.04282
 
     model = SmallStrainFFT(
         load_schedule=load_schedule,
@@ -179,7 +182,8 @@ def test_evp_with_af_hardening(material_no_defect, evp_af, load_schedule):
 
 def test_evp_with_no_hardening(material_no_defect, evp_pp, load_schedule):
     # evpfft mean stress norm: 441.6827
-    expected_mean_stress_norm = 442.608112
+    # expected_mean_stress_norm = 442.608112 (Willot)
+    expected_mean_stress_norm = 442.238339
 
     model = SmallStrainFFT(
         load_schedule=load_schedule,
@@ -196,8 +200,10 @@ def test_evp_with_no_hardening(material_no_defect, evp_pp, load_schedule):
 
 def test_strain_bcs(material_no_defect, evp_pp):
     # evpfft S33: 426.2354431
-    expected_S33 = 426.923816
-    expected_mean_stress_norm = 428.328875
+    # expected_S33 = 426.923816 (Willot)
+    expected_S33 = 426.642853
+    # expected_mean_stress_norm = 428.328875 (Willot)
+    expected_mean_stress_norm = 428.032383
     velocity_gradient = Order2SymmetricTensor.from_strain_voigt(
         np.array([-0.35, -0.35, 1.0, 0, 0, 0])
     )

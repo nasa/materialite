@@ -167,7 +167,8 @@ def test_stress_bc(material_with_defect):
 
 def test_elasticity_with_defect(material_with_defect):
     # evpfft mean stress norm: 4.472936630
-    expected_mean_stress_norm = 4.547568053
+    # expected_mean_stress_norm = 4.547568053 (Willot)
+    expected_mean_stress_norm = 4.514405
     load_schedule = LoadSchedule.from_constant_uniaxial_strain_rate(direction="z")
     model = SmallStrainFFT(
         load_schedule=load_schedule, end_time=5.0e-5, initial_time_increment=5.0e-5
