@@ -67,7 +67,6 @@ class SmallStrainFFT(Model):
         self,
         material,
         orientation_label="orientation",
-        phase_label=None,
         output_variables=None,
         output_times=None,
         global_tolerance=1.0e-3,
@@ -96,12 +95,9 @@ class SmallStrainFFT(Model):
         orientations = material.extract(orientation_label)
         self._projection = self._get_projection_operator()
         ndof = self._num_points * 6
-        constitutive_model = self._get_constitutive_model(
-            material, phase_label, self._constitutive_model
-        )
 
         # Initialize
-        tangent = constitutive_model.initialize(orientations)
+        tangent = self._constitutive_model.initialize(orientations)
         ref_stress = (
             tangent.mean("p") @ Order2SymmetricTensor([1.0e-10, 0, 0, 0, 0, 0])
         ).components[0]
@@ -140,7 +136,7 @@ class SmallStrainFFT(Model):
                 delta_temperature = self.temperature_history.temperature_increment(
                     time, time_increment
                 )
-                thermal_strain_increment = constitutive_model.calculate_thermal_strain(
+                thermal_strain_increment = self._constitutive_model.calculate_thermal_strain(
                     delta_temperature
                 )
                 thermal_strain = old_thermal_strain + thermal_strain_increment
@@ -159,7 +155,7 @@ class SmallStrainFFT(Model):
                 self._logger.debug(f"global iteration {iteration}")
                 if iteration == 1:
                     stress, tangent, constit_iters = (
-                        constitutive_model.calculate_stress_and_tangent(
+                        self._constitutive_model.calculate_stress_and_tangent(
                             strain - thermal_strain, guess_stress, time_increment
                         )
                     )
@@ -190,7 +186,7 @@ class SmallStrainFFT(Model):
                 old_fluctuation_strain += fluctuation_strain
 
                 stress, tangent, constit_iters = (
-                    constitutive_model.calculate_stress_and_tangent(
+                    self._constitutive_model.calculate_stress_and_tangent(
                         strain - thermal_strain, guess_stress, time_increment
                     )
                 )
@@ -247,7 +243,7 @@ class SmallStrainFFT(Model):
                     break
 
             if converged:
-                constitutive_model.update_state_variables()
+                self._constitutive_model.update_state_variables()
                 old_stress = stress.copy()
                 old_strain = strain.copy()
                 old_tangent = tangent.copy()
@@ -257,7 +253,7 @@ class SmallStrainFFT(Model):
                 time_step_id += 1
                 time += time_increment
                 if time >= (next_output_time - time_tolerance):
-                    outputs = constitutive_model.generate_outputs(output_variables)
+                    outputs = self._constitutive_model.generate_outputs(output_variables)
                     outputs.update({"stress": stress, "strain": strain})
                     if self.temperature_history is not None:
                         outputs.update({"thermal_strain": thermal_strain})
@@ -284,7 +280,7 @@ class SmallStrainFFT(Model):
                 if time_increment < self.min_time_increment:
                     raise ValueError("min time increment reached")
 
-        outputs = constitutive_model.postprocess(output_variables)
+        outputs = self._constitutive_model.postprocess(output_variables)
         outputs.update({"stress": stress, "strain": strain})
         if self.temperature_history is not None:
             outputs.update({"thermal_strain": thermal_strain})
@@ -474,19 +470,3 @@ class SmallStrainFFT(Model):
         return irfftn(
             fourier_product, tensor_grid.shape[:-1], axes=(0, 1, 2)
         ).real.ravel()
-
-    def _get_constitutive_model(self, material, phase_label, constitutive_model):
-        if phase_label is not None and constitutive_model is not None:
-            raise ValueError("cannot specify phase and constitutive model")
-        if phase_label is None and constitutive_model is None:
-            raise ValueError("must specify phase label or provide a constitutive model")
-        if phase_label is not None:
-            phase_fields = material.extract_regional_field(phase_label)
-            phases = phase_fields[phase_label].to_list()
-            models = phase_fields["constitutive_model"].to_list()
-            phase_indices = material.get_region_indices(region_label=phase_label)
-            return Multiphase(
-                phases, models, [phase_indices[p] for p in phases], self._num_points
-            )
-        else:
-            return constitutive_model

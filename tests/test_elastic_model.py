@@ -3,7 +3,12 @@ from functools import partial
 import numpy as np
 import pandas as pd
 import pytest  # Includes: tmp_path, mocker
-from materialite.models.small_strain_fft import Elastic, LoadSchedule, SmallStrainFFT
+from materialite.models.small_strain_fft import (
+    Elastic,
+    Multiphase,
+    LoadSchedule,
+    SmallStrainFFT,
+)
 from materialite.util import repeat_data
 from numpy.testing import assert_allclose
 
@@ -105,13 +110,6 @@ def material_with_defect(elastic_model):
     rng = np.random.default_rng(0)
     sizes = [3, 3, 3]
     midpoint = sizes[2] / 2
-    phases = [1, 2]
-    elastic_models = [elastic_model, Elastic(elastic_model.stiffness * 0.0)]
-
-    regional_fields = pd.DataFrame(
-        columns=["phase", "constitutive_model"],
-        data=np.c_[phases, elastic_models],
-    )
 
     material = (
         Material(dimensions=[8, 8, 8], sizes=sizes)
@@ -122,9 +120,20 @@ def material_with_defect(elastic_model):
             Sphere(radius=1, centroid=[midpoint, midpoint, midpoint]),
             fields={"phase": 2},
         )
-        .create_regional_fields("phase", regional_fields)
     )
     return material
+
+
+@pytest.fixture
+def multiphase_model(material_with_defect, elastic_model):
+    elastic_models = [elastic_model, Elastic(elastic_model.stiffness * 0.0)]
+    phases = [1, 2]
+    return Multiphase.from_material(
+        material_with_defect,
+        phase_label="phase",
+        phases=phases,
+        constitutive_models=elastic_models,
+    )
 
 
 def test_compare_elasticity_with_evpfft(material, elastic_model):
@@ -145,7 +154,7 @@ def test_compare_elasticity_with_evpfft(material, elastic_model):
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
 
 
-def test_stress_bc(material_with_defect):
+def test_stress_bc(material_with_defect, multiphase_model):
     end_time = 1.0e-4
     expected_mean_stress_norm = 6.0
     applied_strain_rate = Order2SymmetricTensor.zero()
@@ -157,25 +166,25 @@ def test_stress_bc(material_with_defect):
     model = SmallStrainFFT(
         load_schedule=load_schedule,
         end_time=end_time,
+        constitutive_model=multiphase_model,
     )
-    material = model(
-        material_with_defect, phase_label="phase", linear_solver_tolerance=1.0e-7
-    )
+    material = model(material_with_defect, linear_solver_tolerance=1.0e-7)
     mean_stress_norm = material.extract("stress").mean().norm.components
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
 
 
-def test_elasticity_with_defect(material_with_defect):
+def test_elasticity_with_defect(material_with_defect, multiphase_model):
     # evpfft mean stress norm: 4.472936630
     # expected_mean_stress_norm = 4.547568053 (Willot)
     expected_mean_stress_norm = 4.514405
     load_schedule = LoadSchedule.from_constant_uniaxial_strain_rate(direction="z")
     model = SmallStrainFFT(
-        load_schedule=load_schedule, end_time=5.0e-5, initial_time_increment=5.0e-5
+        load_schedule=load_schedule,
+        end_time=5.0e-5,
+        initial_time_increment=5.0e-5,
+        constitutive_model=multiphase_model,
     )
-    material = model(
-        material_with_defect, phase_label="phase", linear_solver_tolerance=1.0e-7
-    )
+    material = model(material_with_defect, linear_solver_tolerance=1.0e-7)
     mean_stress_norm = material.extract("stress").mean().norm.components
     print(mean_stress_norm)
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
