@@ -8,7 +8,7 @@ from materialite import (
     Order2SymmetricTensor,
     Order2Tensor,
     Order4SymmetricTensor,
-    Orientation,
+    Orientation2,
     Scalar,
     Vector,
 )
@@ -1378,21 +1378,15 @@ def test_symmetric_tensor_voigt_mandel(sym_tensors, symmetric_matrices):
 
 
 def test_rotations_identity(o2_tensors, sym_tensors, vectors, minor_sym_tensors):
-    o_identity = Orientation.identity()
-    r2_crystal = o2_tensors.to_crystal_frame(o_identity)
-    r2_specimen = o2_tensors.to_specimen_frame(o_identity)
-    sym_crystal = sym_tensors.to_crystal_frame(o_identity)
-    sym_specimen = sym_tensors.to_specimen_frame(o_identity)
-    vec_crystal = vectors.to_crystal_frame(o_identity)
-    vec_specimen = vectors.to_specimen_frame(o_identity)
-    minor_specimen = minor_sym_tensors.to_specimen_frame(o_identity)
-    assert_allclose(r2_crystal.components, o2_tensors.components)
-    assert_allclose(r2_specimen.components, o2_tensors.components)
-    assert_allclose(sym_crystal.components, sym_tensors.components)
-    assert_allclose(sym_specimen.components, sym_tensors.components)
-    assert_allclose(vec_crystal.components, vectors.components)
-    assert_allclose(vec_specimen.components, vectors.components)
-    assert_allclose(minor_specimen.components, minor_sym_tensors.components)
+    o_identity = Orientation2.identity()
+    r2_rotated = o2_tensors.rotate(o_identity)
+    sym_rotated = sym_tensors.rotate(o_identity)
+    vec_rotated = vectors.rotate(o_identity)
+    minor_rotated = minor_sym_tensors.rotate(o_identity)
+    assert_allclose(r2_rotated.components, o2_tensors.components)
+    assert_allclose(sym_rotated.components, sym_tensors.components)
+    assert_allclose(vec_rotated.components, vectors.components)
+    assert_allclose(minor_rotated.components, minor_sym_tensors.components)
 
 
 @pytest.mark.parametrize("num_orientations", [1, 2])
@@ -1418,13 +1412,13 @@ def test_rotations_with_inverse(
         vector,
         minor_sym_tensor,
     ]
-    o = Orientation.random(num_orientations, rng=rng)
+    o = Orientation2.random(num_orientations, rng=rng)
     for t in tensors:
         if t.dims_str == "" and num_orientations == 2:
             expected = [t.components] * 2
         else:
             expected = t.components
-        t_rotated = t.to_crystal_frame(o).to_specimen_frame(o)
+        t_rotated = t.rotate(o).rotate(o.inv)
         assert_allclose(t_rotated.components, expected, atol=1e-12)
 
 
@@ -1438,31 +1432,27 @@ def test_rotations_with_inverse_s_dimension(
     vectors,
     minor_sym_tensors,
 ):
-    o = Orientation.random(shape=(NUM_POINTS, NUM_SLIP_SYSTEMS))
+    o = Orientation2.random(shape=(NUM_POINTS, NUM_SLIP_SYSTEMS))
     tensors_p = [o2_tensors_p, sym_tensors_p, vectors_p, minor_sym_tensors_p]
     for t in tensors_p:
         expected = np.repeat(t.components[:, np.newaxis, ...], NUM_SLIP_SYSTEMS, axis=1)
-        t_rotated = t.to_crystal_frame(o).to_specimen_frame(o)
+        t_rotated = t.rotate(o).rotate(o.inv)
         assert_allclose(t_rotated.components, expected, atol=1e-12)
 
     tensors = [o2_tensors, sym_tensors, vectors, minor_sym_tensors]
     for t in tensors:
         expected = t.components
-        t_rotated = t.to_crystal_frame(o).to_specimen_frame(o)
+        t_rotated = t.rotate(o).rotate(o.inv)
         assert_allclose(t_rotated.components, expected, atol=1e-12)
 
 
 def test_rotations_stress_strain(sym_tensors, minor_sym_tensors, rng):
-    o = Orientation.random(2, rng=rng)
-    sym_rotations = (
-        minor_sym_tensors @ sym_tensors.to_crystal_frame(o)
-    ).to_specimen_frame(o)
-    minor_sym_rotations = minor_sym_tensors.to_specimen_frame(o) @ sym_tensors
+    o = Orientation2.random(2, rng=rng)
+    sym_rotations = (minor_sym_tensors @ sym_tensors.rotate(o.inv)).rotate(o)
+    minor_sym_rotations = minor_sym_tensors.rotate(o) @ sym_tensors
     assert_allclose(sym_rotations.components, minor_sym_rotations.components)
-    sym_rotations2 = (
-        minor_sym_tensors @ sym_tensors.to_specimen_frame(o)
-    ).to_crystal_frame(o)
-    minor_sym_rotations2 = minor_sym_tensors.to_crystal_frame(o) @ sym_tensors
+    sym_rotations2 = (minor_sym_tensors @ sym_tensors.rotate(o)).rotate(o.inv)
+    minor_sym_rotations2 = minor_sym_tensors.rotate(o.inv) @ sym_tensors
     assert_allclose(sym_rotations2.components, minor_sym_rotations2.components)
 
 

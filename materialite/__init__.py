@@ -16,6 +16,7 @@
 from .material import Material, Sphere, Superellipsoid, Feature, Box
 from .tensor import (
     Orientation,
+    Orientation2,
     Scalar,
     Vector,
     Order2Tensor,
