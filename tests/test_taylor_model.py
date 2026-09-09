@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
-from materialite import Material, Order2SymmetricTensor, Orientation
 from materialite.models import TaylorModel
 from numpy.testing import assert_allclose
+
+from materialite import Material, Order2SymmetricTensor, Orientation2, Scalar, Vector
 
 
 @pytest.fixture
@@ -42,17 +43,9 @@ def expected_taylor_factors():
 
 @pytest.fixture
 def material():
-    r2 = 1 / np.sqrt(2)
-    orientations = Orientation.from_rotation_matrix(
-        # 90 degrees about specimen x axis
-        np.array(
-            [
-                [[1.0, 0, 0], [0, 0, 1.0], [0, -1.0, 0]],
-                # 45 degrees about specimen x axis
-                [[1.0, 0, 0], [0, r2, r2], [0, -r2, r2]],
-            ]
-        )
-    )
+    # 90 and 45 degree rotations about x axis
+    angles = Scalar([90, 45]) * np.pi / 180
+    orientations = Orientation2.from_axis_angle(Vector.X, angles)
     mask = [0, 1]
     fields = {"orientation": orientations, "mask": mask}
     return Material(dimensions=[2, 1, 1]).create_fields(fields)

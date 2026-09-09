@@ -32,6 +32,6 @@ class DecoupledCrystalElasticity(Model):
         return material.create_fields({"stress": stresses})
 
     def _calculate_stresses(self, stiffnesses, orientations):
-        crystal_strains = self.applied_strain.to_crystal_frame(orientations)
-        crystal_stresses = stiffnesses @ crystal_strains
-        return crystal_stresses.to_specimen_frame(orientations)
+        reference_strains = self.applied_strain.rotate(orientations.inv)
+        reference_stresses = stiffnesses @ reference_strains
+        return reference_stresses.rotate(orientations)

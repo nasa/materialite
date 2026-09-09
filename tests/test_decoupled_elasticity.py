@@ -1,14 +1,21 @@
+from functools import partial
+
 import numpy as np
 import pytest  # Includes: tmp_path, mocker
+from materialite.models import DecoupledCrystalElasticity
+from numpy.testing import assert_allclose
+
 from materialite import (
     Material,
     Order2SymmetricTensor,
     Order4SymmetricTensor,
-    Orientation,
+    Orientation2,
+    Scalar,
+    Vector,
 )
-from materialite.models import DecoupledCrystalElasticity
-from numpy.testing import assert_allclose
 
+A_TOL = 1e-14
+assert_allclose_with_atol = partial(assert_allclose, atol=A_TOL)
 MODEL_PATH = "materialite.models.decoupled_crystal_elasticity"
 
 
@@ -28,19 +35,10 @@ def stiffness_tensor():
 
 
 @pytest.fixture
-def material(stiffness_tensor, mocker):
-    r2 = 1 / np.sqrt(2)
-    orientations = Orientation.from_rotation_matrix(
-        # 90 degrees about specimen x axis
-        np.array(
-            [
-                [[1.0, 0, 0], [0, 0, 1.0], [0, -1.0, 0]],
-                # 45 degrees about specimen x axis
-                [[1.0, 0, 0], [0, r2, r2], [0, -r2, r2]],
-                [[1.0, 0, 0], [0, 0, 1.0], [0, -1.0, 0]],
-            ]
-        )
-    )
+def material(stiffness_tensor):
+    # 90, 45, 90 degree rotations about x axis
+    angles = Scalar([90, 45, 90]) * np.pi / 180
+    orientations = Orientation2.from_axis_angle(Vector.X, angles)
     num_points = 3
     fields = {
         "stiffness": stiffness_tensor.repeat(num_points),
@@ -66,4 +64,4 @@ def test_run_model(model, material):
         ]
     )
     stress = model(material).extract("stress").stress_voigt
-    assert_allclose(stress, expected_stress)
+    assert_allclose_with_atol(stress, expected_stress)

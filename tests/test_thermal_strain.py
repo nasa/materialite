@@ -5,25 +5,25 @@ import pandas as pd
 import pytest  # Includes: tmp_path, mocker
 from materialite.models.small_strain_fft import (
     Elastic,
-    IsotropicElasticPlastic,
     ElasticViscoplastic,
+    IsotropicElasticPlastic,
     LoadSchedule,
     SmallStrainFFT,
-    perfect_plasticity,
     linear,
+    perfect_plasticity,
 )
 from materialite.models.small_strain_fft.temperature_history import TemperatureHistory
 from numpy.testing import assert_allclose
 
 from materialite import (
     Box,
-    Sphere,
     Material,
-    Scalar,
     Order2SymmetricTensor,
     Order4SymmetricTensor,
-    Orientation,
+    Orientation2,
+    Scalar,
     SlipSystem,
+    Sphere,
 )
 
 
@@ -75,7 +75,7 @@ def material(delta_T):
     material = Material(dimensions=[4, 4, 4])
     material = (
         material.create_uniform_field(
-            "orientation", Orientation.from_euler_angles([0, 0, 0])
+            "orientation", Orientation2.from_euler_angles([0, 0, 0])
         )
         .create_uniform_field("phase", 1)
         .insert_feature(
@@ -149,7 +149,7 @@ def test_isotropic_plasticity(
     modulus, shear_modulus, delta_T, thermal_expansion_coefficients, poisson
 ):
     material = Material(dimensions=[8, 8, 8]).create_uniform_field(
-        "orientation", Orientation(np.eye(3))
+        "orientation", Orientation2.identity()
     )
     yield_ratio = 0.001
     yield_stress = modulus * yield_ratio
@@ -214,7 +214,7 @@ def test_elastic_viscoplastic(thermal_expansion_coefficients, delta_T):
     df = pd.DataFrame(
         {
             "grain": [1, 2],
-            "orientation": Orientation.from_euler_angles(
+            "orientation": Orientation2.from_euler_angles(
                 [[0, 0, 0], [np.pi / 4, np.pi / 4, 0]]
             ),
         }
@@ -285,21 +285,28 @@ def test_eshelby_problem():
     material = (
         Material([256, 256, 1], sizes=[1023, 1023, 0])
         .create_uniform_field("phase", 1)
-        .create_uniform_field("orientation", Orientation.identity())
+        .create_uniform_field("orientation", Orientation2.identity())
     )
     times = np.array([0, 1])
     temperature1 = Scalar([0, 1000.0], dims="t")
     temperature2 = Scalar([0, 1500.0], dims="t")
     sphere = Sphere(radius=43, centroid=material.sizes / 2)
-    regional_fields = {"phase": [1, 2], "temperature_history": [temperature1, temperature2]}
-    material = material.insert_feature(sphere, fields={"phase": 2}).create_regional_fields(
-        "phase", regional_fields
-    )
+    regional_fields = {
+        "phase": [1, 2],
+        "temperature_history": [temperature1, temperature2],
+    }
+    material = material.insert_feature(
+        sphere, fields={"phase": 2}
+    ).create_regional_fields("phase", regional_fields)
     pointwise_temperature = material.extract("temperature_history")
-    temperature_history = TemperatureHistory(temperatures=pointwise_temperature, times=times)
+    temperature_history = TemperatureHistory(
+        temperatures=pointwise_temperature, times=times
+    )
 
     alpha = 10.0e-6
-    thermal_expansion_coefficients = Order2SymmetricTensor([alpha, alpha, alpha, 0, 0, 0])
+    thermal_expansion_coefficients = Order2SymmetricTensor(
+        [alpha, alpha, alpha, 0, 0, 0]
+    )
     E = 65400.0
     nu = 0.42
     stiffness = Order4SymmetricTensor.from_isotropic_constants(
@@ -326,5 +333,7 @@ def test_eshelby_problem():
         strain_correction_tolerance=1.0,
     )
     inclusion_idx = material.get_region_indices("phase")[2]
-    mean_stress_inclusion = material.extract("stress")[inclusion_idx].mean().components[0]
+    mean_stress_inclusion = (
+        material.extract("stress")[inclusion_idx].mean().components[0]
+    )
     assert_allclose(mean_stress_inclusion, expected_stress, atol=1)

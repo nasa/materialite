@@ -28,6 +28,7 @@ from materialite.basis_operations import (
     voigt_dual_product_basis,
     voigt_product_basis,
 )
+from materialite.util import classproperty
 from numpy.linalg import inv
 
 
@@ -792,6 +793,18 @@ class Vector(Tensor):
 
     def __init__(self, components, dims=None):
         super().__init__(components, dims)
+
+    @classproperty
+    def X(cls):
+        return cls(np.array([1, 0, 0]))
+
+    @classproperty
+    def Y(cls):
+        return cls(np.array([0, 1, 0]))
+
+    @classproperty
+    def Z(cls):
+        return cls(np.array([0, 0, 1]))
 
     @classmethod
     def random(cls, shape=1, rng=np.random.default_rng(), dims=None):
@@ -2517,6 +2530,10 @@ class Orientation2:
         )
 
         return cls(rotation.components, rotation.dims_str)
+
+    @classmethod
+    def from_axis_angle(cls, axis, angle):
+        return cls.from_rotation_vector(Vector(axis).unit * angle)
 
     @classmethod
     def random(cls, shape=1, rng=np.random.default_rng(), dims=None):

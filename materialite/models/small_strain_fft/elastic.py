@@ -22,12 +22,10 @@ class Elastic:
         self._state_variable_info = dict()
 
     def initialize(self, orientations):
-        self.state_variables["stiffnesses"] = self.stiffness.to_specimen_frame(
-            orientations
-        )
+        self.state_variables["stiffnesses"] = self.stiffness.rotate(orientations)
         if self.thermal_expansion_coefficients is not None:
             self.state_variables["thermal_expansion_coefficients"] = (
-                self.thermal_expansion_coefficients.to_specimen_frame(orientations)
+                self.thermal_expansion_coefficients.rotate(orientations)
             )
         return self.state_variables["stiffnesses"]
 

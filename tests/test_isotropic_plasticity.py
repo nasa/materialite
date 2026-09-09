@@ -1,6 +1,5 @@
 import numpy as np
 import pytest  # Includes: tmp_path, mocker
-from materialite import Material, Orientation, Scalar, Order2SymmetricTensor
 from materialite.models.small_strain_fft import (
     IsotropicElasticPlastic,
     LoadSchedule,
@@ -12,13 +11,15 @@ from materialite.models.small_strain_fft import (
 from materialite.models.small_strain_fft.temperature_history import TemperatureHistory
 from numpy.testing import assert_allclose
 
+from materialite import Material, Order2SymmetricTensor, Orientation2, Scalar
+
 
 @pytest.fixture
 def material():
     sizes = [3, 3, 3]
     return (
         Material(dimensions=[8, 8, 8], sizes=sizes)
-        .create_uniform_field("orientation", Orientation(np.eye(3)))
+        .create_uniform_field("orientation", Orientation2.identity())
         .create_uniform_field("phase", 1)
     )
 
@@ -68,7 +69,7 @@ def test_time_incrementation_perfect_plasticity(material, load_schedule):
     time_increment = 1.0e-4
     end_time = 15.0e-4
     num_time_steps = 15
-    # Set the initial time increment to be larger than the first output time 
+    # Set the initial time increment to be larger than the first output time
     # to test that the model adjusts the time increment to hit the output time
     model = SmallStrainFFT(
         load_schedule=load_schedule,

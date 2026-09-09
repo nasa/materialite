@@ -38,11 +38,11 @@ class TaylorModel(Model):
         )
 
         # Calculations
-        crystal_strains = self.applied_strain.to_crystal_frame(self._orientations)
-        crystal_stresses, taylor_factors = (
-            self._get_crystal_stresses_and_taylor_factors(crystal_strains)
+        reference_strains = self.applied_strain.rotate(self._orientations.inv)
+        reference_stresses, taylor_factors = (
+            self._get_crystal_stresses_and_taylor_factors(reference_strains)
         )
-        stresses = crystal_stresses.to_specimen_frame(self._orientations)
+        stresses = reference_stresses.rotate(self._orientations)
         stresses, taylor_factors = self._apply_mask(stresses, taylor_factors)
         stresses = stresses * self.critical_resolved_shear_stress
 
@@ -56,22 +56,22 @@ class TaylorModel(Model):
         new_material.state["average_taylor_factor"] = np.mean(taylor_factors)
         return new_material
 
-    def _get_crystal_stresses_and_taylor_factors(self, crystal_strains):
-        work = crystal_strains * self._vertices
+    def _get_crystal_stresses_and_taylor_factors(self, reference_strains):
+        work = reference_strains * self._vertices
         max_work_idx = np.argmax(work.abs.components, axis=1)
         max_work = np.take_along_axis(
             work.components, max_work_idx[:, np.newaxis], axis=1
         ).squeeze()
-        crystal_stresses = Order2SymmetricTensor(
+        reference_stresses = Order2SymmetricTensor(
             self._vertices[max_work_idx].components, "p"
         )
         negatives = max_work < 0.0
-        crystal_stresses[negatives] = -crystal_stresses[negatives]
+        reference_stresses[negatives] = -reference_stresses[negatives]
         effective_applied_strain = (
             np.sqrt(2.0 / 3.0) * self.applied_strain.norm.components
         )
         taylor_factors = np.abs(max_work) / effective_applied_strain
-        return crystal_stresses, taylor_factors
+        return reference_stresses, taylor_factors
 
     def _apply_mask(self, stresses, taylor_factors):
         not_mask = np.logical_not(self._mask)

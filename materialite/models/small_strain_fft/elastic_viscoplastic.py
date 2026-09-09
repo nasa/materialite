@@ -90,18 +90,18 @@ class ElasticViscoplastic:
 
         if self.thermal_expansion_coefficients is not None:
             self.state_variables["thermal_expansion_coefficients"] = (
-                self.thermal_expansion_coefficients.to_specimen_frame(orientations)
+                self.thermal_expansion_coefficients.rotate(orientations)
             )
 
-        return self.stiffness.to_specimen_frame(orientations)
+        return self.stiffness.rotate(orientations)
 
     def calculate_stress_and_tangent(self, strains, guess_stresses, time_increment):
         TOLERANCE = 2.0e-5
         MAX_ITERATIONS = 60
         orientations = self.state_variables["orientations"]
         guess_stress_norms = guess_stresses.norm
-        stresses = guess_stresses.to_crystal_frame(orientations)
-        strains = strains.to_crystal_frame(orientations)
+        stresses = guess_stresses.rotate(orientations.inv)
+        strains = strains.rotate(orientations.inv)
 
         old_plastic_strains = self.state_variables["_old_plastic_strains"]
         old_slip_resistances = self.state_variables["old_slip_resistances"]
@@ -189,8 +189,8 @@ class ElasticViscoplastic:
         )
 
         return (
-            stresses.to_specimen_frame(orientations),
-            d_sigma_d_epsilon.to_specimen_frame(orientations),
+            stresses.rotate(orientations),
+            d_sigma_d_epsilon.rotate(orientations),
             iteration,
         )
 
@@ -260,12 +260,10 @@ class ElasticViscoplastic:
         )
 
     def update_state_variables(self):
-        crystal_plastic_strains = self.state_variables["_plastic_strains"]
-        self.state_variables["_old_plastic_strains"] = crystal_plastic_strains.copy()
-        self.state_variables["plastic_strains"] = (
-            crystal_plastic_strains.to_specimen_frame(
-                self.state_variables["orientations"]
-            )
+        reference_plastic_strains = self.state_variables["_plastic_strains"]
+        self.state_variables["_old_plastic_strains"] = reference_plastic_strains.copy()
+        self.state_variables["plastic_strains"] = reference_plastic_strains.rotate(
+            self.state_variables["orientations"]
         )
         self.state_variables["old_slip_resistances"] = self.state_variables[
             "slip_resistances"

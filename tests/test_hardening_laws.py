@@ -2,16 +2,6 @@ from collections import defaultdict
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
-
-from materialite import (
-    Material,
-    Order4SymmetricTensor,
-    Orientation,
-    SlipSystem,
-    Vector,
-    Scalar,
-)
 from materialite.models.small_strain_fft import (
     ElasticViscoplastic,
     LoadSchedule,
@@ -20,6 +10,16 @@ from materialite.models.small_strain_fft import (
     linear,
     perfect_plasticity,
     voce,
+)
+from numpy.testing import assert_allclose
+
+from materialite import (
+    Material,
+    Order4SymmetricTensor,
+    Orientation2,
+    Scalar,
+    SlipSystem,
+    Vector,
 )
 
 
@@ -37,7 +37,7 @@ def extract_outputs(material):
 @pytest.fixture
 def material():
     return Material(dimensions=[4, 4, 4]).create_uniform_field(
-        "orientation", Orientation(np.eye(3))
+        "orientation", Orientation2.identity()
     )
 
 

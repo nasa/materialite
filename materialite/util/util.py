@@ -14,6 +14,16 @@ import numpy as np
 from numpy.linalg import norm
 
 
+class classproperty:
+    """A read-only property that works on the class (not instances)."""
+
+    def __init__(self, func):
+        self._func = func
+
+    def __get__(self, obj, cls):
+        return self._func(cls)
+
+
 def get_random_unit_vector(dimension=3, rng=np.random.default_rng()):
     v = rng.normal(size=dimension)
     return v / norm(v)

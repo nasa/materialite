@@ -18,28 +18,26 @@ from numpy.linalg import norm
 def add_ipf_colors_field(
     material,
     orientation_label="orientation",
-    specimen_frame_direction=Vector([0, 0, 1]),
+    direction=Vector([0, 0, 1]),
     unit_cell="cubic",
     ipf_color_label="ipf_color",
 ):
     orientations = material.extract(orientation_label)
-    ipf_colors = get_ipf_colors(specimen_frame_direction, orientations, unit_cell)
+    ipf_colors = get_ipf_colors(direction, orientations, unit_cell)
     return material.create_fields({ipf_color_label: ipf_colors.tolist()})
 
 
-def get_ipf_colors(specimen_frame_direction, orientations, unit_cell):
-    specimen_frame_direction = Vector(specimen_frame_direction)
-    direction = specimen_frame_direction / specimen_frame_direction.norm
-    crystal_directions = direction.to_crystal_frame(orientations)
-    ipf_points = _convert_to_fundamental_region(crystal_directions, unit_cell)
+def get_ipf_colors(direction, orientations, unit_cell):
+    direction = Vector(direction).unit
+    reference_poles = direction.rotate(orientations.inv)
+    ipf_points = _convert_to_fundamental_region(reference_poles, unit_cell)
     return _get_ipf_colors_from_fundamental_points(ipf_points, unit_cell)
 
 
-def get_ipf(specimen_frame_direction, orientations, unit_cell):
-    specimen_frame_direction = Vector(specimen_frame_direction)
-    direction = specimen_frame_direction / specimen_frame_direction.norm
-    crystal_directions = direction.to_crystal_frame(orientations)
-    ipf_points_3D = _convert_to_fundamental_region(crystal_directions, unit_cell)
+def get_ipf(direction, orientations, unit_cell):
+    direction = Vector(direction).unit
+    reference_poles = direction.rotate(orientations.inv)
+    ipf_points_3D = _convert_to_fundamental_region(reference_poles, unit_cell)
     ipf_points = _get_stereographic_projection(ipf_points_3D)
     ipf_boundary = _get_ipf_boundary(unit_cell)
     return ipf_points, ipf_boundary

@@ -17,7 +17,7 @@ import materialite.tensor
 import numpy as np
 import pandas as pd
 from materialite import Material
-from materialite.tensor import Orientation, Tensor
+from materialite.tensor import Orientation2, Tensor
 
 
 class MaterialEncoder(json.JSONEncoder):
@@ -28,7 +28,7 @@ class MaterialEncoder(json.JSONEncoder):
                 "type": type(obj).__name__,
                 "dims": obj.dims_str,
             }
-        elif isinstance(obj, Orientation):
+        elif isinstance(obj, Orientation2):
             return {"data": obj.rotation_matrix.tolist(), "type": type(obj).__name__}
         elif isinstance(obj, (np.number, np.ndarray)):
             return {"data": obj.tolist()}

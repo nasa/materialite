@@ -1,6 +1,5 @@
 import numpy as np
 import pytest  # Includes: tmp_path, mocker
-from materialite import Box, Material, Orientation, Scalar
 from materialite.models.small_strain_fft import (
     IsotropicElasticPlastic,
     LoadSchedule,
@@ -8,6 +7,8 @@ from materialite.models.small_strain_fft import (
     linear,
 )
 from numpy.testing import assert_allclose
+
+from materialite import Box, Material, Orientation2, Scalar
 
 
 @pytest.fixture
@@ -26,7 +27,7 @@ def material():
     )
     return (
         Material(dimensions=[8, 8, 8], sizes=sizes)
-        .create_uniform_field("orientation", Orientation(np.eye(3)))
+        .create_uniform_field("orientation", Orientation2.identity())
         .create_uniform_field("phase", 0)
         .insert_feature(box, fields={"phase": 1})
         .create_regional_fields(
@@ -67,7 +68,10 @@ def test_with_linear_hardening(material):
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
     assert_allclose(stress[:, -1].components[:, 2], axial_stresses[-1])
     assert_allclose(
-        axial_stresses[12:], hardening_rate * mean_eq_plastic_strains[11:-1] + yield_stress
+        axial_stresses[12:],
+        hardening_rate * mean_eq_plastic_strains[11:-1] + yield_stress,
     )
-    mean_eq_plastic_strains = np.tile(mean_eq_plastic_strains, (len(eq_plastic_strains), 1))
+    mean_eq_plastic_strains = np.tile(
+        mean_eq_plastic_strains, (len(eq_plastic_strains), 1)
+    )
     assert_allclose(eq_plastic_strains.components, mean_eq_plastic_strains)
