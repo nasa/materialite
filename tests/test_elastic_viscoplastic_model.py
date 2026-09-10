@@ -13,6 +13,7 @@ from materialite import (
 from materialite.models.small_strain_fft import (
     Elastic,
     ElasticViscoplastic,
+    Multiphase,
     LoadSchedule,
     SmallStrainFFT,
     armstrong_frederick,
@@ -113,31 +114,36 @@ def evp_pp(stiffness_tensor):
 
 
 @pytest.fixture
+def evp_defect(material_with_defect, evp_linear):
+    phases = [1, 2]
+    pore_model = Elastic(evp_linear.stiffness * 0.0)
+    models = [evp_linear, pore_model]
+    return Multiphase.from_material(
+        material_with_defect,
+        phase_label="phase",
+        phases=phases,
+        constitutive_models=models,
+    )
+
+
+@pytest.fixture
 def load_schedule():
     return LoadSchedule.from_constant_uniaxial_strain_rate(direction="z")
 
 
-def assign_constitutive_models(material, evp_model):
-    phases = [1, 2]
-    pore_model = Elastic(evp_model.stiffness * 0.0)
-    models = [evp_model, pore_model]
-    regional_fields = pd.DataFrame({"phase": phases, "constitutive_model": models})
-    return material.create_regional_fields("phase", regional_fields)
-
-
 def test_evp_with_linear_hardening_defect(
-    material_with_defect, evp_linear, load_schedule
+    material_with_defect, evp_defect, load_schedule
 ):
     # evpfft mean stress norm: 354.8037
-    expected_mean_stress_norm = 361.276725
-    material_linear = assign_constitutive_models(material_with_defect, evp_linear)
-
+    # expected_mean_stress_norm = 361.276725 (Willot)
+    expected_mean_stress_norm = 358.71158
     model = SmallStrainFFT(
         load_schedule=load_schedule,
         end_time=4.0e-3,
         initial_time_increment=1.0e-3,
+        constitutive_model=evp_defect,
     )
-    material = model(material_linear, phase_label="phase", global_tolerance=1.0e-7)
+    material = model(material_with_defect, global_tolerance=1.0e-7)
     mean_stress_norm = material.extract("stress").mean().norm.components
     assert_allclose(mean_stress_norm, expected_mean_stress_norm)
     mean_strain = material.extract("strain").mean().components
@@ -146,7 +152,8 @@ def test_evp_with_linear_hardening_defect(
 
 def test_evp_with_voce_hardening(material_no_defect, evp_voce, load_schedule):
     # evpfft mean stress norm: 540.14502
-    expected_mean_stress_norm = 541.043871
+    # expected_mean_stress_norm = 541.043871 (Willot)
+    expected_mean_stress_norm = 540.741396
 
     model = SmallStrainFFT(
         load_schedule=load_schedule,
@@ -162,7 +169,8 @@ def test_evp_with_voce_hardening(material_no_defect, evp_voce, load_schedule):
 
 
 def test_evp_with_af_hardening(material_no_defect, evp_af, load_schedule):
-    expected_mean_stress_norm = 539.345343
+    # expected_mean_stress_norm = 539.345343 (Willot)
+    expected_mean_stress_norm = 539.04282
 
     model = SmallStrainFFT(
         load_schedule=load_schedule,
@@ -179,7 +187,8 @@ def test_evp_with_af_hardening(material_no_defect, evp_af, load_schedule):
 
 def test_evp_with_no_hardening(material_no_defect, evp_pp, load_schedule):
     # evpfft mean stress norm: 441.6827
-    expected_mean_stress_norm = 442.608112
+    # expected_mean_stress_norm = 442.608112 (Willot)
+    expected_mean_stress_norm = 442.238339
 
     model = SmallStrainFFT(
         load_schedule=load_schedule,
@@ -196,8 +205,10 @@ def test_evp_with_no_hardening(material_no_defect, evp_pp, load_schedule):
 
 def test_strain_bcs(material_no_defect, evp_pp):
     # evpfft S33: 426.2354431
-    expected_S33 = 426.923816
-    expected_mean_stress_norm = 428.328875
+    # expected_S33 = 426.923816 (Willot)
+    expected_S33 = 426.642853
+    # expected_mean_stress_norm = 428.328875 (Willot)
+    expected_mean_stress_norm = 428.032383
     velocity_gradient = Order2SymmetricTensor.from_strain_voigt(
         np.array([-0.35, -0.35, 1.0, 0, 0, 0])
     )

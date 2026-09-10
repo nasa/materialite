@@ -1054,7 +1054,7 @@ class Order2Tensor(Tensor):
 
     @property
     def sym(self):
-        return Order2SymmetricTensor.from_cartesian(
+        return Order2SymmetricTensor._from_cartesian(
             0.5 * (self + self.T).components, self.dims_str
         )
 
@@ -1203,7 +1203,7 @@ class Order2SymmetricTensor(Tensor):
 
     @classmethod
     def identity(cls):
-        return cls.from_cartesian(np.identity(3))
+        return cls._from_cartesian(np.identity(3))
 
     @classmethod
     def zero(cls):
@@ -1227,6 +1227,10 @@ class Order2SymmetricTensor(Tensor):
             raise ValueError(
                 "tried to create Order2SymmetricTensor using non-symmetric input"
             )
+        return cls(cartesian_to_reduced(matrices, cls._basis), dims)
+
+    @classmethod
+    def _from_cartesian(cls, matrices, dims=None):
         return cls(cartesian_to_reduced(matrices, cls._basis), dims)
 
     @classmethod
@@ -1288,7 +1292,7 @@ class Order2SymmetricTensor(Tensor):
 
     @property
     def inverse(self):
-        return Order2SymmetricTensor.from_cartesian(inv(self.cartesian), self.dims_str)
+        return Order2SymmetricTensor._from_cartesian(inv(self.cartesian), self.dims_str)
 
     @property
     def inv(self):
@@ -1423,7 +1427,7 @@ class Order2SymmetricTensor(Tensor):
             self.cartesian,
             optimize=True,
         )
-        return Order2SymmetricTensor.from_cartesian(components, output_dims)
+        return Order2SymmetricTensor._from_cartesian(components, output_dims)
 
     def to_specimen_frame(self, orientations):
         output_dims, output_indices, self_indices = self._get_transformation_indices(
@@ -1438,7 +1442,7 @@ class Order2SymmetricTensor(Tensor):
             self.cartesian,
             optimize=True,
         )
-        return Order2SymmetricTensor.from_cartesian(components, output_dims)
+        return Order2SymmetricTensor._from_cartesian(components, output_dims)
 
     def rotate(self, rotation):
         output_dims, output_indices, self_indices = self._get_transformation_indices(
@@ -1469,7 +1473,7 @@ class Order4SymmetricTensor(Tensor):
     _mul_lookup = {"mn": "mn"}
     _matmul_lookup = {
         "n": ["mn", "n", "m", Order2SymmetricTensor],
-        "ij": ["ijkl", "kl", "ij", Order2SymmetricTensor.from_cartesian],
+        "ij": ["ijkl", "kl", "ij", Order2SymmetricTensor._from_cartesian],
         "mn": ["mn", "no", "mo", None],
     }
 

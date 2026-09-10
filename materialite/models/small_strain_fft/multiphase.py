@@ -28,6 +28,13 @@ class Multiphase:
                 self.available_state_variables += m.available_state_variables
         self._output_variable_info = None
 
+    @classmethod
+    def from_material(cls, material, phase_label, phases, constitutive_models):
+        phase_indices = material.get_region_indices(region_label=phase_label)
+        return cls(
+            phases, constitutive_models, [phase_indices[p] for p in phases], material.num_points
+        )
+
     def initialize(self, orientations):
         tangent = Order4SymmetricTensor.zero().repeat(self.num_points)
         for m, i in zip(self.models, self.indices):

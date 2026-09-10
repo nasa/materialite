@@ -19,11 +19,14 @@ import logging
 from collections import defaultdict
 
 import numpy as np
-import scipy.sparse.linalg as sp
+
+# import scipy.sparse.linalg as sp
+from scipy.sparse.linalg import LinearOperator
 from materialite.models import Model
 from materialite.models.small_strain_fft import Multiphase
+from materialite.models.small_strain_fft.minres import minres
 from materialite.tensor import Order2SymmetricTensor, Order4SymmetricTensor
-from numpy.fft import fftfreq, fftn, ifftn
+from scipy.fft import fftfreq, rfftfreq, rfftn, irfftn
 
 
 class SmallStrainFFT(Model):
@@ -58,19 +61,21 @@ class SmallStrainFFT(Model):
         self._dimensions = None
         self._num_points = None
         self._projection = None
+        self._G_type = None
 
     def run(
         self,
         material,
         orientation_label="orientation",
-        phase_label=None,
         output_variables=None,
         output_times=None,
         global_tolerance=1.0e-3,
         strain_correction_tolerance=1.0e-2,
         linear_solver_tolerance=1.0e-5,
         postprocessor=None,
+        G_type="staggered",
     ):
+        self._G_type = G_type
         self._sizes = material.sizes
         self._dimensions = material.dimensions
         self._num_points = material.num_points
@@ -90,12 +95,9 @@ class SmallStrainFFT(Model):
         orientations = material.extract(orientation_label)
         self._projection = self._get_projection_operator()
         ndof = self._num_points * 6
-        constitutive_model = self._get_constitutive_model(
-            material, phase_label, self._constitutive_model
-        )
 
         # Initialize
-        tangent = constitutive_model.initialize(orientations)
+        tangent = self._constitutive_model.initialize(orientations)
         ref_stress = (
             tangent.mean("p") @ Order2SymmetricTensor([1.0e-10, 0, 0, 0, 0, 0])
         ).components[0]
@@ -134,7 +136,7 @@ class SmallStrainFFT(Model):
                 delta_temperature = self.temperature_history.temperature_increment(
                     time, time_increment
                 )
-                thermal_strain_increment = constitutive_model.calculate_thermal_strain(
+                thermal_strain_increment = self._constitutive_model.calculate_thermal_strain(
                     delta_temperature
                 )
                 thermal_strain = old_thermal_strain + thermal_strain_increment
@@ -153,7 +155,7 @@ class SmallStrainFFT(Model):
                 self._logger.debug(f"global iteration {iteration}")
                 if iteration == 1:
                     stress, tangent, constit_iters = (
-                        constitutive_model.calculate_stress_and_tangent(
+                        self._constitutive_model.calculate_stress_and_tangent(
                             strain - thermal_strain, guess_stress, time_increment
                         )
                     )
@@ -164,7 +166,13 @@ class SmallStrainFFT(Model):
                     mean_von_mises_stress = stress.mean().dev.norm.components * np.sqrt(
                         1.5
                     )
-                    equilibrium_error = np.max(np.abs(b))
+                    stress_normalizer = self._get_stress_normalizer(
+                        mean_von_mises_stress,
+                        summed_von_mises_stress,
+                        ref_stress,
+                        time_step_id,
+                    )
+                    equilibrium_error = np.max(np.abs(b)) / stress_normalizer
                     self._logger.debug(f"equilibrium error: {equilibrium_error}")
                     guess_stress = stress.copy()
                     all_constit_iters.append(constit_iters)
@@ -178,7 +186,7 @@ class SmallStrainFFT(Model):
                 old_fluctuation_strain += fluctuation_strain
 
                 stress, tangent, constit_iters = (
-                    constitutive_model.calculate_stress_and_tangent(
+                    self._constitutive_model.calculate_stress_and_tangent(
                         strain - thermal_strain, guess_stress, time_increment
                     )
                 )
@@ -193,16 +201,12 @@ class SmallStrainFFT(Model):
                 # Check convergence
                 # Equilibrium
                 mean_von_mises_stress = stress.mean().dev.norm.components * np.sqrt(1.5)
-                time_avg_von_mises_stress = (
-                    summed_von_mises_stress + mean_von_mises_stress
-                ) / (time_step_id + 1)
-                if mean_von_mises_stress < 1.0e-10 * time_avg_von_mises_stress:
-                    mean_von_mises_stress = time_avg_von_mises_stress
-                # Deal with case where all mean stresses are zero (e.g., free thermal expansion)
-                if mean_von_mises_stress < ref_stress:
-                    stress_normalizer = ref_stress
-                else:
-                    stress_normalizer = mean_von_mises_stress
+                stress_normalizer = self._get_stress_normalizer(
+                    mean_von_mises_stress,
+                    summed_von_mises_stress,
+                    ref_stress,
+                    time_step_id,
+                )
                 equilibrium_error = np.max(np.abs(b)) / stress_normalizer
 
                 # Strain correction (mapped to stress to filter out zero-stiffness points)
@@ -239,7 +243,7 @@ class SmallStrainFFT(Model):
                     break
 
             if converged:
-                constitutive_model.update_state_variables()
+                self._constitutive_model.update_state_variables()
                 old_stress = stress.copy()
                 old_strain = strain.copy()
                 old_tangent = tangent.copy()
@@ -249,7 +253,7 @@ class SmallStrainFFT(Model):
                 time_step_id += 1
                 time += time_increment
                 if time >= (next_output_time - time_tolerance):
-                    outputs = constitutive_model.generate_outputs(output_variables)
+                    outputs = self._constitutive_model.generate_outputs(output_variables)
                     outputs.update({"stress": stress, "strain": strain})
                     if self.temperature_history is not None:
                         outputs.update({"thermal_strain": thermal_strain})
@@ -276,7 +280,7 @@ class SmallStrainFFT(Model):
                 if time_increment < self.min_time_increment:
                     raise ValueError("min time increment reached")
 
-        outputs = constitutive_model.postprocess(output_variables)
+        outputs = self._constitutive_model.postprocess(output_variables)
         outputs.update({"stress": stress, "strain": strain})
         if self.temperature_history is not None:
             outputs.update({"thermal_strain": thermal_strain})
@@ -297,6 +301,19 @@ class SmallStrainFFT(Model):
             new_material.state.update(new_state)
 
         return new_material
+    
+    def _get_stress_normalizer(self, mean_von_mises_stress, summed_von_mises_stress, ref_stress, time_step_id):
+        time_avg_von_mises_stress = (
+            summed_von_mises_stress + mean_von_mises_stress
+        ) / (time_step_id + 1)
+        if mean_von_mises_stress < 1.0e-10 * time_avg_von_mises_stress:
+            mean_von_mises_stress = time_avg_von_mises_stress
+        # Deal with case where all mean stresses are zero (e.g., free thermal expansion)
+        if mean_von_mises_stress < ref_stress:
+            stress_normalizer = ref_stress
+        else:
+            stress_normalizer = mean_von_mises_stress
+        return stress_normalizer
 
     def _get_new_time_increment(
         self,
@@ -321,12 +338,14 @@ class SmallStrainFFT(Model):
             linear_solver_iters += 1
 
         Ax = lambda deps: self._left_hand_side(deps, tangent)
-        deps_vector, _ = sp.minres(
+        deps_vector, _ = minres(
             rtol=linear_solver_tolerance,
-            A=sp.LinearOperator(shape=(ndof, ndof), matvec=Ax, dtype="float"),
+            A=LinearOperator(shape=(ndof, ndof), matvec=Ax, dtype="float"),
             b=b,
             callback=count_iters,
         )
+        if np.any(np.iscomplex(deps_vector)):
+            deps_vector = np.real(deps_vector)
         self._logger.debug(f"linear solver iterations: {linear_solver_iters}")
         fluctuation_strain = Order2SymmetricTensor(
             deps_vector.reshape(self._num_points, 6), "p"
@@ -334,62 +353,107 @@ class SmallStrainFFT(Model):
         return fluctuation_strain
 
     def _get_projection_operator(self):
-        Nx, Ny, Nz = self._dimensions
-        qx = fftfreq(Nx)
-        qy = fftfreq(Ny)
-        qz = fftfreq(Nz)
-        frequencies = np.array(np.meshgrid(qx, qy, qz, indexing="ij")) * 2 * np.pi
-        rotated_frequencies = np.zeros_like(frequencies)
-        rotated_frequencies[0, ...] = (
-            np.sin(frequencies[0, ...] / 2)
-            * np.cos(frequencies[1, ...] / 2)
-            * np.cos(frequencies[2, ...] / 2)
-        )
-        rotated_frequencies[1, ...] = (
-            np.sin(frequencies[1, ...] / 2)
-            * np.cos(frequencies[0, ...] / 2)
-            * np.cos(frequencies[2, ...] / 2)
-        )
-        rotated_frequencies[2, ...] = (
-            np.sin(frequencies[2, ...] / 2)
-            * np.cos(frequencies[0, ...] / 2)
-            * np.cos(frequencies[1, ...] / 2)
-        )
-        rotated_frequency_norms = np.linalg.norm(rotated_frequencies, axis=0)
-        normalized_rotated_frequencies = np.divide(
-            rotated_frequencies,
-            rotated_frequency_norms,
-            out=np.zeros_like(rotated_frequencies),
-            where=rotated_frequency_norms != 0,
-        )
-        k = normalized_rotated_frequencies
-        if Nx % 2 == 0:
-            k[:, Nx // 2, :, :] = 0.0
-        if Ny % 2 == 0:
-            k[:, :, Ny // 2, :] = 0.0
-        if Nz % 2 == 0:
-            k[:, :, :, Nz // 2] = 0.0
-        A = np.einsum("im, jxyz, lxyz -> xyzijlm", np.eye(3), k, k, optimize=True)
-        B = np.einsum("ixyz, jxyz, lxyz, mxyz -> xyzijlm", k, k, k, k, optimize=True)
-        Ghat4 = (
-            0.5
-            * (
-                A
-                + np.einsum("xyzijlm -> xyzijml", A, optimize=True)
-                + np.einsum("xyzijlm -> xyzjilm", A, optimize=True)
-                + np.einsum("xyzijlm -> xyzjiml", A, optimize=True)
+        k = self._frequencies()
+        freq_points = k.shape[1:]
+        if self._G_type == "staggered":
+            k0 = np.ravel(k[0, ...])
+            k1 = np.ravel(k[1, ...])
+            k2 = np.ravel(k[2, ...])
+            B = np.zeros((*k0.shape, 6, 3), dtype="complex")
+            B[:, 0, 0] = k0
+            B[:, 1, 1] = k1
+            B[:, 2, 2] = k2
+            k_minus = -np.conj(k) / np.sqrt(2)
+            B[:, 3, 1] = k_minus[2, ...].ravel()
+            B[:, 4, 0] = k_minus[2, ...].ravel()
+            B[:, 3, 2] = k_minus[1, ...].ravel()
+            B[:, 5, 0] = k_minus[1, ...].ravel()
+            B[:, 4, 2] = k_minus[0, ...].ravel()
+            B[:, 5, 1] = k_minus[0, ...].ravel()
+            B_star = np.einsum("pij -> pji", np.conj(B), optimize=True)
+            tensor = np.einsum("pij, pjk -> pik", B_star, B, optimize=True)
+            tensor_inv = np.zeros_like(tensor)
+            tensor_inv[1:, :, :] = np.linalg.inv(tensor[1:, :, :])
+            tensor = np.einsum(
+                "pij, pjk, pkl -> pil", B, tensor_inv, B_star, optimize=True
+            ).reshape(*freq_points, 6, 6)
+            Nx, Ny, Nz = self._dimensions
+            if Nx % 2 == 0 and Ny % 2 == 0 and Nz % 2 == 0:
+                tensor[Nx // 2, Ny // 2, -1, ...] = 0.0
+            tensor = Order4SymmetricTensor(tensor.reshape(np.prod(freq_points), 6, 6), "p")
+        else:
+            A = np.einsum("im, jxyz, lxyz -> xyzijlm", np.eye(3), k, k, optimize=True)
+            B = np.einsum(
+                "ixyz, jxyz, lxyz, mxyz -> xyzijlm", k, k, k, k, optimize=True
             )
-            - B
-        )
-        tensor = Order4SymmetricTensor.from_cartesian(
-            Ghat4.reshape((self._num_points, 3, 3, 3, 3)), "p"
-        )
+            Ghat4 = (
+                0.5
+                * (
+                    A
+                    + np.einsum("xyzijlm -> xyzijml", A, optimize=True)
+                    + np.einsum("xyzijlm -> xyzjilm", A, optimize=True)
+                    + np.einsum("xyzijlm -> xyzjiml", A, optimize=True)
+                )
+                - B
+            )
+            tensor = Order4SymmetricTensor.from_cartesian(
+                Ghat4.reshape((np.prod(freq_points), 3, 3, 3, 3)), "p"
+            )
         if not np.array_equal(self.load_schedule.stress_mask, np.zeros(6)):
             stress_bc = np.zeros((6, 6))
             indices = np.nonzero(self.load_schedule.stress_mask)[0]
             stress_bc[indices, indices] = 1
             tensor[0] = Order4SymmetricTensor(stress_bc)
-        return tensor.components.reshape((*self._dimensions, 6, 6))
+        return tensor.components.reshape((*freq_points, 6, 6))
+
+    def _frequencies(self):
+        Nx, Ny, Nz = self._dimensions
+        qx = fftfreq(Nx)
+        qy = fftfreq(Ny)
+        qz = rfftfreq(Nz)
+        if Nz % 2 == 0:
+            qz[-1] = -qz[-1]
+        frequencies = np.array(np.meshgrid(qx, qy, qz, indexing="ij")) * 2 * np.pi
+        new_frequencies = np.zeros_like(frequencies)
+        q0 = frequencies[0, ...]
+        q1 = frequencies[1, ...]
+        q2 = frequencies[2, ...]
+        if self._G_type == "continuous":
+            new_frequencies = frequencies
+        elif self._G_type == "corners":
+            c0 = np.cos(q0 / 2)
+            c1 = np.cos(q1 / 2)
+            c2 = np.cos(q2 / 2)
+            new_frequencies[0, ...] = 2 * np.sin(q0 / 2) * c1 * c2
+            new_frequencies[1, ...] = 2 * np.sin(q1 / 2) * c0 * c2
+            new_frequencies[2, ...] = 2 * np.sin(q2 / 2) * c0 * c1
+        elif self._G_type == "centers":
+            new_frequencies[0, ...] = np.sin(q0)
+            new_frequencies[1, ...] = np.sin(q1)
+            new_frequencies[2, ...] = np.sin(q2)
+        elif self._G_type == "staggered":
+            new_frequencies = np.zeros_like(frequencies, dtype="complex")
+            new_frequencies[0, ...] = np.exp(1j * q0) - 1
+            new_frequencies[1, ...] = np.exp(1j * q1) - 1
+            new_frequencies[2, ...] = np.exp(1j * q2) - 1
+            return new_frequencies
+        else:
+            raise ValueError(f"invalid G_type: {self._G_type}")
+        new_frequency_norms = np.linalg.norm(new_frequencies, axis=0)
+        normalized_new_frequencies = np.divide(
+            new_frequencies,
+            new_frequency_norms,
+            out=np.zeros_like(new_frequencies),
+            where=new_frequency_norms != 0,
+        )
+        k = normalized_new_frequencies
+        if Nx % 2 == 0:
+            k[:, Nx // 2, :, :] = 0.0
+        if Ny % 2 == 0:
+            k[:, :, Ny // 2, :] = 0.0
+        if Nz % 2 == 0:
+            k[:, :, :, -1] = 0.0
+        return k
 
     def _left_hand_side(self, deps, d_sigma_d_epsilon):
         stress_guess = d_sigma_d_epsilon @ Order2SymmetricTensor(
@@ -399,24 +463,10 @@ class SmallStrainFFT(Model):
 
     def _apply_projection_tensor(self, tensor):
         tensor_grid = tensor.components.reshape((*self._dimensions, 6))
-        fourier_tensor = fftn(tensor_grid, axes=(0, 1, 2))
+        fourier_tensor = rfftn(tensor_grid, axes=(0, 1, 2))
         fourier_product = np.einsum(
             "xyzij, xyzj -> xyzi", self._projection, fourier_tensor, optimize=True
         )
-        return ifftn(fourier_product, axes=(0, 1, 2)).real.ravel()
-
-    def _get_constitutive_model(self, material, phase_label, constitutive_model):
-        if phase_label is not None and constitutive_model is not None:
-            raise ValueError("cannot specify phase and constitutive model")
-        if phase_label is None and constitutive_model is None:
-            raise ValueError("must specify phase label or provide a constitutive model")
-        if phase_label is not None:
-            phase_fields = material.extract_regional_field(phase_label)
-            phases = phase_fields[phase_label].to_list()
-            models = phase_fields["constitutive_model"].to_list()
-            phase_indices = material.get_region_indices(region_label=phase_label)
-            return Multiphase(
-                phases, models, [phase_indices[p] for p in phases], self._num_points
-            )
-        else:
-            return constitutive_model
+        return irfftn(
+            fourier_product, tensor_grid.shape[:-1], axes=(0, 1, 2)
+        ).real.ravel()
