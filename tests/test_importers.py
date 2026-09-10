@@ -1,10 +1,14 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
-from materialite import import_dream3d, import_spparks, import_vgstudio, import_evpfft
 from numpy.testing import assert_allclose, assert_array_equal
 from pandas.testing import assert_frame_equal
 
+from materialite import import_dream3d, import_evpfft, import_spparks, import_vgstudio
+
+TEST_DIR = Path(__file__).parent
 UTIL_PATH = "materialite.util"
 
 
@@ -128,7 +132,7 @@ def expected_dream3d_import():
 def test_dream3d_importer(expected_dream3d_import):
     data_container = "DataContainers/SyntheticVolumeDataContainer"
     material = import_dream3d(
-        file="tests/Cylinder_Synthetic.dream3d",
+        file=f"{TEST_DIR}/Cylinder_Synthetic.dream3d",
         simpl_geometry_path=f"{data_container}/_SIMPL_GEOMETRY",
         region_id_path=f"{data_container}/CellData/FeatureIds",
         field_paths=[f"{data_container}/CellData/Phases"],
@@ -148,7 +152,7 @@ def test_dream3d_importer(expected_dream3d_import):
 def test_dream3d_importer_fields_only(expected_dream3d_import):
     data_container = "DataContainers/SyntheticVolumeDataContainer"
     material2 = import_dream3d(
-        file="tests/Cylinder_Synthetic.dream3d",
+        file=f"{TEST_DIR}/Cylinder_Synthetic.dream3d",
         simpl_geometry_path=f"{data_container}/_SIMPL_GEOMETRY",
         region_id_path=f"{data_container}/CellData/FeatureIds",
         region_field_paths=[],
@@ -165,7 +169,7 @@ def test_dream3d_importer_error_if_region_id_label_must_be_specified():
     data_container = "DataContainers/SyntheticVolumeDataContainer"
     with pytest.raises(ValueError):
         _ = import_dream3d(
-            file="tests/Cylinder_Synthetic.dream3d",
+            file=f"{TEST_DIR}/Cylinder_Synthetic.dream3d",
             simpl_geometry_path=f"{data_container}/_SIMPL_GEOMETRY",
             region_field_paths=[f"{data_container}/Grain Data/NumNeighbors"],
         )

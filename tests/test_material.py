@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest  # Includes: tmp_path
@@ -15,6 +17,8 @@ from materialite import (
     Vector,
     import_dream3d,
 )
+
+TEST_DIR = Path(__file__).parent
 
 
 @pytest.fixture
@@ -649,7 +653,7 @@ def test_export_to_vtk(small_material, tmp_path):
 def test_export_to_evpfft(tmp_path, expected_evpfft_file_contents):
     data_container = "DataContainers/SyntheticVolumeDataContainer"
     material = import_dream3d(
-        file="tests/Cylinder_Synthetic.dream3d",
+        file=f"{TEST_DIR}/Cylinder_Synthetic.dream3d",
         simpl_geometry_path=f"{data_container}/_SIMPL_GEOMETRY",
         region_id_path=f"{data_container}/CellData/FeatureIds",
         region_field_paths=[f"{data_container}/Grain Data/EulerAngles"],
