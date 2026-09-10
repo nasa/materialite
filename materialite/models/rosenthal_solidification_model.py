@@ -19,7 +19,7 @@ from scipy.spatial import KDTree
 from materialite import Material
 from materialite.models import Model
 from materialite.models.laser_path import LaserPath
-from materialite.tensor import Scalar, Vector, Orientation
+from materialite.tensor import Scalar, Vector
 
 
 @njit
