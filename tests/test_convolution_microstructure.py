@@ -3,8 +3,9 @@ import importlib.util
 import numpy as np
 import pandas as pd
 import pytest  # Includes: tmp_path, mocker
+from materialite.tensor import Orientation2
+
 from materialite import Material
-from materialite.tensor import Orientation
 
 # Modules that have cupy imports
 try:
@@ -41,8 +42,8 @@ def model():
     }
 
     num_spins = 10000
-    orientations = Orientation.random(num_spins, rng=np.random.default_rng(123))
-    orientations[0] = Orientation.from_euler_angles([0, 0, 0])
+    orientations = Orientation2.random(num_spins, rng=np.random.default_rng(123))
+    orientations[0] = Orientation2.identity()
 
     return ConvolutionMicrostructureGPUModel(
         save_frequency=50,
@@ -63,8 +64,8 @@ def material():
     material = material.create_uniform_field("temperature", 300.0)
 
     num_spins = 10000
-    orientations = Orientation.random(num_spins, rng=np.random.default_rng(123))
-    orientations[0] = Orientation.from_euler_angles([0, 0, 0])
+    orientations = Orientation2.random(num_spins, rng=np.random.default_rng(123))
+    orientations[0] = Orientation2.identity()
     unique_spins = np.arange(num_spins)
     feature_field = pd.DataFrame({"spin": unique_spins, "orientation": orientations})
     material = material.create_random_integer_field(
@@ -158,8 +159,8 @@ def test_laser_adjust_build_path(material):
 )
 def test_run_model(model, material, laser):
     num_spins = 10000
-    orientations = Orientation.random(num_spins)
-    orientations[0] = Orientation.from_euler_angles([0, 0, 0])
+    orientations = Orientation2.random(num_spins)
+    orientations[0] = Orientation2.identity()
     unique_spins = np.arange(num_spins)
     feature_field = pd.DataFrame({"spin": unique_spins, "orientation": orientations})
     material = material.create_random_integer_field(
