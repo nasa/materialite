@@ -3,7 +3,7 @@ import pytest  # Includes: tmp_path, mocker
 from numpy import array, pi
 from numpy.testing import assert_allclose, assert_array_equal
 
-from materialite import Orientation2, Scalar, Vector
+from materialite import Orientation2, Scalar, Vector, Order4SymmetricTensor
 
 
 @pytest.fixture
@@ -47,6 +47,17 @@ def test_initialize_with_euler_angles():
     )
     orientation = Orientation2.from_euler_angles(euler_angles)
     assert_allclose(expected_rotation_matrix, orientation.rotation_matrix, atol=1e-14)
+
+
+def test_initialize_with_euler_angles_singleton_dimension():
+    euler_angles = [[pi / 2, pi / 2, pi / 2]]
+    expected_rotation_matrix = array(
+        [[[0.0, 0.0, 1.0], [0.0, -1.0, 0.0], [1.0, 0.0, 0.0]]]
+    )
+    orientation = Orientation2.from_euler_angles(euler_angles)
+    assert orientation.dims_str == "p"
+    assert_allclose(expected_rotation_matrix, orientation.rotation_matrix, atol=1e-14)
+
 
 
 def test_euler_angles_R22_equals_one():
@@ -104,6 +115,20 @@ def test_initialize_with_orientations():
 def test_get_random_orientation(seeded_rng):
     orientation = Orientation2.random(1, rng=seeded_rng)
     expected_euler_angles = np.array([1.42839436, 1.94602287, 5.00999493 - 2 * np.pi])
+    assert_allclose(orientation.euler_angles, expected_euler_angles)
+
+
+def test_get_random_orientation_points_dimension(seeded_rng):
+    orientation = Orientation2.random(1, rng=seeded_rng, dims="p")
+    expected_euler_angles = np.array([[1.42839436, 1.94602287, 5.00999493 - 2 * np.pi]])
+    assert orientation.dims_str == "p"
+    assert_allclose(orientation.euler_angles, expected_euler_angles)
+
+
+def test_get_random_orientation_implicit_points_dimension(seeded_rng):
+    orientation = Orientation2.random((1,), rng=seeded_rng)
+    expected_euler_angles = np.array([[1.42839436, 1.94602287, 5.00999493 - 2 * np.pi]])
+    assert orientation.dims_str == "p"
     assert_allclose(orientation.euler_angles, expected_euler_angles)
 
 
@@ -269,3 +294,33 @@ def test_compose_orientations_with_burgers_orientation_relationship_s_dimension(
     assert_allclose(
         calculated_beta_directions, beta_directions, rtol=1.0e-3, atol=1.0e-13
     )
+
+
+def test_mandel(seeded_rng):
+    tensor = Order4SymmetricTensor.from_cubic_constants(C11=252.0, C12=72.0, C44=90.0)
+    orientation = Orientation2.random(rng=seeded_rng)
+    rotated_tensor = tensor.rotate(orientation)
+    expected_rotated_tensor = np.einsum(
+        "mi, nj, qk, rl, ijkl -> mnqr",
+        orientation.rotation_matrix,
+        orientation.rotation_matrix,
+        orientation.rotation_matrix,
+        orientation.rotation_matrix,
+        tensor.cartesian,
+    )
+    assert_allclose(rotated_tensor.cartesian, expected_rotated_tensor, atol=1.0e-13)
+
+
+def test_mandel_with_singleton_points_dimension(seeded_rng):
+    tensor = Order4SymmetricTensor.from_cubic_constants(C11=252.0, C12=72.0, C44=90.0)
+    orientation = Orientation2.random(shape=(1,), rng=seeded_rng)
+    rotated_tensor = tensor.rotate(orientation)
+    expected_rotated_tensor = np.einsum(
+        "pmi, pnj, pqk, prl, ijkl -> pmnqr",
+        orientation.rotation_matrix,
+        orientation.rotation_matrix,
+        orientation.rotation_matrix,
+        orientation.rotation_matrix,
+        tensor.cartesian,
+    )
+    assert_allclose(rotated_tensor.cartesian, expected_rotated_tensor, atol=1.0e-13)

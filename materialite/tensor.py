@@ -2307,7 +2307,7 @@ class Orientation2:
         R_mandel[..., 5, 3] = R[..., 0, 1] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 1]
         R_mandel[..., 5, 4] = R[..., 0, 0] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 0]
         R_mandel[..., 5, 5] = R[..., 0, 0] * R[..., 1, 1] + R[..., 0, 1] * R[..., 1, 0]
-        return np.squeeze(R_mandel)
+        return np.squeeze(R_mandel) if len(self.dims_str) == 0 else R_mandel
 
     @property
     def num_dims(self):
@@ -2499,8 +2499,9 @@ class Orientation2:
         rotation_matrix[..., 2, 0] = s2 * s3
         rotation_matrix[..., 2, 1] = c3 * s2
         rotation_matrix[..., 2, 2] = c2
+        rotation_matrix = np.squeeze(rotation_matrix) if euler_angles.shape == (3,) else rotation_matrix
 
-        return cls(np.squeeze(rotation_matrix), dims)
+        return cls(rotation_matrix, dims)
 
     @classmethod
     def from_rotation_vector(cls, rotation_vector):
@@ -2542,16 +2543,17 @@ class Orientation2:
     @classmethod
     def random(cls, shape=1, rng=np.random.default_rng(), dims=None):
         # Check if iterable to allow the user to pass in an int
-        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
+        processed_shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
 
         # Generate random Euler angles using uniform distribution on SO(3)
-        z1 = rng.random(shape) * 2.0 * np.pi
-        cos_x2 = rng.random(shape) * 2.0 - 1.0
+        z1 = rng.random(processed_shape) * 2.0 * np.pi
+        cos_x2 = rng.random(processed_shape) * 2.0 - 1.0
         x2 = np.arccos(cos_x2)
-        z3 = rng.random(shape) * 2.0 * np.pi
+        z3 = rng.random(processed_shape) * 2.0 * np.pi
 
         # Stack Euler angles and create rotations
         euler_angles = np.stack([z1, x2, z3], axis=-1)
+        euler_angles = np.squeeze(euler_angles) if shape==1 and dims is None else euler_angles
 
         return cls.from_euler_angles(euler_angles, dims=dims)
 
@@ -2579,7 +2581,7 @@ class Orientation2:
         eulers_default = np.moveaxis(np.array([z1, x2, z3]), 0, -1)
 
         if np.all(Q22_default):
-            return np.squeeze(eulers_default)
+            return np.squeeze(eulers_default) if len(self.dims_str) == 0 else eulers_default
 
         eulers_negative_one = np.array(
             [np.arctan2(Q[..., 0, 1], Q[..., 0, 0]), np.pi * np.ones(n), np.zeros(n)]
@@ -2591,13 +2593,14 @@ class Orientation2:
         eulers_one = np.moveaxis(eulers_one, 0, -1)
 
         # Three conditions rolled into a messy operation
-        return np.squeeze(
+        result = (
             np.einsum("..., ...j -> ...j", Q22_default, eulers_default)
             + np.einsum(
                 "..., ...j -> ...j", Q22_equals_negative_one, eulers_negative_one
             )
             + np.einsum("..., ...j -> ...j", Q22_equals_one, eulers_one)
         )
+        return np.squeeze(result) if len(self.dims_str) == 0 else result
 
     @property
     def euler_angles_in_degrees(self):
