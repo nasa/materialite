@@ -41,7 +41,6 @@ def minres(A, b, x0=None, rtol=1e-5, atol=None, maxiter=None, callback=None):
     s = 0.0
     old_residual_norm = beta_curr
     step_size = 0.0
-    T_norm_squared = beta_curr**2
     precomputed_diag_term = 0.0
     off_off_diag = 0.0
     max_diag = 0.0
@@ -77,8 +76,6 @@ def minres(A, b, x0=None, rtol=1e-5, atol=None, maxiter=None, callback=None):
         x += step_size * search_dir_curr
 
         # Check convergence
-        T_norm_squared += alpha**2 + beta_curr**2 + beta_new**2
-        A_norm = np.sqrt(T_norm_squared)
         max_diag = np.max([max_diag, np.abs(diag)])
         min_diag = np.min([min_diag, np.abs(diag)])
         condition_number = max_diag / min_diag

@@ -20,10 +20,8 @@ from collections import defaultdict
 
 import numpy as np
 
-# import scipy.sparse.linalg as sp
 from scipy.sparse.linalg import LinearOperator
 from materialite.models import Model
-from materialite.models.small_strain_fft import Multiphase
 from materialite.models.small_strain_fft.minres import minres
 from materialite.tensor import Order2SymmetricTensor, Order4SymmetricTensor
 from scipy.fft import fftfreq, rfftfreq, rfftn, irfftn
@@ -418,16 +416,16 @@ class SmallStrainFFT(Model):
         q0 = frequencies[0, ...]
         q1 = frequencies[1, ...]
         q2 = frequencies[2, ...]
-        if self._G_type == "continuous":
+        if self._G_type == "continuum":
             new_frequencies = frequencies
-        elif self._G_type == "corners":
+        elif self._G_type == "rotated":
             c0 = np.cos(q0 / 2)
             c1 = np.cos(q1 / 2)
             c2 = np.cos(q2 / 2)
             new_frequencies[0, ...] = 2 * np.sin(q0 / 2) * c1 * c2
             new_frequencies[1, ...] = 2 * np.sin(q1 / 2) * c0 * c2
             new_frequencies[2, ...] = 2 * np.sin(q2 / 2) * c0 * c1
-        elif self._G_type == "centers":
+        elif self._G_type == "centered":
             new_frequencies[0, ...] = np.sin(q0)
             new_frequencies[1, ...] = np.sin(q1)
             new_frequencies[2, ...] = np.sin(q2)
