@@ -59,6 +59,13 @@ def test_initialize_with_euler_angles_singleton_dimension():
     assert_allclose(expected_rotation_matrix, orientation.rotation_matrix, atol=1e-14)
 
 
+def test_rotation_vector_with_singleton_dimension():
+    euler_angles = [[pi / 2, 0, 0]]
+    orientation = Orientation2.from_euler_angles(euler_angles)
+    rotation_vector = orientation.rotation_vector
+    assert rotation_vector.dims_str == "p"
+    assert_allclose(rotation_vector.components, np.array([[0, 0, pi / 2]]))
+
 
 def test_euler_angles_R22_equals_one():
     euler_angles = [pi / 6, 0, pi / 4]

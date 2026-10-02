@@ -2672,7 +2672,9 @@ class Orientation2:
         # Scale axis by angle to get rotation vector
         rotation_vector = axis * angle[..., np.newaxis]
 
-        return Vector(np.squeeze(rotation_vector), self.dims_str)
+        rotation_vector = np.squeeze(rotation_vector) if len(self.dims_str) == 0 else rotation_vector
+
+        return Vector(rotation_vector, self.dims_str)
 
     @property
     def trace(self):
