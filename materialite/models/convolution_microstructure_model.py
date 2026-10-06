@@ -52,7 +52,7 @@ class ConvolutionMicrostructureGPUModel(Model):
         max_spin=20,
         neighborhood_distance=np.sqrt(3),
         seed=None,
-        record_frequency=100_000,
+        record_frequency=0,  # 0 = do not record the Potts energy (it is not returned)
         kbTs=0.00000001,
         Q=128312.1,
         orientations=[],
@@ -101,6 +101,7 @@ class ConvolutionMicrostructureGPUModel(Model):
 
     def run(self, material, laser, temperature_label, spin_label):
         self._clear_gpu_fields()
+        self._check_orientations(material, spin_label)
         self._initiate_temperature_simulation(material, laser, temperature_label)
         self._initiate_enthalpy_method()
         self._initiate_microstructure_simulation(material, spin_label)
@@ -131,6 +132,22 @@ class ConvolutionMicrostructureGPUModel(Model):
         self._clear_gpu_fields()
 
         return new_material
+
+    def _check_orientations(self, material, spin_label):
+        # Every spin value (including the random spins outside the original
+        # domain) is used as an index into the orientations
+        if not hasattr(self.orientations, "euler_angles"):
+            raise ValueError(
+                "orientations must be an Orientation with one entry per spin value"
+            )
+        num_orientations = self.orientations.euler_angles.shape[0]
+        largest_spin = max(self.max_spin - 1, int(material.extract(spin_label).max()))
+        if largest_spin >= num_orientations:
+            raise ValueError(
+                f"Spin values go up to {largest_spin}, but only {num_orientations} "
+                "orientations were provided"
+            )
+        return None
 
     def _initiate_microstructure_simulation(self, material, spin_label):
         if hasattr(material, "neighbors") and hasattr(material, "num_neighbors"):
@@ -295,7 +312,7 @@ class ConvolutionMicrostructureGPUModel(Model):
 
         for current_flip in range(num_monte_carlo_attempts):
 
-            if current_flip % record_frequency == 0:
+            if record_frequency > 0 and current_flip % record_frequency == 0:
                 recorded_energy.append(
                     _get_energy(num_points, neighbors, num_neighbors, spin_field)
                 )
@@ -846,22 +863,25 @@ class ConvolutionMicrostructureGPUModel(Model):
 
         return None
 
+    def _sync_sub_vectors(self):
+        # When the z sub-range is smaller than the full domain, sub_set is not
+        # contiguous and reshaping it makes sub_vector a copy rather than a view.
+        # Write the sub_vector updates back so super_set and original_set see them.
+        for field in (self._spin, self._grab_distance):
+            if hasattr(field, "sub_vector"):
+                field.sub_set[:, :, :] = field.sub_vector.reshape(field.sub_set.shape)
+        return None
+
     def _save_fields(self):
         if self.save_history:
             if (self.time_step % self.save_frequency) == 0:
+                self._sync_sub_vectors()
                 self.temperature_history.update(
                     {self.time_step: np.copy(cp.asnumpy(self._temperature.super_set))}
                 )
                 self.phase_history.update(
                     {self.time_step: np.copy(cp.asnumpy(self._phase.super_set))}
                 )
-
-                # Need this to relink the data from the vector to the array
-                if hasattr(self._spin, "sub_vector"):
-                    self._spin.sub_set[:] = self._spin.sub_vector.reshape(
-                        self._x.sub_set.shape
-                    )
-
                 self.spin_history.update(
                     {self.time_step: np.copy(cp.asnumpy(self._spin.super_set))}
                 )
@@ -870,6 +890,7 @@ class ConvolutionMicrostructureGPUModel(Model):
         return None
 
     def _finalize_material(self, material, temperature_label, spin_label):
+        self._sync_sub_vectors()
         new_material = material.create_fields(
             {"phase": cp.asnumpy(self._phase.original_set).reshape(material.num_points)}
         )
@@ -923,13 +944,9 @@ class ConvolutionMicrostructureGPUModel(Model):
             print("Cannot plot. Enthalpy method not in use or initialized.")
 
     def _update_z_domain(self, laser):
+        # Keep the updates from the previous sub-range before it changes
+        self._sync_sub_vectors()
         conditions = laser.get_current_beam_conditions()
-        # Reshape and assign to tie back together
-        if hasattr(self._spin, "sub_vector"):
-            self._spin.sub_set[:] = self._spin.sub_vector.reshape(self._x.sub_set.shape)
-            self._grab_distance.sub_set[:] = self._grab_distance.sub_vector.reshape(
-                self._x.sub_set.shape
-            )
         self.z_upper = int(np.round(conditions["z"] / self.dx))
         self.z_lower = int(self.z_upper - self.z_range)
         self.domain._set_sub_z_range(self.z_lower, self.z_upper)
