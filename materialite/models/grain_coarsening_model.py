@@ -51,7 +51,7 @@ class GrainCoarseningModel(Model):
         try:
             spin_field = material.extract(grain_label).astype(int)
         except KeyError:
-            rng = np.random.default_rng()
+            rng = np.random.default_rng(self.seed)
             spin_field = rng.integers(0, self.max_grain_id, size=material.num_points)
         try:
             mobility_field = material.extract(mobility_label).astype(np.float32)
@@ -152,7 +152,9 @@ class GrainCoarseningModel(Model):
             if mobility_field[sample_point] < probability_check:
                 continue
 
-            test_spin = random.randint(0, max_spin)
+            # randrange excludes max_spin, matching the 0 to max_grain_id - 1
+            # range used when the grain field is generated
+            test_spin = random.randrange(0, max_spin)
             neighbor_range = num_neighbors[sample_point]
             current_energy = 0
             test_energy = 0
@@ -253,8 +255,8 @@ def _get_neighbors(material, neighborhood_distance):
     )
     neighbors[distances == 0] = -1
     neighbors[np.isinf(distances)] = -1
-    neighbors = np.roll(neighbors, -1)
-    distances = np.roll(distances, -1)  # Not needed for this application
+    neighbors = np.roll(neighbors, -1, axis=1)
+    distances = np.roll(distances, -1, axis=1)  # Not needed for this application
 
     num_neighbors = np.sum(neighbors != -1, axis=1)
     return neighbors, num_neighbors
