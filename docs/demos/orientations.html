@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -441,8 +441,8 @@ document.write(`
 </div>
 </div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">Orientation</span></code>s in Materialite represent a basis transformation from one coordinate frame to another. In the language of materials science, the transformation is from a “specimen” (or “sample” or “lab”) frame to a “crystal” frame.</p>
-<p>Make an <code class="docutils literal notranslate"><span class="pre">Orientation</span></code> representing the Goss orientation. We’ll use the <code class="docutils literal notranslate"><span class="pre">from_euler_angles</span></code> method, which expects a set of Bunge Euler angles in radians. The Bunge Euler angles represent a rotation about the specimen <code class="docutils literal notranslate"><span class="pre">z</span></code> axis, followed by a rotation about the new <code class="docutils literal notranslate"><span class="pre">x</span></code> axis, followed by a rotation about the new <code class="docutils literal notranslate"><span class="pre">z</span></code> axis. The three angles are often defined as <span class="math notranslate nohighlight">\(\phi_1\)</span>, <span class="math notranslate nohighlight">\(\Phi\)</span>, and <span class="math notranslate nohighlight">\(\phi_2\)</span>, respectively.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Orientation</span></code>s in Materialite represent the rotation of objects (and their associated vectors/tensors) from a reference positioning to a physical, oriented positioning, e.g. the rotation of a reference unit cell of a crystal to the unit cell for that crystal inside a polycrystal (see the <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> demo for more detail on using <code class="docutils literal notranslate"><span class="pre">Orientation</span></code>s to rotate other tensors).</p>
+<p>First, we make an <code class="docutils literal notranslate"><span class="pre">Orientation</span></code> representing the Goss orientation. We’ll use the <code class="docutils literal notranslate"><span class="pre">from_euler_angles</span></code> method, which expects a set of Bunge Euler angles in radians. The Bunge Euler angles represent a sequence of three elemental rotations: starting about the reference <code class="docutils literal notranslate"><span class="pre">z</span></code> axis, followed by the new <code class="docutils literal notranslate"><span class="pre">x</span></code> axis, followed by the new <code class="docutils literal notranslate"><span class="pre">z</span></code> axis. The three angles are often defined as <span class="math notranslate nohighlight">\(\phi_1\)</span>, <span class="math notranslate nohighlight">\(\Phi\)</span>, and <span class="math notranslate nohighlight">\(\phi_2\)</span>, respectively.</p>
 <p>As an example, create the Goss orientation, which requires only a <span class="math notranslate nohighlight">\(\pi/4\)</span> or <span class="math notranslate nohighlight">\(45^\circ\)</span> rotation about the <code class="docutils literal notranslate"><span class="pre">x</span></code> axis.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -455,16 +455,16 @@ document.write(`
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>rotation matrix:
- [[ 1.          0.          0.        ]
- [-0.          0.70710678  0.70710678]
- [ 0.         -0.70710678  0.70710678]]
+ [[ 1.         -0.          0.        ]
+ [ 0.          0.70710678 -0.70710678]
+ [ 0.          0.70710678  0.70710678]]
 Bunge Euler angles: [0.         0.78539816 0.        ]
 Bunge Euler angles in degrees: [ 0. 45.  0.]
 </pre></div>
 </div>
 </div>
 </div>
-<p>The rows of the rotation matrix represent the crystal basis vectors expressed in the specimen frame. The columns represent the specimen basis vectors expressed in the crystal frame. Here, the specimen <span class="math notranslate nohighlight">\([100]\)</span> direction is aligned with the crystal <span class="math notranslate nohighlight">\([100]\)</span> direction, the specimen <span class="math notranslate nohighlight">\([010]\)</span> direction is aligned with the crystal <span class="math notranslate nohighlight">\([01\bar{1}]\)</span> direction, and the specimen <span class="math notranslate nohighlight">\([001]\)</span> direction is aligned with the crystal <span class="math notranslate nohighlight">\([011]\)</span> direction.</p>
+<p>This orientation rotates the reference <span class="math notranslate nohighlight">\([100]\)</span> direction to the <span class="math notranslate nohighlight">\([100]\)</span> direction (i.e., it is unchanged), the reference <span class="math notranslate nohighlight">\([010]\)</span> direction to the <span class="math notranslate nohighlight">\([011]\)</span> direction, and the reference <span class="math notranslate nohighlight">\([001]\)</span> direction to the <span class="math notranslate nohighlight">\([0\bar{1}1]\)</span> direction.</p>
 <p>We can also construct the <code class="docutils literal notranslate"><span class="pre">Orientation</span></code> using the Euler angles in degrees if we set the <code class="docutils literal notranslate"><span class="pre">in_degrees</span></code> argument to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -720,7 +720,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>Orientation([2.7   1.256 2.125], dims: (), Eul...</td>
+      <td>Orientation([ 3.07   0.743 -1.62 ], dims: (), ...</td>
     </tr>
     <tr>
       <th>1</th>
@@ -730,7 +730,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>0</td>
       <td>0</td>
       <td>1</td>
-      <td>Orientation([2.7   1.256 2.125], dims: (), Eul...</td>
+      <td>Orientation([ 3.07   0.743 -1.62 ], dims: (), ...</td>
     </tr>
     <tr>
       <th>2</th>
@@ -740,7 +740,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>0</td>
       <td>1</td>
       <td>0</td>
-      <td>Orientation([2.7   1.256 2.125], dims: (), Eul...</td>
+      <td>Orientation([ 3.07   0.743 -1.62 ], dims: (), ...</td>
     </tr>
     <tr>
       <th>3</th>
@@ -750,7 +750,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>0</td>
       <td>1</td>
       <td>1</td>
-      <td>Orientation([2.7   1.256 2.125], dims: (), Eul...</td>
+      <td>Orientation([ 3.07   0.743 -1.62 ], dims: (), ...</td>
     </tr>
     <tr>
       <th>4</th>
@@ -760,7 +760,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>1</td>
       <td>0</td>
       <td>0</td>
-      <td>Orientation([2.7   1.256 2.125], dims: (), Eul...</td>
+      <td>Orientation([ 3.07   0.743 -1.62 ], dims: (), ...</td>
     </tr>
     <tr>
       <th>5</th>
@@ -770,7 +770,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>1</td>
       <td>0</td>
       <td>1</td>
-      <td>Orientation([2.7   1.256 2.125], dims: (), Eul...</td>
+      <td>Orientation([ 3.07   0.743 -1.62 ], dims: (), ...</td>
     </tr>
     <tr>
       <th>6</th>
@@ -780,7 +780,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>1</td>
       <td>1</td>
       <td>0</td>
-      <td>Orientation([2.7   1.256 2.125], dims: (), Eul...</td>
+      <td>Orientation([ 3.07   0.743 -1.62 ], dims: (), ...</td>
     </tr>
     <tr>
       <th>7</th>
@@ -790,7 +790,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>Orientation([2.7   1.256 2.125], dims: (), Eul...</td>
+      <td>Orientation([ 3.07   0.743 -1.62 ], dims: (), ...</td>
     </tr>
   </tbody>
 </table>
@@ -841,7 +841,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>Orientation([ 1.283  1.206 -1.327], dims: (), ...</td>
+      <td>Orientation([1.519 2.598 0.087], dims: (), Eul...</td>
     </tr>
     <tr>
       <th>1</th>
@@ -851,7 +851,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>0</td>
       <td>0</td>
       <td>1</td>
-      <td>Orientation([-1.868  0.988 -1.202], dims: (), ...</td>
+      <td>Orientation([-1.591  2.086 -2.637], dims: (), ...</td>
     </tr>
     <tr>
       <th>2</th>
@@ -861,7 +861,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>0</td>
       <td>1</td>
       <td>0</td>
-      <td>Orientation([1.828 1.77  2.36 ], dims: (), Eul...</td>
+      <td>Orientation([ 1.01   0.991 -1.867], dims: (), ...</td>
     </tr>
     <tr>
       <th>3</th>
@@ -871,7 +871,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>0</td>
       <td>1</td>
       <td>1</td>
-      <td>Orientation([ 1.007  1.371 -1.768], dims: (), ...</td>
+      <td>Orientation([ 0.947  1.728 -1.153], dims: (), ...</td>
     </tr>
     <tr>
       <th>4</th>
@@ -881,7 +881,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>1</td>
       <td>0</td>
       <td>0</td>
-      <td>Orientation([ 0.773  1.977 -0.159], dims: (), ...</td>
+      <td>Orientation([-2.364  0.839 -2.208], dims: (), ...</td>
     </tr>
     <tr>
       <th>5</th>
@@ -891,7 +891,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>1</td>
       <td>0</td>
       <td>1</td>
-      <td>Orientation([0.527 1.266 0.396], dims: (), Eul...</td>
+      <td>Orientation([-0.407  1.324  0.767], dims: (), ...</td>
     </tr>
     <tr>
       <th>6</th>
@@ -901,7 +901,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>1</td>
       <td>1</td>
       <td>0</td>
-      <td>Orientation([ 0.462  0.763 -0.452], dims: (), ...</td>
+      <td>Orientation([ 1.582  0.251 -0.335], dims: (), ...</td>
     </tr>
     <tr>
       <th>7</th>
@@ -911,7 +911,7 @@ Orientation([[[ 1.883  1.338 -1.958]
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>Orientation([ 1.836  1.869 -0.713], dims: (), ...</td>
+      <td>Orientation([1.583 1.725 0.076], dims: (), Eul...</td>
     </tr>
   </tbody>
 </table>
@@ -933,12 +933,12 @@ Orientation([[[ 1.883  1.338 -1.958]
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Orientation([0.    1.571 0.   ], dims: (), Euler angles shape: (3,))
 Orientation([[0.    1.571 0.   ]
- [0.785 1.047 0.   ]], dims: (points), Euler angles shape: (2, 3))
+ [0.    1.047 0.785]], dims: (points), Euler angles shape: (2, 3))
 </pre></div>
 </div>
 </div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">Orientation</span></code>s can also be constructed from Miller indices. Here, we provide the crystal plane normal that is parallel to the specimen ND/[001]/z direction and the crystal direction that is parallel to the RD/[100]/x direction. As an example, we will make the Goss orientation again.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Orientation</span></code>s can also be constructed from Miller indices. Here, we provide the plane normal in the crystal that is parallel to the specimen ND/[001]/z direction and the direction in the crystal that is parallel to the RD/[100]/x direction. As an example, we will make the Goss orientation again.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Orientation</span><span class="o">.</span><span class="n">from_miller_indices</span><span class="p">(</span>

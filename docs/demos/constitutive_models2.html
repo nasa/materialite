@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -436,6 +436,7 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">()</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -455,6 +456,7 @@ document.write(`
     <span class="n">LoadSchedule</span><span class="p">,</span>
     <span class="n">Elastic</span><span class="p">,</span>
     <span class="n">ElasticViscoplastic</span><span class="p">,</span>
+    <span class="n">Multiphase</span><span class="p">,</span>
     <span class="n">voce</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -536,7 +538,7 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Axial stress [MPa]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/d5344ef84fb9d6f176dd9de69c6b895abd3c56882d86de55740e9148ce426335.png" src="../_images/d5344ef84fb9d6f176dd9de69c6b895abd3c56882d86de55740e9148ce426335.png" />
+<img alt="../_images/2de5e2d18b7506adb8aed31f2ec14272f39a49b2e6ddb84da8ed9134144bcc34.png" src="../_images/2de5e2d18b7506adb8aed31f2ec14272f39a49b2e6ddb84da8ed9134144bcc34.png" />
 </div>
 </div>
 <p>Mean plastic strain in the loading direction versus total strain:</p>
@@ -556,7 +558,7 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Axial plastic strain [-]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/66b9ac29f0b8ab85fcb65a8dfe30de5565171de02f60ac78f3d25dc835e736ea.png" src="../_images/66b9ac29f0b8ab85fcb65a8dfe30de5565171de02f60ac78f3d25dc835e736ea.png" />
+<img alt="../_images/3afdcc3dcc6f62377f1534c26d206158143a4cb72d6c6b6f0c211dcd1925ec57.png" src="../_images/3afdcc3dcc6f62377f1534c26d206158143a4cb72d6c6b6f0c211dcd1925ec57.png" />
 </div>
 </div>
 <p>Pointwise equivalent plastic strain at the end of the simulation:</p>
@@ -570,7 +572,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/01c509cc5ef8f24c9172c86e173ff85836880db610b18ea8bdbc7c9f19d3186b.png" src="../_images/01c509cc5ef8f24c9172c86e173ff85836880db610b18ea8bdbc7c9f19d3186b.png" />
+<img alt="../_images/ad0598622b87ce8ce296a05e3419649d018695a9d99e88e83eac9dd1c2d49121.png" src="../_images/ad0598622b87ce8ce296a05e3419649d018695a9d99e88e83eac9dd1c2d49121.png" />
 </div>
 </div>
 <p>Pointwise CRSS. Since the hardening law is a function of only the accumulated slip, the CRSS is the same on all slip systems at a given point. Here, we take the max over the slip systems, but taking the mean would yield the same result in this case.</p>
@@ -583,7 +585,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/cab01e5a28a8dc2d4254c82814c20c44134e22d09a82c2de3a050723f178d214.png" src="../_images/cab01e5a28a8dc2d4254c82814c20c44134e22d09a82c2de3a050723f178d214.png" />
+<img alt="../_images/2b2d0a831b3a8307b045696bbcd8b830943323aca5ef1236e15140290246ae3b.png" src="../_images/2b2d0a831b3a8307b045696bbcd8b830943323aca5ef1236e15140290246ae3b.png" />
 </div>
 </div>
 <p>We can do the same with the max slip across the 12 slip systems at each point.</p>
@@ -596,7 +598,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/4eea77b125e3d5e83a811bfba17386a75a58c2db24688fdec471bd1d2e68d9df.png" src="../_images/4eea77b125e3d5e83a811bfba17386a75a58c2db24688fdec471bd1d2e68d9df.png" />
+<img alt="../_images/42edecafe583b82cdf56e69a38970eac9bb7cf1d3044d9bc72a072c2dbed2ee7.png" src="../_images/42edecafe583b82cdf56e69a38970eac9bb7cf1d3044d9bc72a072c2dbed2ee7.png" />
 </div>
 </div>
 <p>We can also calculate and plot grain-average quantities. The method <code class="docutils literal notranslate"><span class="pre">get_region_indices</span></code> returns a dictionary whose keys are the region IDs (in this case grain IDs) and whose values are the indices in <code class="docutils literal notranslate"><span class="pre">material.get_fields()</span></code> corresponding to each region ID.</p>
@@ -620,7 +622,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/f8bdf058f9704e5ed059e5288daa646e22d16f1bdf87879192a581853b29b58e.png" src="../_images/f8bdf058f9704e5ed059e5288daa646e22d16f1bdf87879192a581853b29b58e.png" />
+<img alt="../_images/067c7afd9d36280fc5cfd802ebac1bfde2d30d56754c089e520773553f008313.png" src="../_images/067c7afd9d36280fc5cfd802ebac1bfde2d30d56754c089e520773553f008313.png" />
 </div>
 </div>
 <p><strong>Example 2: Cyclic loading</strong></p>
@@ -657,10 +659,13 @@ document.write(`
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.01 + 0.02
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.03 + 0.02
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:ElasticViscoplastic:Too many iterations in material loop
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:ElasticViscoplastic:Too many iterations in material loop
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.01 + 0.01
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.02 + 0.01
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.03 + 0.01
@@ -720,40 +725,43 @@ document.write(`
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.42999999999999994 + 0.027499999999999997
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.4574999999999999 + 0.04250000000000009
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.4574999999999999 + 0.027499999999999997
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.5 + 0.04250000000000009
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.4849999999999999 + 0.015000000000000124
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.5425000000000001 + 0.04250000000000009
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.5 + 0.03000000000000025
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.5850000000000002 + 0.039999999999999813
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.5300000000000002 + 0.0600000000000005
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.625 + 0.07999999999999963
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.5900000000000007 + 0.034999999999999254
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.7049999999999996 + 0.04500000000000037
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.625 + 0.06999999999999851
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.75 + 0.09000000000000075
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.6949999999999985 + 0.05500000000000149
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.8400000000000007 + 0.034999999999999254
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.75 + 0.11000000000000298
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.875 + 0.034999999999999254
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.860000000000003 + 0.014999999999997016
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.9099999999999993 + 0.034999999999999254
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.875 + 0.02999999999999403
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.9449999999999985 + 0.034999999999999254
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.904999999999994 + 0.02999999999999403
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.9799999999999978 + 0.020000000000002238
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.9349999999999881 + 0.05999999999998806
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:SmallStrainFFT:New increment: time 0.9949999999999761 + 0.005000000000023874
 </pre></div>
 </div>
 </div>
@@ -774,7 +782,7 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Axial strain [-]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/f2e4a33667315a2f1f5a17f0536073e7c3adc6acfd115d2cb8cc214594e975fe.png" src="../_images/f2e4a33667315a2f1f5a17f0536073e7c3adc6acfd115d2cb8cc214594e975fe.png" />
+<img alt="../_images/527fa270e0ca54cd79211ede12928228b8775e285d77cb73d1eb35262cd10e96.png" src="../_images/527fa270e0ca54cd79211ede12928228b8775e285d77cb73d1eb35262cd10e96.png" />
 </div>
 </div>
 <p>Plot the axial stress-strain curve. Note that the stress relaxes slightly due to the viscoplastic material model and low strain rate at the maximum and minimum of the cycle. The stress relaxation can be reduced by increasing the rate exponent to more closely approximate rate-independent behavior.</p>
@@ -793,7 +801,7 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Axial stress [MPa]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/b6c7cb1de8fa3a05656418005e355525af111b5c76a18dd03af47207ebcc8d96.png" src="../_images/b6c7cb1de8fa3a05656418005e355525af111b5c76a18dd03af47207ebcc8d96.png" />
+<img alt="../_images/e3867ba9167c1bbe2d5d7b1418191e9832a72e0b55a080f347ada2caa245eed1.png" src="../_images/e3867ba9167c1bbe2d5d7b1418191e9832a72e0b55a080f347ada2caa245eed1.png" />
 </div>
 </div>
 <p><strong>Example 3: Breaking periodic boundary conditions</strong></p>
@@ -819,12 +827,18 @@ document.write(`
 <img alt="../_images/6adcbb0787555cbe131c2ec03dd4914a655475aea3225ea59f940ba7487c161f.png" src="../_images/6adcbb0787555cbe131c2ec03dd4914a655475aea3225ea59f940ba7487c161f.png" />
 </div>
 </div>
-<p>Running a model follows the same steps as Example 4 in the constitutive models demo. Create a regional field to assign constitutive models to the zero-stiffness phase (phase ID 0) and the solid material (phase ID 1).</p>
+<p>Running a model follows the same steps as Example 4 in the constitutive models demo. Here, we create a <code class="docutils literal notranslate"><span class="pre">Multiphase</span></code> constitutive model for the zero-stiffness phase (phase ID 0) and the solid material (phase ID 1).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pore_model</span> <span class="o">=</span> <span class="n">Elastic</span><span class="p">(</span><span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">zero</span><span class="p">())</span>
-<span class="n">phase_field</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;constitutive_model&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">pore_model</span><span class="p">,</span> <span class="n">constitutive_model</span><span class="p">]}</span>
-<span class="n">material_3</span> <span class="o">=</span> <span class="n">material_3</span><span class="o">.</span><span class="n">create_regional_fields</span><span class="p">(</span><span class="n">region_label</span><span class="o">=</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">regional_fields</span><span class="o">=</span><span class="n">phase_field</span><span class="p">)</span>
+<span class="n">phases</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">constitutive_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">pore_model</span><span class="p">,</span> <span class="n">constitutive_model</span><span class="p">]</span>
+<span class="n">multiphase</span> <span class="o">=</span> <span class="n">Multiphase</span><span class="o">.</span><span class="n">from_material</span><span class="p">(</span>
+    <span class="n">material_3</span><span class="p">,</span>
+    <span class="n">phase_label</span><span class="o">=</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span>
+    <span class="n">phases</span><span class="o">=</span><span class="n">phases</span><span class="p">,</span>
+    <span class="n">constitutive_models</span><span class="o">=</span><span class="n">constitutive_models</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="n">load_schedule</span> <span class="o">=</span> <span class="n">LoadSchedule</span><span class="o">.</span><span class="n">from_constant_uniaxial_strain_rate</span><span class="p">(</span>
     <span class="n">magnitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;z&quot;</span>
 <span class="p">)</span>
@@ -832,11 +846,10 @@ document.write(`
     <span class="n">load_schedule</span><span class="o">=</span><span class="n">load_schedule</span><span class="p">,</span>
     <span class="n">end_time</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
     <span class="n">initial_time_increment</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+    <span class="n">constitutive_model</span><span class="o">=</span><span class="n">multiphase</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">output_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">material_3</span> <span class="o">=</span> <span class="n">material_3</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">,</span> <span class="n">output_times</span><span class="o">=</span><span class="n">output_times</span><span class="p">,</span> <span class="n">phase_label</span><span class="o">=</span><span class="s2">&quot;phase&quot;</span>
-<span class="p">)</span>
+<span class="n">material_3</span> <span class="o">=</span> <span class="n">material_3</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">output_times</span><span class="o">=</span><span class="n">output_times</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -849,7 +862,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/80e51112baa636886497c9ded1c3ae567818fa38bf0c52b90279fb081734abd7.png" src="../_images/80e51112baa636886497c9ded1c3ae567818fa38bf0c52b90279fb081734abd7.png" />
+<img alt="../_images/3ef688e7ff253d709f29104f717ce812ec11b8000053df0b05f00d1768aec724.png" src="../_images/3ef688e7ff253d709f29104f717ce812ec11b8000053df0b05f00d1768aec724.png" />
 </div>
 </div>
 <p>If you want to simulate microstructure in the center of a specimen, you could use an <code class="docutils literal notranslate"><span class="pre">IsotropicElasticPlastic</span></code> buffer material instead of <code class="docutils literal notranslate"><span class="pre">Elastic</span></code> with zero stiffness.</p>
@@ -893,9 +906,7 @@ document.write(`
 <span class="p">)</span>
 
 <span class="n">output_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">material_4</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">,</span> <span class="n">output_times</span><span class="o">=</span><span class="n">output_times</span><span class="p">,</span> <span class="n">postprocessor</span><span class="o">=</span><span class="n">postprocessor</span>
-<span class="p">)</span>
+<span class="n">material_4</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">output_times</span><span class="o">=</span><span class="n">output_times</span><span class="p">,</span> <span class="n">postprocessor</span><span class="o">=</span><span class="n">postprocessor</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -908,26 +919,26 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;mean_stress&#39;: [np.float64(207.70069137892975),
-  np.float64(331.13093246584344),
-  np.float64(370.4118603702579),
-  np.float64(387.2041238388599),
-  np.float64(398.39624896975545),
-  np.float64(407.61063023651127),
-  np.float64(415.7811885118615),
-  np.float64(423.2240240574911),
-  np.float64(430.09600307452513),
-  np.float64(436.47823073914367)],
- &#39;mean_strain&#39;: [np.float64(0.0009999999999999998),
-  np.float64(0.002000000000000002),
-  np.float64(0.0029999999999999957),
-  np.float64(0.003999999999999998),
-  np.float64(0.00499999999999999),
-  np.float64(0.005999999999999989),
-  np.float64(0.006999999999999994),
-  np.float64(0.008000000000000014),
-  np.float64(0.008999999999999975),
-  np.float64(0.009999999999999976)]}
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;mean_stress&#39;: [np.float64(206.92313714915716),
+  np.float64(329.43136289113767),
+  np.float64(368.47622271052904),
+  np.float64(385.2407725683348),
+  np.float64(396.4274684179873),
+  np.float64(405.6273437171825),
+  np.float64(413.77537802722003),
+  np.float64(421.18723439921365),
+  np.float64(428.0228347017804),
+  np.float64(434.36650121783885)],
+ &#39;mean_strain&#39;: [np.float64(0.0009999999999999983),
+  np.float64(0.0020000000000000065),
+  np.float64(0.0030000000000000035),
+  np.float64(0.003999999999999997),
+  np.float64(0.004999999999999995),
+  np.float64(0.006000000000000008),
+  np.float64(0.006999999999999999),
+  np.float64(0.008),
+  np.float64(0.009000000000000006),
+  np.float64(0.010000000000000005)]}
 </pre></div>
 </div>
 </div>
@@ -946,7 +957,7 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Axial stress [-]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/89759ef0c14d508cfbe62d34a486d722b5a38e37e3681a7ae362607d7c2d02ce.png" src="../_images/89759ef0c14d508cfbe62d34a486d722b5a38e37e3681a7ae362607d7c2d02ce.png" />
+<img alt="../_images/0a5ab12a5e5d4bc2a7657f2fbe1456cd4d389e8b97253eb82f55149fd9552c24.png" src="../_images/0a5ab12a5e5d4bc2a7657f2fbe1456cd4d389e8b97253eb82f55149fd9552c24.png" />
 </div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">SmallStrainFFT</span></code> still adds the stress and strain fields at the last time step as fields.</p>
@@ -997,8 +1008,8 @@ document.write(`
       <td>0</td>
       <td>0</td>
       <td>28</td>
-      <td>Order2SymmetricTensor([   3.24027071   50.9661...</td>
-      <td>Order2SymmetricTensor([-0.00351021 -0.00351244...</td>
+      <td>Order2SymmetricTensor([ 44.40739431  20.778807...</td>
+      <td>Order2SymmetricTensor([-4.02206381e-03 -4.3072...</td>
       <td>Orientation([-1.939  1.397 -0.22 ], dims: (), ...</td>
     </tr>
     <tr>
@@ -1010,8 +1021,8 @@ document.write(`
       <td>0</td>
       <td>1</td>
       <td>18</td>
-      <td>Order2SymmetricTensor([-115.70210395 -110.2031...</td>
-      <td>Order2SymmetricTensor([-0.00478479 -0.00286396...</td>
+      <td>Order2SymmetricTensor([-115.34760878 -156.5198...</td>
+      <td>Order2SymmetricTensor([-0.00249326 -0.00387251...</td>
       <td>Orientation([1.122 0.824 2.524], dims: (), Eul...</td>
     </tr>
     <tr>
@@ -1023,8 +1034,8 @@ document.write(`
       <td>0</td>
       <td>2</td>
       <td>27</td>
-      <td>Order2SymmetricTensor([185.0448906   57.573206...</td>
-      <td>Order2SymmetricTensor([-0.00500004 -0.00391037...</td>
+      <td>Order2SymmetricTensor([147.01575422  74.899312...</td>
+      <td>Order2SymmetricTensor([-0.0084086  -0.00165567...</td>
       <td>Orientation([2.49  1.101 1.855], dims: (), Eul...</td>
     </tr>
     <tr>
@@ -1036,8 +1047,8 @@ document.write(`
       <td>0</td>
       <td>3</td>
       <td>23</td>
-      <td>Order2SymmetricTensor([ 96.02910171 323.994570...</td>
-      <td>Order2SymmetricTensor([-0.00390457 -0.00711432...</td>
+      <td>Order2SymmetricTensor([150.1283481  205.292544...</td>
+      <td>Order2SymmetricTensor([-0.00145961 -0.00738729...</td>
       <td>Orientation([ 0.037  1.844 -0.961], dims: (), ...</td>
     </tr>
     <tr>
@@ -1049,8 +1060,8 @@ document.write(`
       <td>0</td>
       <td>4</td>
       <td>23</td>
-      <td>Order2SymmetricTensor([ 46.66484985 133.920709...</td>
-      <td>Order2SymmetricTensor([-0.00311848 -0.00894383...</td>
+      <td>Order2SymmetricTensor([115.54627058 222.541062...</td>
+      <td>Order2SymmetricTensor([-0.00220165 -0.00731762...</td>
       <td>Orientation([ 0.037  1.844 -0.961], dims: (), ...</td>
     </tr>
     <tr>
@@ -1075,8 +1086,8 @@ document.write(`
       <td>15</td>
       <td>11</td>
       <td>28</td>
-      <td>Order2SymmetricTensor([168.97974002 105.387120...</td>
-      <td>Order2SymmetricTensor([-0.00319162 -0.00547008...</td>
+      <td>Order2SymmetricTensor([135.3022041   33.062029...</td>
+      <td>Order2SymmetricTensor([-0.00440629 -0.00560055...</td>
       <td>Orientation([-1.939  1.397 -0.22 ], dims: (), ...</td>
     </tr>
     <tr>
@@ -1088,8 +1099,8 @@ document.write(`
       <td>15</td>
       <td>12</td>
       <td>28</td>
-      <td>Order2SymmetricTensor([ 93.39650328 -11.017745...</td>
-      <td>Order2SymmetricTensor([-0.00284104 -0.00798951...</td>
+      <td>Order2SymmetricTensor([ 77.06611446  67.003127...</td>
+      <td>Order2SymmetricTensor([-0.00469628 -0.00598936...</td>
       <td>Orientation([-1.939  1.397 -0.22 ], dims: (), ...</td>
     </tr>
     <tr>
@@ -1101,8 +1112,8 @@ document.write(`
       <td>15</td>
       <td>13</td>
       <td>28</td>
-      <td>Order2SymmetricTensor([ 10.51056344  13.955798...</td>
-      <td>Order2SymmetricTensor([-0.00497961 -0.00499625...</td>
+      <td>Order2SymmetricTensor([ 14.56070635  61.260061...</td>
+      <td>Order2SymmetricTensor([-0.00526191 -0.00480005...</td>
       <td>Orientation([-1.939  1.397 -0.22 ], dims: (), ...</td>
     </tr>
     <tr>
@@ -1114,8 +1125,8 @@ document.write(`
       <td>15</td>
       <td>14</td>
       <td>28</td>
-      <td>Order2SymmetricTensor([  2.92641953  32.954120...</td>
-      <td>Order2SymmetricTensor([-0.00610594 -0.00402682...</td>
+      <td>Order2SymmetricTensor([ 22.08812505  46.216443...</td>
+      <td>Order2SymmetricTensor([-5.73114477e-03 -4.2544...</td>
       <td>Orientation([-1.939  1.397 -0.22 ], dims: (), ...</td>
     </tr>
     <tr>
@@ -1127,8 +1138,8 @@ document.write(`
       <td>15</td>
       <td>15</td>
       <td>28</td>
-      <td>Order2SymmetricTensor([ 109.77530785  172.6339...</td>
-      <td>Order2SymmetricTensor([-0.0068626  -0.00355898...</td>
+      <td>Order2SymmetricTensor([  37.77520997   61.7016...</td>
+      <td>Order2SymmetricTensor([-0.0070529  -0.00499993...</td>
       <td>Orientation([-1.939  1.397 -0.22 ], dims: (), ...</td>
     </tr>
   </tbody>
@@ -1190,12 +1201,12 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([481.70479664 548.18381739 498.5617037  507.56479777 516.48744305
- 576.30838446 349.05984275 356.92346469 454.21201614 375.45566692
- 549.97101148 339.8180509  502.01325136 508.67748579 371.54957844
- 524.5070343  456.89068358 516.68494602 530.63278875 501.22307915
- 358.31437551 487.052812   479.17639761 454.48104572 551.70120767
- 412.75761847 524.70150062 468.10681304 362.92975004 490.14177953], dims: (g), components shape: (30,))
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([476.60174867 542.81322943 512.92137372 489.36928123 507.03342105
+ 563.43609972 351.80597057 358.16325907 451.65281646 378.51198599
+ 552.68325832 341.86321367 497.82242272 496.95828004 382.81050711
+ 529.77995107 458.50980607 503.92063914 511.80339429 503.41505336
+ 361.58643715 485.61795473 461.49416838 450.61730867 552.88330165
+ 417.17997037 514.72399416 457.42729514 369.38538501 484.14111948], dims: (g), components shape: (30,))
 </pre></div>
 </div>
 </div>
@@ -1216,7 +1227,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/f8bdf058f9704e5ed059e5288daa646e22d16f1bdf87879192a581853b29b58e.png" src="../_images/f8bdf058f9704e5ed059e5288daa646e22d16f1bdf87879192a581853b29b58e.png" />
+<img alt="../_images/067c7afd9d36280fc5cfd802ebac1bfde2d30d56754c089e520773553f008313.png" src="../_images/067c7afd9d36280fc5cfd802ebac1bfde2d30d56754c089e520773553f008313.png" />
 </div>
 </div>
 <p><strong>Example 5: Anisotropic hardening</strong></p>
@@ -1227,6 +1238,7 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">slip_systems</span> <span class="o">=</span> <span class="n">SlipSystem</span><span class="o">.</span><span class="n">octahedral</span><span class="p">()</span>
 <span class="n">num_slip_systems</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">slip_systems</span><span class="p">)</span>
 <span class="n">hardening_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">num_slip_systems</span><span class="p">,</span> <span class="n">num_slip_systems</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1.2</span>
+<span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">hardening_matrix</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 <span class="n">hardening_properties</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;tau_1&quot;</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">,</span>
     <span class="s2">&quot;theta_0&quot;</span><span class="p">:</span> <span class="mf">1450.0</span><span class="p">,</span>
@@ -1243,7 +1255,6 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stiffness_tensor</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_cubic_constants</span><span class="p">(</span>
     <span class="n">C11</span><span class="o">=</span><span class="mi">243300</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="mi">156700</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="mi">117800</span>
 <span class="p">)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">hardening_matrix</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 <span class="n">constitutive_model</span> <span class="o">=</span> <span class="n">ElasticViscoplastic</span><span class="p">(</span>
     <span class="n">stiffness</span><span class="o">=</span><span class="n">stiffness_tensor</span><span class="p">,</span>
     <span class="n">slip_systems</span><span class="o">=</span><span class="n">SlipSystem</span><span class="o">.</span><span class="n">octahedral</span><span class="p">(),</span>
@@ -1281,8 +1292,16 @@ document.write(`
 <span class="n">stress1</span> <span class="o">=</span> <span class="n">material_1</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">)</span>
 <span class="n">strain1</span> <span class="o">=</span> <span class="n">material_1</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s2">&quot;strain&quot;</span><span class="p">)</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strain</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Anisotropic hardening&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strain1</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress1</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Isotropic hardening&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">strain</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="n">stress</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Anisotropic hardening&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">strain1</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="n">stress1</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Isotropic hardening&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Axial strain [-]&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Axial stress [MPa]&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1290,10 +1309,10 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x1cf5f666510&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x226779442f0&gt;
 </pre></div>
 </div>
-<img alt="../_images/0d44c14af9a29716bc42fd51f63476a3ea40067b70081b6a589116d551cf4b47.png" src="../_images/0d44c14af9a29716bc42fd51f63476a3ea40067b70081b6a589116d551cf4b47.png" />
+<img alt="../_images/3f33156574e0e9db447614cdb0aafa330c9e8663375797468f942e4bf4b62a1b.png" src="../_images/3f33156574e0e9db447614cdb0aafa330c9e8663375797468f942e4bf4b62a1b.png" />
 </div>
 </div>
 <p>Now the slip resistances are different across each slip system.</p>
@@ -1304,19 +1323,19 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([[164.14970033 164.39023491 164.46167343 ... 164.43802522 164.46167384
-  164.35224907]
- [174.27245784 173.79484097 172.56942262 ... 174.26493831 174.2718922
-  172.61539879]
- [171.4128959  171.41289635 171.41289309 ... 170.57009999 171.41289635
-  170.15853936]
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([[164.92907864 164.93271521 164.93260454 ... 164.92925772 164.9325201
+  164.1078788 ]
+ [167.83096602 166.61135099 167.06415329 ... 167.77937008 167.83096335
+  166.62305411]
+ [173.13751206 173.13746663 173.13741632 ... 171.61787266 173.13751204
+  170.11205937]
  ...
- [169.06256046 169.07517988 169.07511847 ... 169.07249457 169.07516566
-  168.77766402]
- [169.06576327 169.07627307 169.07627376 ... 169.065674   169.07625964
-  168.34547412]
- [170.90645409 170.92998511 170.93037496 ... 170.88980175 170.93037175
-  169.96203552]], dims: (points, slip systems), components shape: (4096, 12))
+ [169.24582881 169.31113877 169.31126615 ... 169.26778354 169.31129144
+  168.44507924]
+ [168.83484621 168.8425742  168.84254226 ... 168.83012367 168.84250521
+  167.64190191]
+ [174.09890173 174.1027327  174.10279001 ... 174.09779855 174.10261774
+  172.99811729]], dims: (points, slip systems), components shape: (4096, 12))
 </pre></div>
 </div>
 </div>

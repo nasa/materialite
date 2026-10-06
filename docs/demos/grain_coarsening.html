@@ -205,6 +205,9 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Grain Coarsening</a></li>
 <li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convolution_microstructure.html">AM Microstucture</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model-Making Demo</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="model_making.html">Creating New Models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
@@ -462,7 +465,7 @@ For now, we can assign them both to be one, create a grain field with values fro
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/1b22225b134033c4f0d894d4508c9f0d5f1eac488262a92fff78dd02ba065d15.png" src="../_images/1b22225b134033c4f0d894d4508c9f0d5f1eac488262a92fff78dd02ba065d15.png" />
+<img alt="../_images/f229d519302f09b77f1e8c93273e1c4b0f900b254586b57705bc79001bdd39e7.png" src="../_images/f229d519302f09b77f1e8c93273e1c4b0f900b254586b57705bc79001bdd39e7.png" />
 </div>
 </div>
 <p>Each site has been randomly assigned a grain value between 0 and 20. There are repeated values, so more than one site can share the same value. One way of thinking about it is by considering each grain id as corresponding to unique a crystallographic orientation.</p>
@@ -484,7 +487,7 @@ For now, we can assign them both to be one, create a grain field with values fro
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/fefc0bc0dd98aaf7ebcbd3146b5c3039353deb56cb548c067c8d78f1d6a89450.png" src="../_images/fefc0bc0dd98aaf7ebcbd3146b5c3039353deb56cb548c067c8d78f1d6a89450.png" />
+<img alt="../_images/052530be3b81bab1f3575dd16b2861b0fe3012650cdb27a11e62b704998d27fa.png" src="../_images/052530be3b81bab1f3575dd16b2861b0fe3012650cdb27a11e62b704998d27fa.png" />
 </div>
 </div>
 <p>If more Monte Carlo flip attempts are taken, the structure will be further coarsened.</p>
@@ -504,7 +507,7 @@ For now, we can assign them both to be one, create a grain field with values fro
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/2334bb94844d767e8a1d82ec56f397590f129c543590f8674d99c52b13000d09.png" src="../_images/2334bb94844d767e8a1d82ec56f397590f129c543590f8674d99c52b13000d09.png" />
+<img alt="../_images/b09fdb16ecec71ed450c923ee224d933a84441e85485585fa7a5809a7ff0db6d.png" src="../_images/b09fdb16ecec71ed450c923ee224d933a84441e85485585fa7a5809a7ff0db6d.png" />
 </div>
 </div>
 <p>The total Monte Carlo energy of the three states (the initial material, coarsened material, and extra coarsened material) can be compared. This typically decreases logarithmically with the number of Monte Carlo steps.</p>
@@ -520,9 +523,9 @@ For now, we can assign them both to be one, create a grain field with values fro
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Energy before: 1500904
-Energy after coarsening: 885660
-Energy after extra coarsening: 388204
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Energy before: 1500186
+Energy after coarsening: 885006
+Energy after extra coarsening: 388994
 </pre></div>
 </div>
 </div>
@@ -551,7 +554,7 @@ Energy after extra coarsening: 388204
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/6b66dbb93b7e009e10e8f30577bf7e2807a8dacc633b3c07f7bfb2c802d6982e.png" src="../_images/6b66dbb93b7e009e10e8f30577bf7e2807a8dacc633b3c07f7bfb2c802d6982e.png" />
+<img alt="../_images/cd15035325d44e762c30964cd0118d61c965f5b6144d09d39a144823d30350c8.png" src="../_images/cd15035325d44e762c30964cd0118d61c965f5b6144d09d39a144823d30350c8.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -570,8 +573,8 @@ Energy after extra coarsening: 388204
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Energy after coarsening with no pinning: 388204
-Energy after coarsening with pinning: 562238
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Energy after coarsening with no pinning: 388994
+Energy after coarsening with pinning: 569204
 </pre></div>
 </div>
 </div>
@@ -614,7 +617,7 @@ Energy after coarsening with pinning: 562238
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/e47f2e888a4c7f9d4a9f00d74a657de1e5be47773b535850f8a7cbec2c8747f4.png" src="../_images/e47f2e888a4c7f9d4a9f00d74a657de1e5be47773b535850f8a7cbec2c8747f4.png" />
+<img alt="../_images/1ecd4a85df6674082ed77da62f33cc3070b568501fa52747f746c289a107ab6d.png" src="../_images/1ecd4a85df6674082ed77da62f33cc3070b568501fa52747f746c289a107ab6d.png" />
 </div>
 </div>
 <p>Mobility decreases to zero as it approaches the bottom of the domain, which causes minimal refinement in that portion of the material.</p>

@@ -1,0 +1,748 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Cropping &#8212; Materialite</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'demos/cropping';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="Materialite - Home"/>
+    <script>document.write(`<img src="../_static/logo.png" class="logo__image only-dark" alt="Materialite - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    Materialite (Alpha Release)
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="simple_example.html">Simple Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="material_basics.html">Material Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="material_plot.html">Material Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="material_phase.html">Material Phases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="regional_fields.html">Regional Fields</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tensor/Crystallography Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="tensors.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orientations.html">Orientations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="crystallography.html">Crystallography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ipf_example.html">IPF Coloring</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mechanical Model Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="constitutive_models.html">Constitutive Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constitutive_models2.html">Constitutive Models: Deep Dive</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Thermal/Process Model Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="convolution.html">Convolution Thermal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
+<li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convolution_microstructure.html">AM Microstucture</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model-Making Demo</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="model_making.html">Creating New Models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">Modules</a></li>
+
+
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/nasa/materialite" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/nasa/materialite/edit/main/docs/_sources/demos/cropping.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/nasa/materialite/issues/new?title=Issue%20on%20page%20%2Fdemos/cropping.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/demos/cropping.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Cropping</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="cropping">
+<h1>Cropping<a class="headerlink" href="#cropping" title="Link to this heading">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">materialite</span><span class="w"> </span><span class="kn">import</span> <span class="n">Material</span><span class="p">,</span> <span class="n">Crop</span><span class="p">,</span> <span class="n">Sphere</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">Material</span></code> can be cropped in four ways: by physical coordinates (<code class="docutils literal notranslate"><span class="pre">crop</span></code>), by point IDs (<code class="docutils literal notranslate"><span class="pre">crop_by_id</span></code>), through index notation (a shorthand for <code class="docutils literal notranslate"><span class="pre">crop_by_id</span></code>), and via the <code class="docutils literal notranslate"><span class="pre">Crop</span></code> model class which provides higher-level operations. All crop operations return a new <code class="docutils literal notranslate"><span class="pre">Material</span></code>, leaving the original unchanged.</p>
+<p>We work with a 21×21×21 material (spacing 1, so the physical domain is [0, 20] in each direction). Two spherical inclusions are embedded: one at the domain center (phase 2) and one towards the far corner (phase 3).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">dimensions</span><span class="o">=</span><span class="p">[</span><span class="mi">21</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">21</span><span class="p">])</span><span class="o">.</span><span class="n">create_uniform_field</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">sphere1</span> <span class="o">=</span> <span class="n">Sphere</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">centroid</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">center</span><span class="p">)</span>
+<span class="n">sphere2</span> <span class="o">=</span> <span class="n">Sphere</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="mf">7.0</span><span class="p">,</span> <span class="n">centroid</span><span class="o">=</span><span class="p">[</span><span class="mi">21</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">21</span><span class="p">])</span>
+<span class="n">material</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">insert_feature</span><span class="p">(</span><span class="n">sphere1</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span><span class="o">.</span><span class="n">insert_feature</span><span class="p">(</span>
+    <span class="n">sphere2</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Material Geometry&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dimensions: </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">dimensions</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;spacing:    </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">spacing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;origin:     </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">origin</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sizes:      </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">sizes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;center:     </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">center</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;center_id:  </span><span class="si">{</span><span class="n">material</span><span class="o">.</span><span class="n">center_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Material Geometry
+dimensions: [21 21 21]
+spacing:    [1 1 1]
+origin:     [0 0 0]
+sizes:      [20 20 20]
+center:     [10. 10. 10.]
+center_id:  [10 10 10]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Plot the <code class="docutils literal notranslate"><span class="pre">z</span></code> coordinate to get a feel for the coordinate system before looking at the phase field.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/72eceaf0c8bb5c1b1b4e7f51c181d13a9a79a11b7097f8ce2da4a1249cb2948b.png" src="../_images/72eceaf0c8bb5c1b1b4e7f51c181d13a9a79a11b7097f8ce2da4a1249cb2948b.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/c8bf905106e0422a5c65a8d44872e3607caea897f0a5d8385992a976bfd52b15.png" src="../_images/c8bf905106e0422a5c65a8d44872e3607caea897f0a5d8385992a976bfd52b15.png" />
+</div>
+</div>
+<p><strong>Cropping by physical coordinate</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">crop</span></code> retains all points whose physical coordinate falls within the given range (inclusive at both endpoints). Unspecified axes are unconstrained.</p>
+<p>The cut below keeps all points with <span class="math notranslate nohighlight">\(z \leq\)</span> <code class="docutils literal notranslate"><span class="pre">center[2]</span></code>, revealing a cross-section through both spheres.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="p">(</span><span class="n">material</span><span class="o">.</span><span class="n">origin</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">material</span><span class="o">.</span><span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" src="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" />
+</div>
+</div>
+<p><strong>Cropping by point ID</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">crop_by_id</span></code> retains all points whose point ID falls within the given range (inclusive at both endpoints). Point IDs run from 0 to <code class="docutils literal notranslate"><span class="pre">dimensions</span> <span class="pre">-</span> <span class="pre">1</span></code> in each direction. For this <code class="docutils literal notranslate"><span class="pre">material</span></code>, this produces the same cut as above.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">crop_by_id</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">material</span><span class="o">.</span><span class="n">center_id</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" src="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" />
+</div>
+</div>
+<p><strong>Indexing</strong></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Material</span></code> supports NumPy-style index notation as a shorthand for <code class="docutils literal notranslate"><span class="pre">crop_by_id</span></code>. Slices use Python’s exclusive-stop convention, so <code class="docutils literal notranslate"><span class="pre">0:11</span></code> selects IDs 0 through 10. The same z cut as above becomes <code class="docutils literal notranslate"><span class="pre">material[:,</span> <span class="pre">:,</span> <span class="pre">0:center_id[2]+1]</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span> <span class="p">:</span> <span class="n">material</span><span class="o">.</span><span class="n">center_id</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" src="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" />
+</div>
+</div>
+<p>A single integer ID collapses that axis to a single plane. Here, a cross-section exactly at the sphere centers.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">material</span><span class="o">.</span><span class="n">center_id</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/4f59a360b5c14670b1f46a60b3e2feb93f8edecc75e4769391b30e3e8969cf4c.png" src="../_images/4f59a360b5c14670b1f46a60b3e2feb93f8edecc75e4769391b30e3e8969cf4c.png" />
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 1000x800 with 2 Axes&gt;, &lt;Axes: xlabel=&#39;x&#39;, ylabel=&#39;y&#39;&gt;)
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Advanced cropping with the <code class="docutils literal notranslate"><span class="pre">Crop</span></code> model</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Crop</span></code> class provides helper methods for common higher-level cropping operations. Being a <code class="docutils literal notranslate"><span class="pre">Model</span></code>, it can be run via <code class="docutils literal notranslate"><span class="pre">crop_model.run(material)</span></code>, called directly as <code class="docutils literal notranslate"><span class="pre">crop_model(material)</span></code>, or composed with <code class="docutils literal notranslate"><span class="pre">material.run</span></code>. In the examples below we assign a name to the model before running it to make the intent clear.</p>
+<p><em>from_slice_by_id</em></p>
+<p>Extracts a single plane perpendicular to the given axis. The <code class="docutils literal notranslate"><span class="pre">axis</span></code> argument accepts an integer (0/1/2) or a label (<code class="docutils literal notranslate"><span class="pre">'x'</span></code>/<code class="docutils literal notranslate"><span class="pre">'y'</span></code>/<code class="docutils literal notranslate"><span class="pre">'z'</span></code>). This is equivalent to a single integer in index notation: <code class="docutils literal notranslate"><span class="pre">from_slice_by_id(axis='z',</span> <span class="pre">index=10)</span></code> gives the same result as <code class="docutils literal notranslate"><span class="pre">material[:,</span> <span class="pre">:,</span> <span class="pre">10]</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">slice_crop</span> <span class="o">=</span> <span class="n">Crop</span><span class="o">.</span><span class="n">from_slice_by_id</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">center_id</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">slice_crop</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">material</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/4f59a360b5c14670b1f46a60b3e2feb93f8edecc75e4769391b30e3e8969cf4c.png" src="../_images/4f59a360b5c14670b1f46a60b3e2feb93f8edecc75e4769391b30e3e8969cf4c.png" />
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 1000x800 with 2 Axes&gt;, &lt;Axes: xlabel=&#39;x&#39;, ylabel=&#39;y&#39;&gt;)
+</pre></div>
+</div>
+</div>
+</div>
+<p><em>from_box_by_id</em></p>
+<p>Extracts a box of a given point count centered on a point ID. <code class="docutils literal notranslate"><span class="pre">dimensions</span></code> is a 3-element iterable <code class="docutils literal notranslate"><span class="pre">[x_size,</span> <span class="pre">y_size,</span> <span class="pre">z_size]</span></code>; a <code class="docutils literal notranslate"><span class="pre">None</span></code> element spans the full range for that axis. By default the center of the box is <code class="docutils literal notranslate"><span class="pre">material.center_id</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 7×7×7 box around the center sphere (sphere1, radius 4, at center_id = [10, 10, 10])</span>
+<span class="n">box_crop</span> <span class="o">=</span> <span class="n">Crop</span><span class="o">.</span><span class="n">from_box_by_id</span><span class="p">(</span><span class="n">dimensions</span><span class="o">=</span><span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
+<span class="n">box_crop</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">material</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/9354178e71f5cc601686df016a78766713372930b23ea8014bc7a0197de88d39.png" src="../_images/9354178e71f5cc601686df016a78766713372930b23ea8014bc7a0197de88d39.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Custom centering to isolate the corner sphere (sphere2, radius 7, at [21, 21, 21])</span>
+<span class="n">box_crop2</span> <span class="o">=</span> <span class="n">Crop</span><span class="o">.</span><span class="n">from_box_by_id</span><span class="p">(</span><span class="n">dimensions</span><span class="o">=</span><span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">14</span><span class="p">],</span> <span class="n">center_id</span><span class="o">=</span><span class="p">[</span><span class="mi">21</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">21</span><span class="p">])</span>
+<span class="n">box_crop2</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">material</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/d94db920df03a711ee614c235c96d7b7507df15fc51540c5fa5dbbe510828d4a.png" src="../_images/d94db920df03a711ee614c235c96d7b7507df15fc51540c5fa5dbbe510828d4a.png" />
+</div>
+</div>
+<p><em>from_fraction</em></p>
+<p>Retains a given fraction of the domain along each axis, provided as a 3-element iterable <code class="docutils literal notranslate"><span class="pre">[x_fraction,</span> <span class="pre">y_fraction,</span> <span class="pre">z_fraction]</span></code>. <code class="docutils literal notranslate"><span class="pre">centered=True</span></code> (default) takes the crop from the middle of the domain; <code class="docutils literal notranslate"><span class="pre">centered=False</span></code> anchors to the origin.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fraction_crop</span> <span class="o">=</span> <span class="n">Crop</span><span class="o">.</span><span class="n">from_fraction</span><span class="p">(</span><span class="n">fractions</span><span class="o">=</span><span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">fraction_crop</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">material</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/3835dea61bc1a9dc9ba90f79a7d37a998f10adc4a76cf923078015abdcbd70a1.png" src="../_images/3835dea61bc1a9dc9ba90f79a7d37a998f10adc4a76cf923078015abdcbd70a1.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fraction_crop_edge</span> <span class="o">=</span> <span class="n">Crop</span><span class="o">.</span><span class="n">from_fraction</span><span class="p">(</span><span class="n">fractions</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">centered</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">fraction_crop_edge</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">material</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/47b624c4bcb57905dfab7eb6acaa87974222e22028f829c6014204793fdda2e9.png" src="../_images/47b624c4bcb57905dfab7eb6acaa87974222e22028f829c6014204793fdda2e9.png" />
+</div>
+</div>
+<p><em>from_clip_by_id</em></p>
+<p>Discards all points on one side of a point ID threshold along the given axis. The default <code class="docutils literal notranslate"><span class="pre">keep='low'</span></code> retains the low-ID side. Synonyms <code class="docutils literal notranslate"><span class="pre">'above'</span></code>/<code class="docutils literal notranslate"><span class="pre">'positive'</span></code>/<code class="docutils literal notranslate"><span class="pre">'high'</span></code> keep the high-ID side; <code class="docutils literal notranslate"><span class="pre">'below'</span></code>/<code class="docutils literal notranslate"><span class="pre">'negative'</span></code>/<code class="docutils literal notranslate"><span class="pre">'low'</span></code> keep the low-ID side.</p>
+<p>Cutting at <code class="docutils literal notranslate"><span class="pre">center_id[2]</span></code> with the default <code class="docutils literal notranslate"><span class="pre">keep='low'</span></code> produces the same z cross-section as the <code class="docutils literal notranslate"><span class="pre">crop_by_id</span></code> example above.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clip_crop</span> <span class="o">=</span> <span class="n">Crop</span><span class="o">.</span><span class="n">from_clip_by_id</span><span class="p">(</span><span class="n">normal</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">center_id</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">clip_crop</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">material</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="c1"># Equivalent: clip_crop(material).plot(&quot;phase&quot;, color_lims=(1, 3))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" src="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" />
+</div>
+</div>
+<p><em>from_clip</em></p>
+<p>The physical-coordinate counterpart to <code class="docutils literal notranslate"><span class="pre">from_clip_by_id</span></code>. Cutting at <code class="docutils literal notranslate"><span class="pre">center[2]</span></code> (= 10.0) gives the same result.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Crop</span><span class="o">.</span><span class="n">from_clip</span><span class="p">(</span><span class="n">normal</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">material</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" src="../_images/b0fb03aa57fdbbff9165840bbbd113394685aa7ef23cbda4cfd7d04eb07b0970.png" />
+</div>
+</div>
+<p>Multiple <code class="docutils literal notranslate"><span class="pre">Crop</span></code> operations can be chained via <code class="docutils literal notranslate"><span class="pre">material.run</span></code>. Here we clip along both z and x at the domain center, creating a corner cutaway that exposes the interior of both spheres at once.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Crop</span><span class="o">.</span><span class="n">from_clip_by_id</span><span class="p">(</span><span class="n">normal</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">center_id</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">Crop</span><span class="o">.</span><span class="n">from_clip_by_id</span><span class="p">(</span><span class="n">normal</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">center_id</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">color_lims</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/18f0753fe9c82be73d60c3c264ca7bf19a0229633ab6450ed527f00621d6d070.png" src="../_images/18f0753fe9c82be73d60c3c264ca7bf19a0229633ab6450ed527f00621d6d070.png" />
+</div>
+</div>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./demos"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By NASA
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

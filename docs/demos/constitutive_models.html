@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -455,6 +455,7 @@ document.write(`
     <span class="n">Elastic</span><span class="p">,</span>
     <span class="n">ElasticViscoplastic</span><span class="p">,</span>
     <span class="n">IsotropicElasticPlastic</span><span class="p">,</span>
+    <span class="n">Multiphase</span><span class="p">,</span>
     <span class="n">voce</span><span class="p">,</span>
     <span class="n">linear</span><span class="p">,</span>
 <span class="p">)</span>
@@ -517,7 +518,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([-7.10542736e-15, -1.42108547e-14,  2.00000000e+02,  0.00000000e+00,
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([-1.42108547e-14, -1.42108547e-14,  2.00000000e+02,  0.00000000e+00,
         0.00000000e+00,  0.00000000e+00])
 </pre></div>
 </div>
@@ -631,7 +632,7 @@ Order2SymmetricTensor([[-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Axial stress [MPa]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/498d63b25c2f30ae1919e0e24f624f781ad08268d8184ddb3b37a384fa5c7121.png" src="../_images/498d63b25c2f30ae1919e0e24f624f781ad08268d8184ddb3b37a384fa5c7121.png" />
+<img alt="../_images/699d7bd19ae93dfc33ea81434638126f60cf05efe116403e6e74489cbbbe6cb4.png" src="../_images/699d7bd19ae93dfc33ea81434638126f60cf05efe116403e6e74489cbbbe6cb4.png" />
 </div>
 </div>
 <p>Plot the axial stress (normal stress in the loading direction) at each point. <code class="docutils literal notranslate"><span class="pre">material.plot()</span></code> automatically plots the value at the last time step/end of the simulation.</p>
@@ -793,7 +794,7 @@ Order2SymmetricTensor([[-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;axial stress [MPa]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/5127795d3170c7b8afcd1b722a314e7b9d966d0b195963b75194efcf47606178.png" src="../_images/5127795d3170c7b8afcd1b722a314e7b9d966d0b195963b75194efcf47606178.png" />
+<img alt="../_images/4c636b3610b90b0030638275429c92db4712b34323ae96a35a330fd4c517d1d7.png" src="../_images/4c636b3610b90b0030638275429c92db4712b34323ae96a35a330fd4c517d1d7.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -803,7 +804,7 @@ Order2SymmetricTensor([[-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/8ae786a3bf0765c743863674547a6a2d74d7c787d874f82e9446e0cf38329b55.png" src="../_images/8ae786a3bf0765c743863674547a6a2d74d7c787d874f82e9446e0cf38329b55.png" />
+<img alt="../_images/be7e76c05f3ed0bce3cca30331cf68b258f3d7870c6c9313f04bb89134c08fff.png" src="../_images/be7e76c05f3ed0bce3cca30331cf68b258f3d7870c6c9313f04bb89134c08fff.png" />
 </div>
 </div>
 <p>The slip system shear strains at each requested output time will now be added to <code class="docutils literal notranslate"><span class="pre">material.fields</span></code>, in addition to the stress and strain. The <code class="docutils literal notranslate"><span class="pre">Materialite</span></code> <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> stored in the “slip_system_shear_strains” field will be a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> with dimensions “p”, “s”, and “t”, representing the shear strain at each point, on each slip system, at each output time. Look at the slip system shear strains at the end of the simulation:</p>
@@ -817,19 +818,19 @@ Order2SymmetricTensor([[-1.27897692e-13 -1.27897692e-13  3.07467637e+02  0.00000
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Slip system shear strain dimensions: pst
-Scalar([[ 7.78371938e-04  1.29891163e-04 -1.51862619e-09 ...  6.97309063e-05
-  -4.07851814e-11 -3.42271114e-04]
- [ 4.86942556e-12 -1.49340991e-03 -5.38309705e-03 ... -2.84103837e-05
-   1.15577790e-06  5.11345257e-03]
- [-6.34021852e-10  9.05740359e-15  7.30094413e-09 ... -2.36383924e-03
-   4.70063086e-12  3.94256276e-03]
+Scalar([[ 1.07999401e-05  2.18274026e-10 -2.56713453e-07 ...  1.16435838e-05
+  -3.76159385e-07 -2.33174028e-03]
+ [-2.00493367e-16 -3.08316122e-03 -2.16225574e-03 ... -1.51029386e-04
+   5.64397640e-09  3.17688993e-03]
+ [-5.97911130e-14 -1.44138326e-07 -1.66250940e-07 ... -4.51500847e-03
+   1.01187804e-10  9.54463780e-03]
  ...
- [ 3.82444110e-05  7.98865119e-09 -2.40589842e-07 ...  7.46152846e-06
-  -5.51309345e-08 -8.28091687e-04]
- [ 2.61875422e-05  2.22517239e-08 -5.13988140e-08 ...  2.92375692e-05
-  -9.93742017e-08 -2.13355818e-03]
- [ 7.54850493e-05  9.00377902e-07 -4.86269023e-09 ...  1.32271909e-04
-  -1.44103654e-08 -2.85620189e-03]], dims: (points, slip systems), components shape: (4096, 12))
+ [ 1.43150053e-04  2.02001150e-07 -1.39745682e-07 ...  1.02725941e-04
+  -5.50999058e-08 -2.54622033e-03]
+ [ 1.95417782e-05  3.63601860e-09 -1.10575613e-07 ...  3.71929112e-05
+  -2.26105065e-07 -3.54977500e-03]
+ [ 1.16431302e-05  1.18629530e-07 -2.07073503e-09 ...  1.70778532e-05
+  -5.38982501e-07 -3.49100202e-03]], dims: (points, slip systems), components shape: (4096, 12))
 </pre></div>
 </div>
 </div>
@@ -848,7 +849,7 @@ Scalar([[ 7.78371938e-04  1.29891163e-04 -1.51862619e-09 ...  6.97309063e-05
         <span class="n">fields</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
     <span class="p">)</span>
 <span class="p">)</span>
-<span class="n">material</span><span class="o">.</span><span class="n">crop_by_range</span><span class="p">(</span><span class="n">x_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">material</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">)</span>
+<span class="n">material</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">material</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -876,195 +877,24 @@ Scalar([[ 7.78371938e-04  1.29891163e-04 -1.51862619e-09 ...  6.97309063e-05
 </div>
 </div>
 </div>
-<p>The constitutive models are associated with the correct phases by creating a regional field in the <code class="docutils literal notranslate"><span class="pre">Material</span></code>. The constitutive model field must be named <code class="docutils literal notranslate"><span class="pre">constitutive_model</span></code>.</p>
+<p>The constitutive models are associated with the correct phases using a <code class="docutils literal notranslate"><span class="pre">Multiphase</span></code> constitutive model. <code class="docutils literal notranslate"><span class="pre">Multiphase</span></code> has a constructor that takes a <code class="docutils literal notranslate"><span class="pre">Material</span></code> and three other arguments:</p>
+<ol class="arabic simple">
+<li><p>The label corresponding to the <code class="docutils literal notranslate"><span class="pre">Material</span></code> field containing phase IDs.</p></li>
+<li><p>A list of phase IDs.</p></li>
+<li><p>A list of constitutive models corresponding to the phase IDs.</p></li>
+</ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">phases</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
 <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="n">evp_model</span><span class="p">,</span> <span class="n">pore_model</span><span class="p">]</span>
-<span class="n">regional_fields</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="n">phases</span><span class="p">,</span> <span class="s2">&quot;constitutive_model&quot;</span><span class="p">:</span> <span class="n">models</span><span class="p">})</span>
-<span class="n">material</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">create_regional_fields</span><span class="p">(</span>
-    <span class="n">region_label</span><span class="o">=</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">regional_fields</span><span class="o">=</span><span class="n">regional_fields</span>
+<span class="n">constitutive_model</span> <span class="o">=</span> <span class="n">Multiphase</span><span class="o">.</span><span class="n">from_material</span><span class="p">(</span>
+    <span class="n">material</span><span class="p">,</span> <span class="n">phase_label</span><span class="o">=</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">phases</span><span class="o">=</span><span class="n">phases</span><span class="p">,</span> <span class="n">constitutive_models</span><span class="o">=</span><span class="n">models</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Look at what we’ve added to the <code class="docutils literal notranslate"><span class="pre">Material</span></code></p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">get_fields</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>x</th>
-      <th>y</th>
-      <th>z</th>
-      <th>x_id</th>
-      <th>y_id</th>
-      <th>z_id</th>
-      <th>orientation</th>
-      <th>phase</th>
-      <th>constitutive_model</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>0</td>
-      <td>0</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0</td>
-      <td>2</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>0</td>
-      <td>0</td>
-      <td>4</td>
-      <td>0</td>
-      <td>0</td>
-      <td>4</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>4091</th>
-      <td>15</td>
-      <td>15</td>
-      <td>11</td>
-      <td>15</td>
-      <td>15</td>
-      <td>11</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-    <tr>
-      <th>4092</th>
-      <td>15</td>
-      <td>15</td>
-      <td>12</td>
-      <td>15</td>
-      <td>15</td>
-      <td>12</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-    <tr>
-      <th>4093</th>
-      <td>15</td>
-      <td>15</td>
-      <td>13</td>
-      <td>15</td>
-      <td>15</td>
-      <td>13</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-    <tr>
-      <th>4094</th>
-      <td>15</td>
-      <td>15</td>
-      <td>14</td>
-      <td>15</td>
-      <td>15</td>
-      <td>14</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-    <tr>
-      <th>4095</th>
-      <td>15</td>
-      <td>15</td>
-      <td>15</td>
-      <td>15</td>
-      <td>15</td>
-      <td>15</td>
-      <td>Orientation([0. 0. 0.], dims: (), Euler angles...</td>
-      <td>1</td>
-      <td>ElasticViscoplastic(stiffness=[[243300. 156700...</td>
-    </tr>
-  </tbody>
-</table>
-<p>4096 rows × 9 columns</p>
-</div></div></div>
-</div>
-<p>We will use the same <code class="docutils literal notranslate"><span class="pre">LoadSchedule</span></code> again. Note that no constitutive model is passed to <code class="docutils literal notranslate"><span class="pre">SmallStrainFFT</span></code>.</p>
+<p>We’ll use the same <code class="docutils literal notranslate"><span class="pre">LoadSchedule</span></code> again and run <code class="docutils literal notranslate"><span class="pre">SmallStrainFFT</span></code> with the <code class="docutils literal notranslate"><span class="pre">Multiphase</span></code> constitutive model we created.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">load_schedule</span> <span class="o">=</span> <span class="n">LoadSchedule</span><span class="o">.</span><span class="n">from_constant_uniaxial_strain_rate</span><span class="p">(</span>
@@ -1074,19 +904,12 @@ Scalar([[ 7.78371938e-04  1.29891163e-04 -1.51862619e-09 ...  6.97309063e-05
     <span class="n">load_schedule</span><span class="o">=</span><span class="n">load_schedule</span><span class="p">,</span>
     <span class="n">end_time</span><span class="o">=</span><span class="mf">0.007</span><span class="p">,</span>
     <span class="n">initial_time_increment</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+    <span class="n">constitutive_model</span><span class="o">=</span><span class="n">constitutive_model</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>Run the model. We specify <code class="docutils literal notranslate"><span class="pre">phase_label=&quot;phase&quot;</span></code> to tell the model to look at the <code class="docutils literal notranslate"><span class="pre">Material</span></code> field called <code class="docutils literal notranslate"><span class="pre">phase</span></code> to determine which points belong to which constitutive model. We will ask for the slip system shear strains as well.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">num_output_times</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">num_output_times</span> <span class="o">=</span> <span class="mi">7</span>
 <span class="n">output_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mf">0.007</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">num_output_times</span><span class="p">)</span>
 <span class="n">material</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span>
-    <span class="n">phase_label</span><span class="o">=</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span>
     <span class="n">output_times</span><span class="o">=</span><span class="n">output_times</span><span class="p">,</span>
     <span class="n">output_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;slip_system_shear_strains&quot;</span><span class="p">],</span>
 <span class="p">)</span>
@@ -1118,20 +941,20 @@ Scalar([[ 7.78371938e-04  1.29891163e-04 -1.51862619e-09 ...  6.97309063e-05
  [0. 0. 0. 0. 0. 0.]
  [0. 0. 0. 0. 0. 0.]
  [0. 0. 0. 0. 0. 0.]]
-mean solid stress: [[-4.01771088e-05 -4.01771088e-05  1.17721036e+02  2.28624890e-17
-   2.91839945e-17 -7.66510416e-17]
- [ 4.83460989e-06  4.83460989e-06  2.27039459e+02 -4.98955361e-17
-  -6.30415911e-17 -6.34380791e-19]
- [ 6.07083720e-04  6.07083720e-04  2.83311972e+02 -7.65204299e-10
-   2.26066458e-10 -1.46598899e-10]
- [ 1.65822596e-04  1.65822596e-04  3.03365583e+02 -1.65927787e-09
-  -5.30326617e-09 -1.90904788e-08]
- [-2.78437840e-03 -2.78437840e-03  3.12933310e+02 -1.62440466e-09
-  -2.86660059e-10  5.36530042e-10]
- [-1.63973267e-03 -1.63973267e-03  3.19798080e+02 -6.91754925e-08
-  -5.46264725e-09  7.43628536e-09]
- [-4.44322799e-04 -4.44322799e-04  3.25746691e+02 -1.42570443e-08
-  -3.13907645e-09  9.02664918e-09]]
+mean solid stress: [[ 3.51708909e-06  3.51708909e-06  1.17475005e+02 -4.62494507e-06
+  -4.62494507e-06  3.18138369e-06]
+ [-1.41938833e-05 -1.41938833e-05  2.26475937e+02  2.33589134e-05
+   2.33589134e-05  7.54150553e-06]
+ [-6.87023639e-05 -6.87023639e-05  2.87852066e+02  1.89916607e-06
+   1.89916607e-06 -3.26004869e-06]
+ [-4.85985183e-04 -4.85985183e-04  3.04922928e+02  2.21791670e-05
+   2.21791670e-05 -2.71704588e-05]
+ [-2.95753153e-05 -2.95753153e-05  3.12973521e+02  8.24407009e-06
+   8.24407009e-06 -3.07588799e-05]
+ [-7.03857404e-05 -7.03857404e-05  3.19389855e+02  2.85310312e-06
+   2.85310312e-06 -1.40524084e-05]
+ [-2.62553333e-04 -2.62553333e-04  3.25209768e+02  9.75756241e-05
+   9.75756241e-05 -9.83569701e-05]]
 </pre></div>
 </div>
 </div>
@@ -1139,14 +962,12 @@ mean solid stress: [[-4.01771088e-05 -4.01771088e-05  1.17721036e+02  2.28624890
 <p>Plot stress field of half the material to show stress near the pore</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">crop_by_range</span><span class="p">(</span><span class="n">x_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">material</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="s2">&quot;stress&quot;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="mi">2</span>
-<span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">material</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/17da39294f059331267b31dc7d4b185864fb897585d30b384411653aaea74fe1.png" src="../_images/17da39294f059331267b31dc7d4b185864fb897585d30b384411653aaea74fe1.png" />
+<img alt="../_images/63e3b643ace31aeecfd3bf77ebf87625713899a314ad7059ea81d0cf3422c013.png" src="../_images/63e3b643ace31aeecfd3bf77ebf87625713899a314ad7059ea81d0cf3422c013.png" />
 </div>
 </div>
 <p>Plot the mean stress-strain curve</p>
@@ -1171,7 +992,7 @@ mean solid stress: [[-4.01771088e-05 -4.01771088e-05  1.17721036e+02  2.28624890
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0, 0.5, &#39;Axial stress [MPa]&#39;)
 </pre></div>
 </div>
-<img alt="../_images/0759a65883456cfef922aef8df355017c7543ddd1dbbdb4aa2e6bb14266b905f.png" src="../_images/0759a65883456cfef922aef8df355017c7543ddd1dbbdb4aa2e6bb14266b905f.png" />
+<img alt="../_images/3c8e99ec548a1731504381d6d5cd04e9ab68eca6c9fb9177720cb155d0b79263.png" src="../_images/3c8e99ec548a1731504381d6d5cd04e9ab68eca6c9fb9177720cb155d0b79263.png" />
 </div>
 </div>
 <p>Look at the slip system shear strains at the end of the simulation. Note that the values default to zero in the pore since this is not an available state variable in <code class="docutils literal notranslate"><span class="pre">Elastic</span></code> models.</p>
@@ -1184,19 +1005,19 @@ mean solid stress: [[-4.01771088e-05 -4.01771088e-05  1.17721036e+02  2.28624890
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([[-1.97058407e-003 -1.97058407e-003  3.38956002e-104 ... -2.00352402e-003
-  -2.00352402e-003  8.51426859e-105]
- [-1.80843984e-003 -1.80843984e-003  3.15201546e-105 ... -1.91844977e-003
-  -1.91844977e-003 -2.21000386e-106]
- [-1.54129130e-003 -1.54129130e-003 -2.94527937e-102 ... -1.68872123e-003
-  -1.68872123e-003  1.33933569e-102]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scalar([[-1.96254072e-003 -1.96254072e-003  6.44019745e-140 ... -2.00286559e-003
+  -2.00286559e-003 -2.12166760e-142]
+ [-1.79946305e-003 -1.79946305e-003  6.02117634e-140 ... -1.84436152e-003
+  -1.84436152e-003 -1.14072106e-140]
+ [-1.55914697e-003 -1.55914697e-003  5.98710169e-142 ... -1.59057241e-003
+  -1.59057241e-003 -6.32357891e-141]
  ...
- [-1.54129130e-003 -1.54129130e-003 -6.69430773e-102 ... -1.68872123e-003
-  -1.68872123e-003  3.65619153e-103]
- [-1.80843984e-003 -1.80843984e-003  4.36549984e-105 ... -1.91844977e-003
-  -1.91844977e-003 -2.13557488e-106]
- [-1.97058407e-003 -1.97058407e-003  3.54436710e-104 ... -2.00352402e-003
-  -2.00352402e-003 -2.41190948e-105]], dims: (points, slip systems), components shape: (3960, 12))
+ [-1.55836089e-003 -1.55836089e-003 -5.72835726e-140 ... -1.85403128e-003
+  -1.85403128e-003 -4.15167766e-140]
+ [-1.80252622e-003 -1.80252622e-003 -4.37085715e-145 ... -2.06705771e-003
+  -2.06705771e-003 -5.06390937e-139]
+ [-1.95927675e-003 -1.95927675e-003  9.61568745e-145 ... -2.13575380e-003
+  -2.13575380e-003  1.48653464e-145]], dims: (points, slip systems), components shape: (3960, 12))
 Scalar([[0. 0. 0. ... 0. 0. 0.]
  [0. 0. 0. ... 0. 0. 0.]
  [0. 0. 0. ... 0. 0. 0.]

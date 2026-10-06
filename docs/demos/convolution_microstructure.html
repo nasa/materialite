@@ -187,16 +187,27 @@
 <li class="toctree-l1"><a class="reference internal" href="material_phase.html">Material Phases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="regional_fields.html">Regional Fields</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Demos</span></p>
-<ul class="current nav bd-sidenav">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tensor/Crystallography Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="tensors.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orientations.html">Orientations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="crystallography.html">Crystallography</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ipf_example.html">IPF Coloring</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mechanical Model Demos</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="constitutive_models.html">Constitutive Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constitutive_models2.html">Constitutive Models: Deep Dive</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Thermal/Process Model Demos</span></p>
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="convolution.html">Convolution Thermal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
 <li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">AM Microstucture</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model-Making Demo</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="model_making.html">Creating New Models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
@@ -444,7 +455,7 @@ document.write(`
 
 <span class="n">num_spins</span> <span class="o">=</span> <span class="mi">10000</span>
 <span class="n">orientations</span> <span class="o">=</span> <span class="n">Orientation</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">num_spins</span><span class="p">)</span>
-<span class="n">orientations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Orientation</span><span class="o">.</span><span class="n">from_euler_angles</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">orientations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Orientation</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span>
 <span class="n">unique_spins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_spins</span><span class="p">)</span>
 <span class="n">region_field</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;spin&quot;</span><span class="p">:</span> <span class="n">unique_spins</span><span class="p">,</span> <span class="s2">&quot;orientation&quot;</span><span class="p">:</span> <span class="n">orientations</span><span class="p">})</span>
 <span class="n">material</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">create_random_integer_field</span><span class="p">(</span>
@@ -542,14 +553,14 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/08c15672fc716fa6329caaf1113b3b98a9e660e96137baad832bdad109b6d142.png" src="../_images/08c15672fc716fa6329caaf1113b3b98a9e660e96137baad832bdad109b6d142.png" />
+<img alt="../_images/cdc8a3ac88e84db9f6297299fdde28133888da6855e29c0114ed472a4017838c.png" src="../_images/cdc8a3ac88e84db9f6297299fdde28133888da6855e29c0114ed472a4017838c.png" />
 </div>
 </div>
 <p>The IPF map can be plotted as well:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ipf_colors</span> <span class="o">=</span> <span class="n">get_ipf_colors</span><span class="p">(</span>
-    <span class="n">specimen_frame_direction</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">orientations</span><span class="o">=</span><span class="n">orientations</span><span class="p">,</span> <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;fcc&quot;</span>
+    <span class="n">direction</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">orientations</span><span class="o">=</span><span class="n">orientations</span><span class="p">,</span> <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;fcc&quot;</span>
 <span class="p">)</span>
 <span class="n">ipf_colors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="n">ipf_region_field</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
@@ -562,7 +573,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/9dca1874ce30d4526fbc82dc2951a0c52e24607ba9440c5c1fd663d967cab7e8.png" src="../_images/9dca1874ce30d4526fbc82dc2951a0c52e24607ba9440c5c1fd663d967cab7e8.png" />
+<img alt="../_images/cde82097ed59852b6a51f49cdfb323773005739a0d8c355bfe737f133ed6c82e.png" src="../_images/cde82097ed59852b6a51f49cdfb323773005739a0d8c355bfe737f133ed6c82e.png" />
 </div>
 </div>
 </section>

@@ -207,6 +207,9 @@
 <li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
 <li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convolution_microstructure.html">AM Microstucture</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model-Making Demo</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="model_making.html">Creating New Models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
@@ -468,7 +471,7 @@ document.write(`
 <img alt="../_images/741dd31b5d44eaaf4e84e325464b0b77d82f2519865cab40e3e402a77d2860cc.png" src="../_images/741dd31b5d44eaaf4e84e325464b0b77d82f2519865cab40e3e402a77d2860cc.png" />
 </div>
 </div>
-<p>Create orientations using the pointwise Euler angles imported from DREAM.3D, and add them as a field to the <code class="docutils literal notranslate"><span class="pre">Material</span></code>. Materialite uses the same Euler angle convention as DREAM.3D, specifically the Bunge Euler angles representing a basis transformation from the specimen reference frame to the crystal reference frame.</p>
+<p>Create orientations using the pointwise Euler angles imported from DREAM.3D, and add them as a field to the <code class="docutils literal notranslate"><span class="pre">Material</span></code>. Materialite uses the same Euler angle convention as DREAM.3D; specifically, physical objects (and their associated vectors/tensors) are rotated from a reference positioning to their physical, oriented positioning by a sequence of three elemental rotations.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eulers</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">extract</span><span class="p">([</span><span class="s2">&quot;euler_angles_1&quot;</span><span class="p">,</span> <span class="s2">&quot;euler_angles_2&quot;</span><span class="p">,</span> <span class="s2">&quot;euler_angles_3&quot;</span><span class="p">])</span>
@@ -478,23 +481,23 @@ document.write(`
 </div>
 </div>
 </div>
-<p>Use the orientations to compute the maximum Schmid factor at each point, assuming an FCC material (i.e., with the octahedral slip systems) and loading in the specimen “z” direction. We can do this by representing the loading direction within the reference frames of the crystals and using the <code class="docutils literal notranslate"><span class="pre">max_schmid_factor</span></code> method of the slip systems.</p>
+<p>Use the orientations to compute the maximum Schmid factor at each point, assuming an FCC material (i.e., with the octahedral slip systems) and loading in the “z” direction. We can do this by rotating the loading direction back to the reference positioning for each of the crystals (reference unit cell) and using the <code class="docutils literal notranslate"><span class="pre">max_schmid_factor</span></code> method of the slip systems.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loading_direction</span> <span class="o">=</span> <span class="n">Vector</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loading_direction</span> <span class="o">=</span> <span class="n">Vector</span><span class="o">.</span><span class="n">Z</span>
 <span class="n">slip_systems</span> <span class="o">=</span> <span class="n">SlipSystem</span><span class="o">.</span><span class="n">octahedral</span><span class="p">()</span>
-<span class="n">crystal_loading_directions</span> <span class="o">=</span> <span class="n">loading_direction</span><span class="o">.</span><span class="n">to_crystal_frame</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
-<span class="n">max_schmid_factors</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">max_schmid_factor</span><span class="p">(</span><span class="n">crystal_loading_directions</span><span class="p">)</span>
+<span class="n">reference_loading_directions</span> <span class="o">=</span> <span class="n">loading_direction</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">orientations</span><span class="o">.</span><span class="n">inv</span><span class="p">)</span>
+<span class="n">max_schmid_factors</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">max_schmid_factor</span><span class="p">(</span><span class="n">reference_loading_directions</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>We could also calculate the Schmid factors by represent the Schmid tensors in the specimen reference frame. Here, we explicitly do the calculation <span class="math notranslate nohighlight">\(m_{max} = \mathbf{M} : (\mathbf{d} \otimes \mathbf{d})\)</span>, where <span class="math notranslate nohighlight">\(m_{max}\)</span> is the max Schmid factor in a crystal, <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> is the crystal Schmid tensor, and <span class="math notranslate nohighlight">\(\mathbf{d}\)</span> is the loading direction.</p>
+<p>We could also calculate the Schmid factors by rotating the reference Schmid tensors to the physical positioning of the crystals. Here, we explicitly do the calculation <span class="math notranslate nohighlight">\(m_{max} = \underset{s}{\text{max}} \, \left| \mathbf{M}_s : (\mathbf{d} \otimes \mathbf{d}) \right|\)</span>, where <span class="math notranslate nohighlight">\(m_{max}\)</span> is the max Schmid factor in a crystal, <span class="math notranslate nohighlight">\(s\)</span> is the slip system index, <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> is the Schmid tensor, and <span class="math notranslate nohighlight">\(\mathbf{d}\)</span> is the loading direction.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specimen_schmid_tensors</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">schmid_tensor</span><span class="o">.</span><span class="n">to_specimen_frame</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">schmid_tensors</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">schmid_tensor</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
 <span class="n">max_schmid_factors2</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">specimen_schmid_tensors</span> <span class="o">*</span> <span class="n">loading_direction</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">loading_direction</span><span class="p">)</span>
+    <span class="n">schmid_tensors</span> <span class="o">*</span> <span class="n">loading_direction</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">loading_direction</span><span class="p">)</span>
 <span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -516,19 +519,21 @@ document.write(`
 <p>Use the orientations to compute the stiffness in the loading direction at each point.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stiffness_tensor</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_cubic_constants</span><span class="p">(</span><span class="n">C11</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
-<span class="n">directional_moduli</span> <span class="o">=</span> <span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">directional_modulus</span><span class="p">(</span><span class="n">crystal_loading_directions</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reference_stiffness_tensor</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_cubic_constants</span><span class="p">(</span>
+    <span class="n">C11</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="mi">120</span>
+<span class="p">)</span>
+<span class="n">directional_moduli</span> <span class="o">=</span> <span class="n">reference_stiffness_tensor</span><span class="o">.</span><span class="n">directional_modulus</span><span class="p">(</span>
+    <span class="n">reference_loading_directions</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Again, we could also do this calculation in the specimen frame instead.</p>
+<p>Again, we could also do this calculation at the physical positioning of the crystals instead.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specimen_frame_stiffness_tensors</span> <span class="o">=</span> <span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">to_specimen_frame</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
-<span class="n">directional_moduli2</span> <span class="o">=</span> <span class="n">specimen_frame_stiffness_tensors</span><span class="o">.</span><span class="n">directional_modulus</span><span class="p">(</span>
-    <span class="n">loading_direction</span>
-<span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stiffness_tensors</span> <span class="o">=</span> <span class="n">reference_stiffness_tensor</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
+<span class="n">directional_moduli2</span> <span class="o">=</span> <span class="n">stiffness_tensors</span><span class="o">.</span><span class="n">directional_modulus</span><span class="p">(</span><span class="n">loading_direction</span><span class="p">)</span>
 <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">directional_moduli</span><span class="o">.</span><span class="n">components</span><span class="p">,</span> <span class="n">directional_moduli2</span><span class="o">.</span><span class="n">components</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -551,7 +556,7 @@ document.write(`
 <span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
     <span class="n">add_ipf_colors_field</span><span class="p">,</span>
     <span class="n">orientation_label</span><span class="o">=</span><span class="s2">&quot;orientation&quot;</span><span class="p">,</span>
-    <span class="n">specimen_frame_direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
+    <span class="n">direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
     <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -606,21 +611,21 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.5), np.float64(2693.5), np.float64(2365.5), np.float64(-0.5))
 </pre></div>
 </div>
-<img alt="../_images/ddd85e7a5b9de158072e87b26e6aa8355c844c5def69d2e817f2162a5a1ace3c.png" src="../_images/ddd85e7a5b9de158072e87b26e6aa8355c844c5def69d2e817f2162a5a1ace3c.png" />
+<img alt="../_images/323e71607138b41f859688a1d702d59839bdf7e3a60ae2a78702e4d728c0717b.png" src="../_images/323e71607138b41f859688a1d702d59839bdf7e3a60ae2a78702e4d728c0717b.png" />
 </div>
 </div>
 <p>Make an inverse pole figure on the standard stereographic triangle. The <code class="docutils literal notranslate"><span class="pre">get_ipf</span></code> function takes the same inputs as <code class="docutils literal notranslate"><span class="pre">add_ipf_colors_field</span></code>. It returns the point on the IPF for each point in the <code class="docutils literal notranslate"><span class="pre">Material</span></code> and the boundary of the SST so that we can make a scatterplot of the IPF.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ipf_points</span><span class="p">,</span> <span class="n">ipf_boundary</span> <span class="o">=</span> <span class="n">get_ipf</span><span class="p">(</span>
-    <span class="n">specimen_frame_direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
+    <span class="n">direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
     <span class="n">orientations</span><span class="o">=</span><span class="n">orientations</span><span class="p">,</span>
     <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ipf_boundary</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">ipf_boundary</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;k&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ipf_points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">ipf_points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
-<span class="c1"># labels for crystal directions:</span>
+<span class="c1"># labels for reference crystal directions:</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
     <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span>
     <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>
@@ -657,7 +662,7 @@ document.write(`
  np.float64(0.38432667397366066))
 </pre></div>
 </div>
-<img alt="../_images/981edf3552b12f532bfa6c38b0f011708be345054a8667b3cf1219cfbbca6be1.png" src="../_images/981edf3552b12f532bfa6c38b0f011708be345054a8667b3cf1219cfbbca6be1.png" />
+<img alt="../_images/c29299aa7a1f8b25667029d595cc7c0a8fd17e548d56a8b1cdb37df451335556.png" src="../_images/c29299aa7a1f8b25667029d595cc7c0a8fd17e548d56a8b1cdb37df451335556.png" />
 </div>
 </div>
 <p>Do the same thing but with a hexagonal unit cell and the basal and prismatic slip systems</p>
@@ -675,12 +680,12 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">slip_systems</span> <span class="o">=</span> <span class="n">SlipSystem</span><span class="o">.</span><span class="n">basal</span><span class="p">()</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">slip_systems</span><span class="o">.</span><span class="n">prismatic</span><span class="p">())</span>
-<span class="n">max_schmid_factors</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">max_schmid_factor</span><span class="p">(</span><span class="n">crystal_loading_directions</span><span class="p">)</span>
+<span class="n">max_schmid_factors</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">max_schmid_factor</span><span class="p">(</span><span class="n">reference_loading_directions</span><span class="p">)</span>
 
 <span class="n">stiffness_tensor</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_transverse_isotropic_constants</span><span class="p">(</span>
     <span class="n">C11</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">C13</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">C33</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="mi">45</span>
 <span class="p">)</span>
-<span class="n">directional_moduli</span> <span class="o">=</span> <span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">directional_modulus</span><span class="p">(</span><span class="n">crystal_loading_directions</span><span class="p">)</span>
+<span class="n">directional_moduli</span> <span class="o">=</span> <span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">directional_modulus</span><span class="p">(</span><span class="n">reference_loading_directions</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -695,7 +700,7 @@ document.write(`
 <span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
     <span class="n">add_ipf_colors_field</span><span class="p">,</span>
     <span class="n">orientation_label</span><span class="o">=</span><span class="s2">&quot;orientation&quot;</span><span class="p">,</span>
-    <span class="n">specimen_frame_direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
+    <span class="n">direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
     <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;hexagonal&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -745,13 +750,13 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.5), np.float64(2637.5), np.float64(1565.5), np.float64(-0.5))
 </pre></div>
 </div>
-<img alt="../_images/e58862bfd901d147a3f0f44e31dcaa1abc890c6f37706f087bbcd824ab5a4dca.png" src="../_images/e58862bfd901d147a3f0f44e31dcaa1abc890c6f37706f087bbcd824ab5a4dca.png" />
+<img alt="../_images/76c10beb52d1efd256cdf26b80e3220faccddf19f3be9a629f224ab6772d2390.png" src="../_images/76c10beb52d1efd256cdf26b80e3220faccddf19f3be9a629f224ab6772d2390.png" />
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ipf_points</span><span class="p">,</span> <span class="n">ipf_boundary</span> <span class="o">=</span> <span class="n">get_ipf</span><span class="p">(</span>
-    <span class="n">specimen_frame_direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
+    <span class="n">direction</span><span class="o">=</span><span class="n">loading_direction</span><span class="p">,</span>
     <span class="n">orientations</span><span class="o">=</span><span class="n">orientations</span><span class="p">,</span>
     <span class="n">unit_cell</span><span class="o">=</span><span class="s2">&quot;hexagonal&quot;</span><span class="p">,</span>
 <span class="p">)</span>
@@ -791,7 +796,7 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(np.float64(-0.05), np.float64(1.05), np.float64(-0.025), np.float64(0.525))
 </pre></div>
 </div>
-<img alt="../_images/188d177f5e208051b809fd7d5d4a6909348ac1c78400075de83f2c88eae43dcc.png" src="../_images/188d177f5e208051b809fd7d5d4a6909348ac1c78400075de83f2c88eae43dcc.png" />
+<img alt="../_images/391e82a9f8a473ddd4ae35faa7c06316315ef668bc2c4e7aaa9b96ac311ba54f.png" src="../_images/391e82a9f8a473ddd4ae35faa7c06316315ef668bc2c4e7aaa9b96ac311ba54f.png" />
 </div>
 </div>
 </section>

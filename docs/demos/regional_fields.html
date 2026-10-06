@@ -205,6 +205,9 @@
 <li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
 <li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convolution_microstructure.html">AM Microstucture</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model-Making Demo</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="model_making.html">Creating New Models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
@@ -1269,7 +1272,6 @@ Message: Could not create regional field: the provided regional fields include a
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">bad_regional_field</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]}</span>
 
-
     <span class="n">material</span><span class="o">.</span><span class="n">create_regional_fields</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">bad_regional_field</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1292,7 +1294,6 @@ Message: Could not create regional field: phase has non-unique values in regiona
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">bad_region_field</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]}</span>
 
-
     <span class="n">material</span><span class="o">.</span><span class="n">create_regional_fields</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">bad_region_field</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1311,7 +1312,6 @@ Message: Values of x not found in regional field: [1]
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">bad_region_field</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]}</span>
-
 
     <span class="n">material</span><span class="o">.</span><span class="n">create_regional_fields</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">bad_region_field</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>

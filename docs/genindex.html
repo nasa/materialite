@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -385,6 +385,8 @@ document.write(`
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
+ | <a href="#X"><strong>X</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
  | <a href="#Z"><strong>Z</strong></a>
  
 </div>
@@ -437,6 +439,8 @@ document.write(`
 </li>
       <li><a href="api_reference.html#materialite.material.Material.center">center (materialite.material.Material property)</a>
 </li>
+      <li><a href="api_reference.html#materialite.material.Material.center_id">center_id (materialite.material.Material property)</a>
+</li>
       <li><a href="api_reference.html#materialite.material.Box.check_inside">check_inside() (materialite.material.Box method)</a>
 
       <ul>
@@ -451,10 +455,10 @@ document.write(`
 </li>
       <li><a href="api_reference.html#materialite.tensor.convert_matrix_basis">convert_matrix_basis() (in module materialite.tensor)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#materialite.tensor.convert_vector_basis">convert_vector_basis() (in module materialite.tensor)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#materialite.material.Material.copy">copy() (materialite.material.Material method)</a>
 
       <ul>
@@ -463,7 +467,11 @@ document.write(`
         <li><a href="api_reference.html#materialite.tensor.Tensor.copy">(materialite.tensor.Tensor method)</a>
 </li>
       </ul></li>
+      <li><a href="api_reference.html#materialite.material.Material.corner_ids">corner_ids (materialite.material.Material property)</a>
+</li>
       <li><a href="api_reference.html#materialite.material.Material.corners">corners (materialite.material.Material property)</a>
+</li>
+      <li><a href="api_reference.html#materialite.tensor.Scalar.cos">cos (materialite.tensor.Scalar property)</a>
 </li>
       <li><a href="api_reference.html#materialite.tensor.Scalar.cosh">cosh (materialite.tensor.Scalar property)</a>
 </li>
@@ -477,11 +485,13 @@ document.write(`
 </li>
       <li><a href="api_reference.html#materialite.material.Material.create_voronoi">create_voronoi() (materialite.material.Material method)</a>
 </li>
-      <li><a href="api_reference.html#materialite.material.Material.crop_by_id_range">crop_by_id_range() (materialite.material.Material method)</a>
+      <li><a href="api_reference.html#materialite.material.Material.crop">crop() (materialite.material.Material method)</a>
 </li>
-      <li><a href="api_reference.html#materialite.material.Material.crop_by_range">crop_by_range() (materialite.material.Material method)</a>
+      <li><a href="api_reference.html#materialite.material.Material.crop_by_id">crop_by_id() (materialite.material.Material method)</a>
 </li>
       <li><a href="api_reference.html#materialite.tensor.Vector.cross">cross() (materialite.tensor.Vector method)</a>
+</li>
+      <li><a href="api_reference.html#materialite.tensor.Vector.cross_product_tensor">cross_product_tensor (materialite.tensor.Vector property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -537,9 +547,33 @@ document.write(`
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#materialite.material.Material.far_corner">far_corner (materialite.material.Material property)</a>
-</li>
       <li><a href="api_reference.html#materialite.material.Feature">Feature (class in materialite.material)</a>
+</li>
+      <li><a href="api_reference.html#materialite.material.FieldFormatter">FieldFormatter (class in materialite.material)</a>
+</li>
+      <li><a href="api_reference.html#materialite.material.FieldFormatter.format_field">format_field() (materialite.material.FieldFormatter method)</a>
+
+      <ul>
+        <li><a href="api_reference.html#materialite.material.Formatter3D.format_field">(materialite.material.Formatter3D method)</a>
+</li>
+        <li><a href="api_reference.html#materialite.material.ImageFormatter.format_field">(materialite.material.ImageFormatter method)</a>
+</li>
+        <li><a href="api_reference.html#materialite.material.NoFormatter.format_field">(materialite.material.NoFormatter method)</a>
+</li>
+      </ul></li>
+      <li><a href="api_reference.html#materialite.material.FieldFormatter.format_result">format_result() (materialite.material.FieldFormatter method)</a>
+
+      <ul>
+        <li><a href="api_reference.html#materialite.material.Formatter3D.format_result">(materialite.material.Formatter3D method)</a>
+</li>
+        <li><a href="api_reference.html#materialite.material.ImageFormatter.format_result">(materialite.material.ImageFormatter method)</a>
+</li>
+        <li><a href="api_reference.html#materialite.material.NoFormatter.format_result">(materialite.material.NoFormatter method)</a>
+</li>
+      </ul></li>
+      <li><a href="api_reference.html#materialite.material.Formatter3D">Formatter3D (class in materialite.material)</a>
+</li>
+      <li><a href="api_reference.html#materialite.tensor.Orientation.from_axis_angle">from_axis_angle() (materialite.tensor.Orientation class method)</a>
 </li>
       <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.from_cartesian">from_cartesian() (materialite.tensor.Order2SymmetricTensor class method)</a>
 
@@ -550,6 +584,10 @@ document.write(`
       <li><a href="api_reference.html#materialite.tensor.Order4SymmetricTensor.from_cubic_constants">from_cubic_constants() (materialite.tensor.Order4SymmetricTensor class method)</a>
 </li>
       <li><a href="api_reference.html#materialite.tensor.Orientation.from_euler_angles">from_euler_angles() (materialite.tensor.Orientation class method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#materialite.material.Material.from_image">from_image() (materialite.material.Material class method)</a>
 </li>
       <li><a href="api_reference.html#materialite.tensor.Order4SymmetricTensor.from_isotropic_constants">from_isotropic_constants() (materialite.tensor.Order4SymmetricTensor class method)</a>
 </li>
@@ -565,13 +603,13 @@ document.write(`
         <li><a href="api_reference.html#materialite.tensor.Order4SymmetricTensor.from_mandel">(materialite.tensor.Order4SymmetricTensor class method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#materialite.tensor.Orientation.from_miller_indices">from_miller_indices() (materialite.tensor.Orientation class method)</a>
 </li>
       <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.from_natural">from_natural() (materialite.tensor.Order2SymmetricTensor class method)</a>
 </li>
       <li><a href="api_reference.html#materialite.tensor.Orientation.from_rotation_matrix">from_rotation_matrix() (materialite.tensor.Orientation class method)</a>
+</li>
+      <li><a href="api_reference.html#materialite.tensor.Orientation.from_rotation_vector">from_rotation_vector() (materialite.tensor.Orientation class method)</a>
 </li>
       <li><a href="api_reference.html#materialite.tensor.Tensor.from_stack">from_stack() (materialite.tensor.Tensor class method)</a>
 </li>
@@ -619,10 +657,10 @@ document.write(`
         <li><a href="api_reference.html#materialite.tensor.Orientation.identity">(materialite.tensor.Orientation class method)</a>
 </li>
       </ul></li>
+      <li><a href="api_reference.html#materialite.material.ImageFormatter">ImageFormatter (class in materialite.material)</a>
+</li>
       <li><a href="api_reference.html#materialite.material.Material.insert_feature">insert_feature() (materialite.material.Material method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.inv">inv (materialite.tensor.Order2SymmetricTensor property)</a>
 
       <ul>
@@ -630,13 +668,19 @@ document.write(`
 </li>
         <li><a href="api_reference.html#materialite.tensor.Order4SymmetricTensor.inv">(materialite.tensor.Order4SymmetricTensor property)</a>
 </li>
+        <li><a href="api_reference.html#materialite.tensor.Orientation.inv">(materialite.tensor.Orientation property)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.inverse">inverse (materialite.tensor.Order2SymmetricTensor property)</a>
 
       <ul>
         <li><a href="api_reference.html#materialite.tensor.Order2Tensor.inverse">(materialite.tensor.Order2Tensor property)</a>
 </li>
         <li><a href="api_reference.html#materialite.tensor.Order4SymmetricTensor.inverse">(materialite.tensor.Order4SymmetricTensor property)</a>
+</li>
+        <li><a href="api_reference.html#materialite.tensor.Orientation.inverse">(materialite.tensor.Orientation property)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -671,7 +715,11 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#materialite.tensor.Scalar.max">max() (materialite.tensor.Scalar method)</a>
 </li>
+      <li><a href="api_reference.html#materialite.material.Material.max_corner">max_corner (materialite.material.Material property)</a>
+</li>
       <li><a href="api_reference.html#materialite.tensor.Tensor.mean">mean() (materialite.tensor.Tensor method)</a>
+</li>
+      <li><a href="api_reference.html#materialite.material.Material.min_corner">min_corner (materialite.material.Material property)</a>
 </li>
       <li>
     module
@@ -694,6 +742,8 @@ document.write(`
         <li><a href="api_reference.html#materialite.tensor.Order4SymmetricTensor.natural">(materialite.tensor.Order4SymmetricTensor property)</a>
 </li>
       </ul></li>
+      <li><a href="api_reference.html#materialite.material.NoFormatter">NoFormatter (class in materialite.material)</a>
+</li>
       <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.norm">norm (materialite.tensor.Order2SymmetricTensor property)</a>
 
       <ul>
@@ -754,10 +804,12 @@ document.write(`
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#materialite.material.Material.pipe">pipe() (materialite.material.Material method)</a>
+      <li><a href="api_reference.html#materialite.tensor.PermutationTensor">PermutationTensor (class in materialite.tensor)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#materialite.material.Material.pipe">pipe() (materialite.material.Material method)</a>
+</li>
       <li><a href="api_reference.html#materialite.material.Material.plot">plot() (materialite.material.Material method)</a>
 </li>
   </ul></td>
@@ -782,12 +834,14 @@ document.write(`
 </li>
       <li><a href="api_reference.html#materialite.tensor.reduced_matrix_to_cartesian">reduced_matrix_to_cartesian() (in module materialite.tensor)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#materialite.tensor.reduced_to_cartesian">reduced_to_cartesian() (in module materialite.tensor)</a>
+</li>
+      <li><a href="api_reference.html#materialite.material.Material.region_centroids">region_centroids() (materialite.material.Material method)</a>
 </li>
       <li><a href="api_reference.html#materialite.material.Material.remove_field">remove_field() (materialite.material.Material method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#materialite.tensor.Orientation.reorder">reorder() (materialite.tensor.Orientation method)</a>
 
       <ul>
@@ -800,7 +854,19 @@ document.write(`
         <li><a href="api_reference.html#materialite.tensor.Tensor.repeat">(materialite.tensor.Tensor method)</a>
 </li>
       </ul></li>
+      <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.rotate">rotate() (materialite.tensor.Order2SymmetricTensor method)</a>
+
+      <ul>
+        <li><a href="api_reference.html#materialite.tensor.Order2Tensor.rotate">(materialite.tensor.Order2Tensor method)</a>
+</li>
+        <li><a href="api_reference.html#materialite.tensor.Order4SymmetricTensor.rotate">(materialite.tensor.Order4SymmetricTensor method)</a>
+</li>
+        <li><a href="api_reference.html#materialite.tensor.Vector.rotate">(materialite.tensor.Vector method)</a>
+</li>
+      </ul></li>
       <li><a href="api_reference.html#materialite.tensor.Orientation.rotation_matrix_mandel">rotation_matrix_mandel (materialite.tensor.Orientation property)</a>
+</li>
+      <li><a href="api_reference.html#materialite.tensor.Orientation.rotation_vector">rotation_vector (materialite.tensor.Orientation property)</a>
 </li>
       <li><a href="api_reference.html#materialite.material.Material.run">run() (materialite.material.Material method)</a>
 </li>
@@ -810,7 +876,11 @@ document.write(`
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#materialite.material.Material.sample_from">sample_from() (materialite.material.Material method)</a>
+</li>
       <li><a href="api_reference.html#materialite.tensor.Scalar">Scalar (class in materialite.tensor)</a>
+</li>
+      <li><a href="api_reference.html#materialite.material.Material.scale">scale() (materialite.material.Material method)</a>
 </li>
       <li><a href="api_reference.html#materialite.material.Material.segment">segment() (materialite.material.Material method)</a>
 </li>
@@ -820,12 +890,14 @@ document.write(`
         <li><a href="api_reference.html#materialite.tensor.Tensor.shape">(materialite.tensor.Tensor property)</a>
 </li>
       </ul></li>
-      <li><a href="api_reference.html#materialite.material.Material.sizes">sizes (materialite.material.Material property)</a>
+      <li><a href="api_reference.html#materialite.tensor.Scalar.sin">sin (materialite.tensor.Scalar property)</a>
 </li>
-      <li><a href="api_reference.html#materialite.material.Material.spacing">spacing (materialite.material.Material property)</a>
+      <li><a href="api_reference.html#materialite.material.Material.sizes">sizes (materialite.material.Material property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#materialite.material.Material.spacing">spacing (materialite.material.Material property)</a>
+</li>
       <li><a href="api_reference.html#materialite.material.Sphere">Sphere (class in materialite.material)</a>
 </li>
       <li><a href="api_reference.html#materialite.tensor.Scalar.sqrt">sqrt (materialite.tensor.Scalar property)</a>
@@ -856,28 +928,6 @@ document.write(`
 </li>
       <li><a href="api_reference.html#materialite.tensor.TensorIterator">TensorIterator (class in materialite.tensor)</a>
 </li>
-      <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.to_crystal_frame">to_crystal_frame() (materialite.tensor.Order2SymmetricTensor method)</a>
-
-      <ul>
-        <li><a href="api_reference.html#materialite.tensor.Order2Tensor.to_crystal_frame">(materialite.tensor.Order2Tensor method)</a>
-</li>
-        <li><a href="api_reference.html#materialite.tensor.Order4SymmetricTensor.to_crystal_frame">(materialite.tensor.Order4SymmetricTensor method)</a>
-</li>
-        <li><a href="api_reference.html#materialite.tensor.Vector.to_crystal_frame">(materialite.tensor.Vector method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.to_specimen_frame">to_specimen_frame() (materialite.tensor.Order2SymmetricTensor method)</a>
-
-      <ul>
-        <li><a href="api_reference.html#materialite.tensor.Order2Tensor.to_specimen_frame">(materialite.tensor.Order2Tensor method)</a>
-</li>
-        <li><a href="api_reference.html#materialite.tensor.Order4SymmetricTensor.to_specimen_frame">(materialite.tensor.Order4SymmetricTensor method)</a>
-</li>
-        <li><a href="api_reference.html#materialite.tensor.Vector.to_specimen_frame">(materialite.tensor.Vector method)</a>
-</li>
-      </ul></li>
       <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.trace">trace (materialite.tensor.Order2SymmetricTensor property)</a>
 
       <ul>
@@ -886,6 +936,10 @@ document.write(`
         <li><a href="api_reference.html#materialite.tensor.Orientation.trace">(materialite.tensor.Orientation property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#materialite.material.Material.translate">translate() (materialite.material.Material method)</a>
+</li>
       <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.transpose">transpose (materialite.tensor.Order2SymmetricTensor property)</a>
 
       <ul>
@@ -927,9 +981,27 @@ document.write(`
   </ul></td>
 </tr></table>
 
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#materialite.tensor.Vector.X">X (materialite.tensor.Vector attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#materialite.tensor.Vector.Y">Y (materialite.tensor.Vector attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="Z">Z</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#materialite.tensor.Vector.Z">Z (materialite.tensor.Vector attribute)</a>
+</li>
       <li><a href="api_reference.html#materialite.tensor.Order2SymmetricTensor.zero">zero() (materialite.tensor.Order2SymmetricTensor class method)</a>
 
       <ul>

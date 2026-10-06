@@ -207,6 +207,9 @@
 <li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
 <li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convolution_microstructure.html">AM Microstucture</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model-Making Demo</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="model_making.html">Creating New Models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
@@ -494,7 +497,7 @@ Message: could not convert string to float: &#39;oops&#39;
 </div>
 </div>
 <p>If the feature is in the interior of the <code class="docutils literal notranslate"><span class="pre">Material</span></code>, we can still visualize it by cropping the <code class="docutils literal notranslate"><span class="pre">Material</span></code> before calling <code class="docutils literal notranslate"><span class="pre">plot</span></code>.</p>
-<p>Here, we look at half of the material along the <span class="math notranslate nohighlight">\(x\)</span> axis using the <code class="docutils literal notranslate"><span class="pre">crop_by_range</span></code> method. The inputs for this method are bounds of the box-shaped region that we will keep in each coordinate direction in physical units (i.e., between <code class="docutils literal notranslate"><span class="pre">material.origin</span></code> and <code class="docutils literal notranslate"><span class="pre">material.sizes</span></code> in each direction).</p>
+<p>Here, we look at half of the material along the <span class="math notranslate nohighlight">\(x\)</span> axis using the <code class="docutils literal notranslate"><span class="pre">crop</span></code> method. The inputs for this method are bounds of the box-shaped region that we will keep in each coordinate direction in physical units (i.e., between <code class="docutils literal notranslate"><span class="pre">material.origin</span></code> and <code class="docutils literal notranslate"><span class="pre">material.sizes</span></code> in each direction).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -505,7 +508,7 @@ Message: could not convert string to float: &#39;oops&#39;
     <span class="o">.</span><span class="n">create_uniform_field</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="o">.</span><span class="n">insert_feature</span><span class="p">(</span><span class="n">sphere</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
 <span class="p">)</span>
-<span class="n">material</span><span class="o">.</span><span class="n">crop_by_range</span><span class="p">(</span><span class="n">x_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">material</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">)</span>
+<span class="n">material</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">material</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -513,10 +516,10 @@ Message: could not convert string to float: &#39;oops&#39;
 <img alt="../_images/9662d5f63324b80ee7a2a8c7a9bccf4e05fa383978559c0e42b194c0432e0a3e.png" src="../_images/9662d5f63324b80ee7a2a8c7a9bccf4e05fa383978559c0e42b194c0432e0a3e.png" />
 </div>
 </div>
-<p>We can also use the <code class="docutils literal notranslate"><span class="pre">crop_by_id_range</span></code> method. This is similar to <code class="docutils literal notranslate"><span class="pre">crop_by_range</span></code>, but the input ranges are provided in terms of point IDs (i.e., between 0 and <code class="docutils literal notranslate"><span class="pre">material.dimensions</span></code> - 1 in each direction)</p>
+<p>We can also use the <code class="docutils literal notranslate"><span class="pre">crop_by_id</span></code> method. This is similar to <code class="docutils literal notranslate"><span class="pre">crop</span></code>, but the input ranges are provided in terms of point IDs (i.e., between 0 and <code class="docutils literal notranslate"><span class="pre">material.dimensions</span></code> - 1 in each direction)</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">crop_by_id_range</span><span class="p">(</span><span class="n">x_id_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span><span class="o">.</span><span class="n">crop_by_id</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

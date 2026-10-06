@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -394,6 +394,7 @@ document.write(`
     <span class="n">voigt_dual_product_basis</span><span class="p">,</span>
     <span class="n">voigt_product_basis</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">materialite.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">classproperty</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">inv</span>
 
 
@@ -742,8 +743,17 @@ document.write(`
         <span class="c1"># If components is already a Tensor, copy it</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">indices_str</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">dims_str</span>
+            <span class="k">if</span> <span class="n">dims</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">dims_str</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">indices_str</span>
+            <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">char</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reserved_indices</span> <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Dimensions (</span><span class="si">{</span><span class="n">dims</span><span class="si">}</span><span class="s2">) cannot overlap with indices reserved for tensor components (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_reserved_indices</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span> <span class="o">=</span> <span class="n">dims</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_indices</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">=</span> <span class="n">dims</span>
+                <span class="n">_check_consistent_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
@@ -838,7 +848,7 @@ document.write(`
                     <span class="c1"># Slice/fancy indexing keeps the dimension</span>
                     <span class="n">remaining_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-            <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">remaining_dims</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">remaining_dims</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">slice_</span><span class="p">)</span> <span class="p">:]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Unknown slice type - assume it keeps dimensions</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span>
@@ -1111,6 +1121,14 @@ document.write(`
         <span class="k">return</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cosh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cosh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
 
@@ -1212,6 +1230,27 @@ document.write(`
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">components</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">dims</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Vector.X">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Vector.X">[docs]</a>
+    <span class="nd">@classproperty</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">X</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="Vector.Y">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Vector.Y">[docs]</a>
+    <span class="nd">@classproperty</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">Y</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="Vector.Z">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Vector.Z">[docs]</a>
+    <span class="nd">@classproperty</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">Z</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span></div>
+
 
 <div class="viewcode-block" id="Vector.random">
 <a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Vector.random">[docs]</a>
@@ -1371,28 +1410,26 @@ document.write(`
         <span class="k">return</span> <span class="n">Vector</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">output_dims</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
 
 
-<div class="viewcode-block" id="Vector.to_crystal_frame">
-<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Vector.to_crystal_frame">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_crystal_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientations</span><span class="p">):</span>
-        <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
-        <span class="n">orientation_indices</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;mj&quot;</span>
-        <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">orientation_indices</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">,</span>
-            <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">Vector</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">output_dims</span><span class="p">)</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cross_product_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span><span class="p">,))</span>
+        <span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 
+        <span class="k">return</span> <span class="n">Order2Tensor</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Vector.to_specimen_frame">
-<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Vector.to_specimen_frame">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_specimen_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientations</span><span class="p">):</span>
-        <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
-        <span class="n">orientation_indices</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;jm&quot;</span>
+<div class="viewcode-block" id="Vector.rotate">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Vector.rotate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotation</span><span class="p">):</span>
+        <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+        <span class="n">rotation_indices</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;mj&quot;</span>
         <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">orientation_indices</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rotation_indices</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">,</span>
             <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
@@ -1477,7 +1514,7 @@ document.write(`
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sym</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">Order2SymmetricTensor</span><span class="o">.</span><span class="n">from_cartesian</span><span class="p">(</span>
+        <span class="k">return</span> <span class="n">Order2SymmetricTensor</span><span class="o">.</span><span class="n">_from_cartesian</span><span class="p">(</span>
             <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">components</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span>
         <span class="p">)</span>
 
@@ -1569,32 +1606,16 @@ document.write(`
             <span class="n">u</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Order2Tensor.to_crystal_frame">
-<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order2Tensor.to_crystal_frame">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_crystal_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientations</span><span class="p">):</span>
-        <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
-        <span class="n">orientation_indices_1</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;mi&quot;</span>
-        <span class="n">orientation_indices_2</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;nj&quot;</span>
+<div class="viewcode-block" id="Order2Tensor.rotate">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order2Tensor.rotate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotation</span><span class="p">):</span>
+        <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+        <span class="n">rotation_indices_1</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;mi&quot;</span>
+        <span class="n">rotation_indices_2</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;nj&quot;</span>
         <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">orientation_indices_1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">orientation_indices_2</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">,</span>
-            <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">Order2Tensor</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">output_dims</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Order2Tensor.to_specimen_frame">
-<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order2Tensor.to_specimen_frame">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_specimen_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientations</span><span class="p">):</span>
-        <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
-        <span class="n">orientation_indices_1</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;im&quot;</span>
-        <span class="n">orientation_indices_2</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;jn&quot;</span>
-        <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">orientation_indices_1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">orientation_indices_2</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rotation_indices_1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">rotation_indices_2</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">,</span>
             <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
@@ -1624,7 +1645,7 @@ document.write(`
 <a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order2SymmetricTensor.identity">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_cartesian</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_from_cartesian</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Order2SymmetricTensor.zero">
@@ -1656,12 +1677,16 @@ document.write(`
 <a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order2SymmetricTensor.from_cartesian">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_cartesian</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">matrices</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrices</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...ij -&gt; ...ji&quot;</span><span class="p">,</span> <span class="n">matrices</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-14</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrices</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...ij -&gt; ...ji&quot;</span><span class="p">,</span> <span class="n">matrices</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-13</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;tried to create Order2SymmetricTensor using non-symmetric input&quot;</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">cartesian_to_reduced</span><span class="p">(</span><span class="n">matrices</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_basis</span><span class="p">),</span> <span class="n">dims</span><span class="p">)</span></div>
 
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_cartesian</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">matrices</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">cartesian_to_reduced</span><span class="p">(</span><span class="n">matrices</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_basis</span><span class="p">),</span> <span class="n">dims</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Order2SymmetricTensor.from_strain_voigt">
 <a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order2SymmetricTensor.from_strain_voigt">[docs]</a>
@@ -1734,7 +1759,7 @@ document.write(`
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">Order2SymmetricTensor</span><span class="o">.</span><span class="n">from_cartesian</span><span class="p">(</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cartesian</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Order2SymmetricTensor</span><span class="o">.</span><span class="n">_from_cartesian</span><span class="p">(</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cartesian</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1859,36 +1884,18 @@ document.write(`
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Order2SymmetricTensor.to_crystal_frame">
-<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order2SymmetricTensor.to_crystal_frame">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_crystal_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientations</span><span class="p">):</span>
+<div class="viewcode-block" id="Order2SymmetricTensor.rotate">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order2SymmetricTensor.rotate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotation</span><span class="p">):</span>
         <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span><span class="p">,</span> <span class="n">self_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span>
-            <span class="n">orientations</span>
+            <span class="n">rotation</span>
         <span class="p">)</span>
-        <span class="n">orientation_indices_1</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;mi&quot;</span>
-        <span class="n">orientation_indices_2</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;nj&quot;</span>
+        <span class="n">rotation_indices_1</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;mi&quot;</span>
+        <span class="n">rotation_indices_2</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;nj&quot;</span>
         <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">orientation_indices_1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">orientation_indices_2</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">self_indices</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cartesian</span><span class="p">,</span>
-            <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">Order2SymmetricTensor</span><span class="o">.</span><span class="n">from_cartesian</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">output_dims</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Order2SymmetricTensor.to_specimen_frame">
-<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order2SymmetricTensor.to_specimen_frame">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_specimen_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientations</span><span class="p">):</span>
-        <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span><span class="p">,</span> <span class="n">self_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span>
-            <span class="n">orientations</span>
-        <span class="p">)</span>
-        <span class="n">orientation_indices_1</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;im&quot;</span>
-        <span class="n">orientation_indices_2</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;jn&quot;</span>
-        <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">orientation_indices_1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">orientation_indices_2</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">self_indices</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
-            <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rotation_indices_1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">rotation_indices_2</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">self_indices</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cartesian</span><span class="p">,</span>
             <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
@@ -1912,7 +1919,7 @@ document.write(`
     <span class="n">_mul_lookup</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mn&quot;</span><span class="p">:</span> <span class="s2">&quot;mn&quot;</span><span class="p">}</span>
     <span class="n">_matmul_lookup</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mn&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="n">Order2SymmetricTensor</span><span class="p">],</span>
-        <span class="s2">&quot;ij&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ijkl&quot;</span><span class="p">,</span> <span class="s2">&quot;kl&quot;</span><span class="p">,</span> <span class="s2">&quot;ij&quot;</span><span class="p">,</span> <span class="n">Order2SymmetricTensor</span><span class="o">.</span><span class="n">from_cartesian</span><span class="p">],</span>
+        <span class="s2">&quot;ij&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ijkl&quot;</span><span class="p">,</span> <span class="s2">&quot;kl&quot;</span><span class="p">,</span> <span class="s2">&quot;ij&quot;</span><span class="p">,</span> <span class="n">Order2SymmetricTensor</span><span class="o">.</span><span class="n">_from_cartesian</span><span class="p">],</span>
         <span class="s2">&quot;mn&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mn&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;mo&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
     <span class="p">}</span>
 
@@ -2161,38 +2168,19 @@ document.write(`
         <span class="k">return</span> <span class="o">-</span><span class="n">moduli</span> <span class="o">*</span> <span class="p">(</span><span class="n">axial_tensor</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inv</span> <span class="o">@</span> <span class="n">transverse_tensor</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="Order4SymmetricTensor.to_crystal_frame">
-<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order4SymmetricTensor.to_crystal_frame">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_crystal_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientations</span><span class="p">):</span>
+<div class="viewcode-block" id="Order4SymmetricTensor.rotate">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order4SymmetricTensor.rotate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotation</span><span class="p">):</span>
         <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span><span class="p">,</span> <span class="n">self_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span>
-            <span class="n">orientations</span>
+            <span class="n">rotation</span>
         <span class="p">)</span>
-        <span class="n">orientation_indices_1</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;ai&quot;</span>
-        <span class="n">orientation_indices_2</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;bj&quot;</span>
-        <span class="n">R</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix_mandel</span>
+        <span class="n">rotation_indices_1</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;ai&quot;</span>
+        <span class="n">rotation_indices_2</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;bj&quot;</span>
+        <span class="n">Q</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">rotation_matrix_mandel</span>
         <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">orientation_indices_1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">orientation_indices_2</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">self_indices</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">R</span><span class="p">,</span>
-            <span class="n">R</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">,</span>
-            <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">Order4SymmetricTensor</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">output_dims</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Order4SymmetricTensor.to_specimen_frame">
-<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Order4SymmetricTensor.to_specimen_frame">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_specimen_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientations</span><span class="p">):</span>
-        <span class="n">output_dims</span><span class="p">,</span> <span class="n">output_indices</span><span class="p">,</span> <span class="n">self_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_transformation_indices</span><span class="p">(</span>
-            <span class="n">orientations</span>
-        <span class="p">)</span>
-        <span class="n">orientation_indices_1</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;ia&quot;</span>
-        <span class="n">orientation_indices_2</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;jb&quot;</span>
-        <span class="n">R</span> <span class="o">=</span> <span class="n">orientations</span><span class="o">.</span><span class="n">rotation_matrix_mandel</span>
-        <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">orientation_indices_1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">orientation_indices_2</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">self_indices</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">R</span><span class="p">,</span>
-            <span class="n">R</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rotation_indices_1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">rotation_indices_2</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">self_indices</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">Q</span><span class="p">,</span>
+            <span class="n">Q</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">,</span>
             <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
@@ -2269,7 +2257,7 @@ document.write(`
         <span class="n">R_mandel</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">R_mandel</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">R_mandel</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">R_mandel</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">R_mandel</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">R_mandel</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">num_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2316,11 +2304,6 @@ document.write(`
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">OrientationIterator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">)</span>
-
-    <span class="c1"># def __getitem__(self, slice_):</span>
-    <span class="c1">#     if len(self.dims_str) is None:</span>
-    <span class="c1">#         raise ValueError(&quot;can&#39;t index&quot;)</span>
-    <span class="c1">#     return Orientation(self.rotation_matrix[slice_])</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slice_</span><span class="p">):</span>
 
@@ -2420,10 +2403,12 @@ document.write(`
         <span class="n">plane</span> <span class="o">=</span> <span class="n">Vector</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span><span class="o">.</span><span class="n">unit</span>
         <span class="n">direction</span> <span class="o">=</span> <span class="n">Vector</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span><span class="o">.</span><span class="n">unit</span>
         <span class="k">if</span> <span class="n">plane</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">direction</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide same number of plane(s) and direction(s) to construct Orientation(s) from Miller indices&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Must provide same number of plane(s) and direction(s) to construct Orientation(s) from Miller indices&quot;</span>
+            <span class="p">)</span>
         <span class="n">td</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
         <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">direction</span><span class="o">.</span><span class="n">components</span><span class="p">,</span> <span class="n">td</span><span class="o">.</span><span class="n">components</span><span class="p">,</span> <span class="n">plane</span><span class="o">.</span><span class="n">components</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span>
+            <span class="p">[</span><span class="n">direction</span><span class="o">.</span><span class="n">components</span><span class="p">,</span> <span class="n">td</span><span class="o">.</span><span class="n">components</span><span class="p">,</span> <span class="n">plane</span><span class="o">.</span><span class="n">components</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">2</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">dims</span><span class="p">)</span></div>
 
@@ -2443,19 +2428,34 @@ document.write(`
 <span class="sd">        Bunge Euler Angle Convention</span>
 
 <span class="sd">        The rotation matrix R formed from these Euler angles is used to take a vector&#39;s</span>
-<span class="sd">        components relative to a specimen reference frame (v_i) and transform them to that same</span>
-<span class="sd">        vector&#39;s components relative to the crystal reference frame (v&#39;_i).</span>
+<span class="sd">        components relative to a crystal reference frame (v&#39;_i) and transform them to that same</span>
+<span class="sd">        vector&#39;s components relative to the specimen reference frame (v_i).</span>
 
-<span class="sd">        v&#39;_i = R_ij * v_j</span>
+<span class="sd">        v_i = R_ij * v&#39;_j</span>
 
-<span class="sd">        R can also be used to construct the crystal basis *vectors* (e&#39;_i) as a linear combination</span>
+<span class="sd">        R can also be used to construct the crystal basis *vectors* (e&#39;_j) as a linear combination</span>
 <span class="sd">        of specimen basis *vectors* (e_i).</span>
 
-<span class="sd">        e&#39;_i = R_ij * e_j</span>
+<span class="sd">        e&#39;_j = R_ij * e_i</span>
 
 <span class="sd">        R can equivalently be written in terms of dot products of the basis vectors.</span>
 
-<span class="sd">        R_ij = e&#39;_i . e_j</span>
+<span class="sd">        R_ij = e_i . e&#39;_j</span>
+
+<span class="sd">        The actual tensor Q that performs the Euler angle rotation sequence has components in the</span>
+<span class="sd">        basis of the specimen reference frame given by the transpose of this rotation matrix as its</span>
+<span class="sd">        components. Therefore, Q has components R_ji and is used to transform the basis vectors</span>
+<span class="sd">        in the following way,</span>
+
+<span class="sd">        e&#39;_j = Q @ e_j</span>
+
+<span class="sd">        e&#39;_j = Q_ji * e_i (transpose usage of the above rotation matrix)</span>
+
+<span class="sd">        The Q_ij are just the components of this tensor and is what is used in the final</span>
+<span class="sd">        rotation_matrix variable below.</span>
+
+<span class="sd">        Apologies for any confusion resulting from the above notation.</span>
+<span class="sd">        We will be updating all documentation regarding rotations in an upcoming release.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">euler_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">euler_angles</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -2470,16 +2470,64 @@ document.write(`
 
         <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="o">*</span><span class="n">euler_angles</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
         <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">c3</span> <span class="o">-</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">s3</span>
-        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">c3</span> <span class="o">*</span> <span class="n">s1</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">s3</span>
-        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">s2</span> <span class="o">*</span> <span class="n">s3</span>
-        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">c1</span> <span class="o">*</span> <span class="n">s3</span> <span class="o">-</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">c3</span> <span class="o">*</span> <span class="n">s1</span>
+        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">c1</span> <span class="o">*</span> <span class="n">s3</span> <span class="o">-</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">c3</span> <span class="o">*</span> <span class="n">s1</span>
+        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">s2</span>
+        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">c3</span> <span class="o">*</span> <span class="n">s1</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">s3</span>
         <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">c3</span> <span class="o">-</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">s3</span>
-        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">c3</span> <span class="o">*</span> <span class="n">s2</span>
-        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">s2</span>
-        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">c1</span> <span class="o">*</span> <span class="n">s2</span>
+        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">c1</span> <span class="o">*</span> <span class="n">s2</span>
+        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">s2</span> <span class="o">*</span> <span class="n">s3</span>
+        <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">c3</span> <span class="o">*</span> <span class="n">s2</span>
         <span class="n">rotation_matrix</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">c2</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">euler_angles</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+            <span class="k">else</span> <span class="n">rotation_matrix</span>
+        <span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">),</span> <span class="n">dims</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">dims</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Orientation.from_rotation_vector">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Orientation.from_rotation_vector">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_rotation_vector</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">rotation_vector</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct an Orientation from a rotation vector (axis-angle representation).</span>
+
+<span class="sd">        The rotation vector is a vector where:</span>
+<span class="sd">        - The direction represents the axis of rotation</span>
+<span class="sd">        - The magnitude represents the angle of rotation (in radians)</span>
+
+<span class="sd">        Q = cos(θ) * I - sin(θ) * ε(axis) + (1 - cos(θ)) * (axis ⊗ axis)</span>
+
+<span class="sd">        where θ is the angle, axis is the unit rotation axis, and ε(axis) is</span>
+<span class="sd">        the permutation tensor contracted with axis.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">rotation_vector</span> <span class="o">=</span> <span class="n">Vector</span><span class="p">(</span><span class="n">rotation_vector</span><span class="p">)</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">rotation_vector</span><span class="o">.</span><span class="n">norm</span>
+
+        <span class="c1"># A bit ugly for now to avoid nans but works</span>
+        <span class="n">safe_angle</span> <span class="o">=</span> <span class="n">Scalar</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">angle</span><span class="o">.</span><span class="n">components</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">angle</span><span class="o">.</span><span class="n">components</span><span class="p">),</span>
+            <span class="n">angle</span><span class="o">.</span><span class="n">dims_str</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">unit_axis</span> <span class="o">=</span> <span class="n">rotation_vector</span> <span class="o">/</span> <span class="n">safe_angle</span>
+
+        <span class="n">rotation</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">angle</span><span class="o">.</span><span class="n">cos</span> <span class="o">*</span> <span class="n">Order2Tensor</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span>
+            <span class="o">-</span> <span class="n">angle</span><span class="o">.</span><span class="n">sin</span> <span class="o">*</span> <span class="n">PermutationTensor</span><span class="p">()(</span><span class="n">unit_axis</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">angle</span><span class="o">.</span><span class="n">cos</span><span class="p">)</span> <span class="o">*</span> <span class="n">unit_axis</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">unit_axis</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">rotation</span><span class="o">.</span><span class="n">components</span><span class="p">,</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Orientation.from_axis_angle">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Orientation.from_axis_angle">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_axis_angle</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_rotation_vector</span><span class="p">(</span><span class="n">Vector</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span><span class="o">.</span><span class="n">unit</span> <span class="o">*</span> <span class="n">angle</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Orientation.random">
@@ -2487,16 +2535,19 @@ document.write(`
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">random</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(),</span> <span class="n">dims</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># Check if iterable to allow the user to pass in an int</span>
-        <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">shape</span><span class="p">,)</span>
+        <span class="n">processed_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">shape</span><span class="p">,)</span>
 
         <span class="c1"># Generate random Euler angles using uniform distribution on SO(3)</span>
-        <span class="n">z1</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-        <span class="n">cos_x2</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="mf">1.0</span>
+        <span class="n">z1</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">processed_shape</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">cos_x2</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">processed_shape</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="mf">1.0</span>
         <span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_x2</span><span class="p">)</span>
-        <span class="n">z3</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">z3</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">processed_shape</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
 
-        <span class="c1"># Stack Euler angles and create orientations</span>
+        <span class="c1"># Stack Euler angles and create rotations</span>
         <span class="n">euler_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">z1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">z3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">euler_angles</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">euler_angles</span><span class="p">)</span> <span class="k">if</span> <span class="n">shape</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dims</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">euler_angles</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_euler_angles</span><span class="p">(</span><span class="n">euler_angles</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">)</span></div>
 
@@ -2504,57 +2555,142 @@ document.write(`
 <div class="viewcode-block" id="Orientation.from_list">
 <a class="viewcode-back" href="../../api_reference.html#materialite.tensor.Orientation.from_list">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">orientations</span><span class="p">):</span>
-        <span class="n">rotation_matrices</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span><span class="o">.</span><span class="n">rotation_matrix</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">orientations</span><span class="p">]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">rotations</span><span class="p">):</span>
+        <span class="n">rotation_matrices</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">rotation_matrix</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rotations</span><span class="p">]</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">rotation_matrices</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">euler_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Source: &quot;Euler Angle Formulas&quot;, David Eberly</span>
-        <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_matrix</span>
+        <span class="c1"># Source: &quot;Euler Angle Formulas&quot;, David Eberly (indices swapped for Q_ij = R_ji)</span>
+        <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_matrix</span>
         <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span>
 
-        <span class="n">R22_less_than_one</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1.0</span>
-        <span class="n">R22_equals_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">R22_less_than_one</span><span class="p">)</span>
+        <span class="n">Q22_less_than_one</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1.0</span>
+        <span class="n">Q22_equals_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">Q22_less_than_one</span><span class="p">)</span>
 
-        <span class="n">R22_greater_than_negative_one</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">1.0</span>
-        <span class="n">R22_equals_negative_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">R22_greater_than_negative_one</span><span class="p">)</span>
+        <span class="n">Q22_greater_than_negative_one</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">1.0</span>
+        <span class="n">Q22_equals_negative_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">Q22_greater_than_negative_one</span><span class="p">)</span>
 
-        <span class="n">R22_default</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">R22_less_than_one</span><span class="p">,</span> <span class="n">R22_greater_than_negative_one</span><span class="p">)</span>
-        <span class="n">z1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-        <span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
-        <span class="n">z3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">Q22_default</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">Q22_less_than_one</span><span class="p">,</span> <span class="n">Q22_greater_than_negative_one</span><span class="p">)</span>
+        <span class="n">z1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="o">-</span><span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">z3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
         <span class="n">eulers_default</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">z1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">z3</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">R22_default</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">eulers_default</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">Q22_default</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">eulers_default</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+                <span class="k">else</span> <span class="n">eulers_default</span>
+            <span class="p">)</span>
 
         <span class="n">eulers_negative_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
         <span class="p">)</span>
         <span class="n">eulers_negative_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">eulers_negative_one</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">eulers_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">R</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
         <span class="p">)</span>
         <span class="n">eulers_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">eulers_one</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Three conditions rolled into a messy operation</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;..., ...j -&gt; ...j&quot;</span><span class="p">,</span> <span class="n">R22_default</span><span class="p">,</span> <span class="n">eulers_default</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;..., ...j -&gt; ...j&quot;</span><span class="p">,</span> <span class="n">Q22_default</span><span class="p">,</span> <span class="n">eulers_default</span><span class="p">)</span>
             <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-                <span class="s2">&quot;..., ...j -&gt; ...j&quot;</span><span class="p">,</span> <span class="n">R22_equals_negative_one</span><span class="p">,</span> <span class="n">eulers_negative_one</span>
+                <span class="s2">&quot;..., ...j -&gt; ...j&quot;</span><span class="p">,</span> <span class="n">Q22_equals_negative_one</span><span class="p">,</span> <span class="n">eulers_negative_one</span>
             <span class="p">)</span>
-            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;..., ...j -&gt; ...j&quot;</span><span class="p">,</span> <span class="n">R22_equals_one</span><span class="p">,</span> <span class="n">eulers_one</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;..., ...j -&gt; ...j&quot;</span><span class="p">,</span> <span class="n">Q22_equals_one</span><span class="p">,</span> <span class="n">eulers_one</span><span class="p">)</span>
         <span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">result</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">euler_angles_in_degrees</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">euler_angles</span> <span class="o">*</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotation_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the rotation matrix to a rotation vector (axis-angle representation).</span>
+
+<span class="sd">        The rotation vector is a vector where the direction represents the axis</span>
+<span class="sd">        of rotation and the magnitude represents the angle in radians.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Rotation vector(s) with shape (..., 3).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_matrix</span>
+
+        <span class="c1"># Compute angle from trace: trace(Q) = 1 + 2*cos(θ)</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">components</span>
+
+        <span class="c1"># Just letting AI do its thing below for now but there are better ways</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">trace</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+
+        <span class="c1"># Extract axis from skew-symmetric part of Q</span>
+        <span class="c1"># Q - Q^T = 2 * sin(θ) * K, where K is the skew-symmetric matrix of the axis</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="o">*</span><span class="n">Q</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Normalize axis (handle small angles where sin(θ) ≈ 0)</span>
+        <span class="n">sin_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">small_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sin_angle</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span>
+
+        <span class="c1"># For small angles, the axis direction doesn&#39;t matter (rotation is ~identity)</span>
+        <span class="c1"># For angles near π, use a different extraction method</span>
+        <span class="n">near_pi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">angle</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
+
+        <span class="c1"># Standard case: divide by 2*sin(θ)</span>
+        <span class="n">axis_norm</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">sin_angle</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">small_angle</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span>
+            <span class="n">axis</span><span class="p">,</span>  <span class="c1"># Keep unnormalized for small angles (will be scaled by small angle anyway)</span>
+            <span class="n">axis</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">small_angle</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">axis_norm</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Handle angles near π using diagonal elements</span>
+        <span class="c1"># For θ ≈ π: Q_ii = 2*k_i^2 - 1, so k_i = sqrt((Q_ii + 1) / 2)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">near_pi</span><span class="p">):</span>
+            <span class="n">diag_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+            <span class="n">diag_axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">diag_axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">diag_axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+            <span class="c1"># Determine signs from off-diagonal elements</span>
+            <span class="c1"># Q_ij = 2*k_i*k_j for i ≠ j when θ = π (Q is symmetric there, same as R)</span>
+            <span class="n">diag_axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">diag_axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">diag_axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">diag_axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">Q</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">diag_axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">diag_axis</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">near_pi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">diag_axis</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+
+        <span class="c1"># Scale axis by angle to get rotation vector</span>
+        <span class="n">rotation_vector</span> <span class="o">=</span> <span class="n">axis</span> <span class="o">*</span> <span class="n">angle</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+        <span class="n">rotation_vector</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">rotation_vector</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">rotation_vector</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Vector</span><span class="p">(</span><span class="n">rotation_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">trace</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Scalar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;...ii -&gt; ...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Orientation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">dimensions</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">DIM_NAMES</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">])</span>
@@ -2564,17 +2700,17 @@ document.write(`
             <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;, dims: (</span><span class="si">{</span><span class="n">dimensions</span><span class="si">}</span><span class="s2">), Euler angles shape: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">euler_angles</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">)&quot;</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="n">Orientation</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotation</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rotation</span><span class="p">,</span> <span class="n">Orientation</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">NotImplemented</span>
-        <span class="n">u</span> <span class="o">=</span> <span class="n">order_dims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">,</span> <span class="n">orientation</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
-        <span class="n">other_indices</span> <span class="o">=</span> <span class="n">orientation</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;jk&quot;</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">order_dims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dims_str</span><span class="p">,</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span>
+        <span class="n">other_indices</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">dims_str</span> <span class="o">+</span> <span class="s2">&quot;jk&quot;</span>
         <span class="n">output_indices</span> <span class="o">=</span> <span class="n">u</span> <span class="o">+</span> <span class="s2">&quot;ik&quot;</span>
         <span class="k">return</span> <span class="n">Orientation</span><span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">indices_str</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">other_indices</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
-                <span class="n">orientation</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
+                <span class="n">rotation</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
                 <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">u</span><span class="p">,</span>
@@ -2629,6 +2765,36 @@ document.write(`
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">raise</span> <span class="ne">StopIteration</span></div>
+
+
+
+<div class="viewcode-block" id="PermutationTensor">
+<a class="viewcode-back" href="../../api_reference.html#materialite.tensor.PermutationTensor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PermutationTensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The 3D permutation (Levi-Civita) tensor, viewed as a map from a vector to</span>
+<span class="sd">    a skew-symmetric tensor. It can be characterized epsilon as:</span>
+<span class="sd">    For any right-handed orthonormal triad {a, b, c}</span>
+<span class="sd">    satisfying epsilon(a, b, c) = 1,</span>
+<span class="sd">    epsilon(c) = a wedge b</span>
+<span class="sd">    where a wedge b is a dyad b - b dyad a</span>
+<span class="sd">    Also, epsilon(v) @ u = u x v.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">components</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">components</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">components</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">components</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="o">=</span> <span class="n">components</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vector</span><span class="p">):</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+            <span class="s2">&quot;ijk, ...k -&gt; ...ij&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">,</span>
+            <span class="n">vector</span><span class="o">.</span><span class="n">components</span><span class="p">,</span>
+            <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Order2Tensor</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">vector</span><span class="o">.</span><span class="n">dims_str</span><span class="p">)</span></div>
 
 </pre></div>
 

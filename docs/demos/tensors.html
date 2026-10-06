@@ -207,6 +207,9 @@
 <li class="toctree-l1"><a class="reference internal" href="grain_coarsening.html">Grain Coarsening</a></li>
 <li class="toctree-l1"><a class="reference internal" href="laser_pathing.html">AM Laser Pathing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convolution_microstructure.html">AM Microstucture</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model-Making Demo</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="model_making.html">Creating New Models</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
@@ -454,7 +457,7 @@ document.write(`
 <li><p><code class="docutils literal notranslate"><span class="pre">Order2Tensor</span></code>: non-symmetric second-order tensors</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code>: symmetric second-order tensors.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor</span></code>: fourth-order tensors with major and minor symmetries (e.g., stiffness tensors)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Orientation</span></code>: represents basis transformations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Orientation</span></code>: rotations between two objects</p></li>
 </ul>
 <p>This demo walks through tensor operations, including individual tensors and groups of tensors, which are all handled by the above classes.</p>
 <p>Create a displacement gradient for simple shear</p>
@@ -588,13 +591,13 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 </div>
 </div>
 </div>
-<p>For solid mechanics problems, we need stiffness tensors too. These are <code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor</span></code>s in Materialite. Here, we’ll create a stiffness tensor for a material with cubic symmetry.</p>
+<p>For solid mechanics problems, we need stiffness tensors too. These are <code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor</span></code>s in Materialite. Here, we’ll create a stiffness tensor for a reference unit cell with cubic symmetry.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stiffness_tensor</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_cubic_constants</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reference_stiffness</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_cubic_constants</span><span class="p">(</span>
     <span class="n">C11</span><span class="o">=</span><span class="mi">250000</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="mi">140000</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="mi">100000</span>
 <span class="p">)</span>
-<span class="n">stiffness_tensor</span>
+<span class="n">reference_stiffness</span>
 </pre></div>
 </div>
 </div>
@@ -612,7 +615,7 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 <p>Again, the default representation is the Mandel components. We can also ask for the Voigt components.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">voigt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reference_stiffness</span><span class="o">.</span><span class="n">voigt</span>
 </pre></div>
 </div>
 </div>
@@ -636,7 +639,7 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 <p>Now let’s do some tensor operations. First, get the stress from the stiffness tensor and the strain: <span class="math notranslate nohighlight">\(\mathbf{\sigma}\)</span> = <span class="math notranslate nohighlight">\(\mathbb{C} \mathbf{\varepsilon}\)</span> or, in index notation, <span class="math notranslate nohighlight">\(\sigma_{ij} = C_{ijkl} \varepsilon_{kl}\)</span>. Tensor applications use the <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> operator.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span> <span class="o">=</span> <span class="n">stiffness_tensor</span> <span class="o">@</span> <span class="n">strain</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stress</span> <span class="o">=</span> <span class="n">reference_stiffness</span> <span class="o">@</span> <span class="n">strain</span>
 <span class="n">stress</span>
 </pre></div>
 </div>
@@ -732,7 +735,7 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stresses</span> <span class="o">=</span> <span class="n">stiffness_tensor</span> <span class="o">@</span> <span class="n">strains</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stresses</span> <span class="o">=</span> <span class="n">reference_stiffness</span> <span class="o">@</span> <span class="n">strains</span>
 <span class="n">stresses</span>
 </pre></div>
 </div>
@@ -813,12 +816,12 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 </div>
 </div>
 </div>
-<p>For crystal plasticity operations, we will also need to work with a slip systems dimension. This typically comes from the Schmid tensor. In Materialite, the <code class="docutils literal notranslate"><span class="pre">SlipSystem</span></code> class can automatically create the Schmid tensor for common slip system families.</p>
+<p>For crystal plasticity operations, we will also need to work with a slip systems dimension. This typically comes from the Schmid tensor. In Materialite, the <code class="docutils literal notranslate"><span class="pre">SlipSystem</span></code> class can automatically create the Schmid tensor for common slip system families for a reference unit cell.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">slip_systems</span> <span class="o">=</span> <span class="n">SlipSystem</span><span class="o">.</span><span class="n">octahedral</span><span class="p">()</span>
-<span class="n">schmid_tensor</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">schmid_tensor</span><span class="o">.</span><span class="n">sym</span>
-<span class="n">schmid_tensor</span>
+<span class="n">reference_schmid_tensor</span> <span class="o">=</span> <span class="n">slip_systems</span><span class="o">.</span><span class="n">schmid_tensor</span><span class="o">.</span><span class="n">sym</span>
+<span class="n">reference_schmid_tensor</span>
 </pre></div>
 </div>
 </div>
@@ -843,7 +846,7 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 <p>Now, suppose our two points from earlier are in a crystal with octahedral slip systems. We can easily compute the resolved shear stress on each slip system at each point. Note that we have two points and 12 slip systems.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">resolved_shear_stresses</span> <span class="o">=</span> <span class="n">schmid_tensor</span> <span class="o">*</span> <span class="n">stresses</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">resolved_shear_stresses</span> <span class="o">=</span> <span class="n">reference_schmid_tensor</span> <span class="o">*</span> <span class="n">stresses</span>
 <span class="n">resolved_shear_stresses</span>
 </pre></div>
 </div>
@@ -901,7 +904,7 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 <p>Now we can compute the plastic strain rates at each point: <span class="math notranslate nohighlight">\(\dot{\mathbf{\varepsilon}}_p = \sum_s \mathbf{M}_s \dot{\gamma}_s\)</span>. Recall that the Schmid tensor is an <code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code> with a “points” dimension and the plastic slip rates are a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> with a “points” and a “slip systems” dimension. Therefore, the product will be an <code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor</span></code> with “points” and “slip systems” dimensions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plastic_strain_rates</span> <span class="o">=</span> <span class="p">(</span><span class="n">schmid_tensor</span> <span class="o">*</span> <span class="n">plastic_slip_rates</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plastic_strain_rates</span> <span class="o">=</span> <span class="p">(</span><span class="n">reference_schmid_tensor</span> <span class="o">*</span> <span class="n">plastic_slip_rates</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 <span class="n">plastic_strain_rates</span>
 </pre></div>
 </div>
@@ -918,7 +921,7 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 <p>Note that the <code class="docutils literal notranslate"><span class="pre">sum</span></code> method automatically sums over the “slip systems” dimension if it exists. This behavior can also be specified explicitly.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">schmid_tensor</span> <span class="o">*</span> <span class="n">plastic_slip_rates</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">reference_schmid_tensor</span> <span class="o">*</span> <span class="n">plastic_slip_rates</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -949,13 +952,13 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 </div>
 </div>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">new_slip_resistances</span></code> has a points dimension since the accumulated slip was calculated at each point. In other words, at each point, we have computed the new CRSS across all 12 slip systems. <code class="docutils literal notranslate"><span class="pre">new_slip_resistances</span></code> would also have a slip systems dimension if the hardening law computed different CRSS increments for each slip system. We also used the <code class="docutils literal notranslate"><span class="pre">abs</span></code> property of a <code class="docutils literal notranslate"><span class="pre">Scalar</span></code> to take the absolute value of the slip rates.</p>
-<p>Generally, points will belong to different crystals that may have different orientations. All <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>s (except <code class="docutils literal notranslate"><span class="pre">Scalar</span></code>s) are equipped with <code class="docutils literal notranslate"><span class="pre">to_crystal_frame()</span></code> and <code class="docutils literal notranslate"><span class="pre">to_specimen_frame()</span></code> methods to handle coordinate transformations. The only argument to the method is an <code class="docutils literal notranslate"><span class="pre">Orientation</span></code> object, which can contain a single orientation or a group of orientations just like <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>s. <code class="docutils literal notranslate"><span class="pre">Orientation</span></code>s represent a basis transformation between a specimen reference frame and a crystal reference frame. There is more detail on creating and using <code class="docutils literal notranslate"><span class="pre">Orientation</span></code>s in <a class="reference internal" href="crystallography.html"><span class="doc std std-doc">Crystallography</span></a>.</p>
+<p>Generally, points will belong to different crystals that may have different orientations. All <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>s (except <code class="docutils literal notranslate"><span class="pre">Scalar</span></code>s) are equipped with a <code class="docutils literal notranslate"><span class="pre">rotate()</span></code> method to rotate a <code class="docutils literal notranslate"><span class="pre">Tensor</span></code> to a new one. The only argument to the method is an <code class="docutils literal notranslate"><span class="pre">Orientation</span></code> object, which can contain a single orientation or a group of orientations just like <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>s. <code class="docutils literal notranslate"><span class="pre">Orientation</span></code>s typically represent a rotation of objects (and their associated tensors) from a reference positioning to a physical, oriented positioning, e.g. the rotation of a reference unit cell of a crystal to the unit cell for that crystal inside a polycrystal. There is more detail on creating and using <code class="docutils literal notranslate"><span class="pre">Orientation</span></code>s in <a class="reference internal" href="crystallography.html"><span class="doc std std-doc">Crystallography</span></a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
 <span class="n">orientations</span> <span class="o">=</span> <span class="n">Orientation</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
-<span class="n">specimen_frame_stiffnesses</span> <span class="o">=</span> <span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">to_specimen_frame</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
-<span class="n">specimen_frame_stiffnesses</span>
+<span class="n">stiffnesses</span> <span class="o">=</span> <span class="n">reference_stiffness</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
+<span class="n">stiffnesses</span>
 </pre></div>
 </div>
 </div>
@@ -992,8 +995,8 @@ Message: tried to create Order2SymmetricTensor using non-symmetric input
 <p>Now, each point has a different stiffness tensor in the specimen frame due to the different orientations. We also need to transform the Schmid tensor to the specimen frame.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specimen_frame_schmid_tensors</span> <span class="o">=</span> <span class="n">schmid_tensor</span><span class="o">.</span><span class="n">to_specimen_frame</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
-<span class="n">specimen_frame_schmid_tensors</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">schmid_tensors</span> <span class="o">=</span> <span class="n">reference_schmid_tensor</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span>
+<span class="n">schmid_tensors</span>
 </pre></div>
 </div>
 </div>
@@ -1135,14 +1138,14 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">material</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">dimensions</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
-<span class="n">stiffness_tensor</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_cubic_constants</span><span class="p">(</span>
+<span class="n">reference_stiffness</span> <span class="o">=</span> <span class="n">Order4SymmetricTensor</span><span class="o">.</span><span class="n">from_cubic_constants</span><span class="p">(</span>
     <span class="n">C11</span><span class="o">=</span><span class="mi">250000</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="mi">140000</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="mi">100000</span>
 <span class="p">)</span>
 <span class="n">orientations</span> <span class="o">=</span> <span class="n">Orientation</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">material</span><span class="o">.</span><span class="n">num_points</span><span class="p">)</span>
 <span class="n">strain</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">Order2SymmetricTensor</span><span class="o">.</span><span class="n">from_cartesian</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span> <span class="o">*</span> <span class="mf">0.001</span>
 <span class="p">)</span>
-<span class="n">stresses</span> <span class="o">=</span> <span class="n">stiffness_tensor</span><span class="o">.</span><span class="n">to_specimen_frame</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span> <span class="o">@</span> <span class="n">strain</span>
+<span class="n">stresses</span> <span class="o">=</span> <span class="n">reference_stiffness</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span> <span class="o">@</span> <span class="n">strain</span>
 <span class="n">material</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">create_fields</span><span class="p">({</span><span class="s2">&quot;orientation&quot;</span><span class="p">:</span> <span class="n">orientations</span><span class="p">,</span> <span class="s2">&quot;stress&quot;</span><span class="p">:</span> <span class="n">stresses</span><span class="p">})</span>
 <span class="n">material</span><span class="o">.</span><span class="n">get_fields</span><span class="p">()</span>
 </pre></div>
@@ -1186,8 +1189,8 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>Orientation([ 3.13   1.83  -0.942], dims: (), ...</td>
-      <td>Order2SymmetricTensor([290.89156058 137.222930...</td>
+      <td>Orientation([-0.328  1.695  0.278], dims: (), ...</td>
+      <td>Order2SymmetricTensor([279.46906266 123.363561...</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1197,8 +1200,8 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
       <td>0</td>
       <td>0</td>
       <td>1</td>
-      <td>Orientation([ 1.243  0.574 -2.99 ], dims: (), ...</td>
-      <td>Order2SymmetricTensor([289.87259163 134.961423...</td>
+      <td>Orientation([-1.51   1.686  2.644], dims: (), ...</td>
+      <td>Order2SymmetricTensor([252.98955804 138.761288...</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1208,8 +1211,8 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
       <td>0</td>
       <td>1</td>
       <td>0</td>
-      <td>Orientation([2.303 1.346 1.041], dims: (), Eul...</td>
-      <td>Order2SymmetricTensor([305.00550418 107.368550...</td>
+      <td>Orientation([-1.193  1.264 -3.076], dims: (), ...</td>
+      <td>Order2SymmetricTensor([282.17122116 119.664312...</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1219,8 +1222,8 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
       <td>0</td>
       <td>1</td>
       <td>1</td>
-      <td>Orientation([0.211 1.973 2.378], dims: (), Eul...</td>
-      <td>Order2SymmetricTensor([297.52466909 129.873334...</td>
+      <td>Orientation([2.187 0.405 2.953], dims: (), Eul...</td>
+      <td>Order2SymmetricTensor([290.14547048 117.441604...</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1230,8 +1233,8 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
       <td>1</td>
       <td>0</td>
       <td>0</td>
-      <td>Orientation([-2.103  2.188  1.837], dims: (), ...</td>
-      <td>Order2SymmetricTensor([303.39649084 109.842544...</td>
+      <td>Orientation([-2.953  2.102 -2.836], dims: (), ...</td>
+      <td>Order2SymmetricTensor([ 2.61608876e+02  1.3717...</td>
     </tr>
     <tr>
       <th>5</th>
@@ -1241,8 +1244,8 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
       <td>1</td>
       <td>0</td>
       <td>1</td>
-      <td>Orientation([2.924 1.601 1.385], dims: (), Eul...</td>
-      <td>Order2SymmetricTensor([263.01406335 132.440446...</td>
+      <td>Orientation([ 1.542  1.238 -2.349], dims: (), ...</td>
+      <td>Order2SymmetricTensor([267.78502568 135.106076...</td>
     </tr>
     <tr>
       <th>6</th>
@@ -1252,8 +1255,8 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
       <td>1</td>
       <td>1</td>
       <td>0</td>
-      <td>Orientation([-1.232  1.932  2.133], dims: (), ...</td>
-      <td>Order2SymmetricTensor([281.42506894 129.445800...</td>
+      <td>Orientation([ 0.316  2.04  -0.75 ], dims: (), ...</td>
+      <td>Order2SymmetricTensor([299.25260159 125.734859...</td>
     </tr>
     <tr>
       <th>7</th>
@@ -1263,8 +1266,8 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>Orientation([0.569 1.63  0.326], dims: (), Eul...</td>
-      <td>Order2SymmetricTensor([293.77145722 106.960097...</td>
+      <td>Orientation([-1.87   1.737  0.28 ], dims: (), ...</td>
+      <td>Order2SymmetricTensor([267.96411088 125.331357...</td>
     </tr>
   </tbody>
 </table>
@@ -1286,7 +1289,7 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
 <p>You can index <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>s like numpy arrays.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specimen_frame_schmid_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">schmid_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -1301,7 +1304,7 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specimen_frame_schmid_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">schmid_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -1314,7 +1317,7 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specimen_frame_schmid_tensors</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">schmid_tensors</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -1351,7 +1354,7 @@ Scalar([ 1.28600823e-004  1.28600823e-004  3.12825484e-168  4.59837222e-003
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
-    <span class="n">specimen_frame_schmid_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">schmid_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Message: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1367,7 +1370,7 @@ Message: Provided 3 indices to Order2SymmetricTensor with only 2 dimensions (sli
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specimen_frame_schmid_tensors</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">schmid_tensors</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -1380,8 +1383,8 @@ Message: Provided 3 indices to Order2SymmetricTensor with only 2 dimensions (sli
 <p>You can also set elements of a tensor with another tensor of the same type</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_stiffnesses</span> <span class="o">=</span> <span class="n">specimen_frame_stiffnesses</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">new_stiffnesses</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">specimen_frame_stiffnesses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_stiffnesses</span> <span class="o">=</span> <span class="n">stiffnesses</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">new_stiffnesses</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">stiffnesses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">new_stiffnesses</span>
 </pre></div>
 </div>

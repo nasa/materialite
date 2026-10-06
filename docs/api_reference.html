@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -436,40 +436,68 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Feature.check_inside"><code class="docutils literal notranslate"><span class="pre">Feature.check_inside()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.FieldFormatter"><code class="docutils literal notranslate"><span class="pre">FieldFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.FieldFormatter.format_field"><code class="docutils literal notranslate"><span class="pre">FieldFormatter.format_field()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.FieldFormatter.format_result"><code class="docutils literal notranslate"><span class="pre">FieldFormatter.format_result()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Formatter3D"><code class="docutils literal notranslate"><span class="pre">Formatter3D</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Formatter3D.format_field"><code class="docutils literal notranslate"><span class="pre">Formatter3D.format_field()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Formatter3D.format_result"><code class="docutils literal notranslate"><span class="pre">Formatter3D.format_result()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.ImageFormatter"><code class="docutils literal notranslate"><span class="pre">ImageFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.ImageFormatter.format_field"><code class="docutils literal notranslate"><span class="pre">ImageFormatter.format_field()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.ImageFormatter.format_result"><code class="docutils literal notranslate"><span class="pre">ImageFormatter.format_result()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material"><code class="docutils literal notranslate"><span class="pre">Material</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.apply"><code class="docutils literal notranslate"><span class="pre">Material.apply()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.assign_random_orientations"><code class="docutils literal notranslate"><span class="pre">Material.assign_random_orientations()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.center"><code class="docutils literal notranslate"><span class="pre">Material.center</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.center_id"><code class="docutils literal notranslate"><span class="pre">Material.center_id</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.chop_by_point_count"><code class="docutils literal notranslate"><span class="pre">Material.chop_by_point_count()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.copy"><code class="docutils literal notranslate"><span class="pre">Material.copy()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.corner_ids"><code class="docutils literal notranslate"><span class="pre">Material.corner_ids</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.corners"><code class="docutils literal notranslate"><span class="pre">Material.corners</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_fields"><code class="docutils literal notranslate"><span class="pre">Material.create_fields()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_random_integer_field"><code class="docutils literal notranslate"><span class="pre">Material.create_random_integer_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_regional_fields"><code class="docutils literal notranslate"><span class="pre">Material.create_regional_fields()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_uniform_field"><code class="docutils literal notranslate"><span class="pre">Material.create_uniform_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_voronoi"><code class="docutils literal notranslate"><span class="pre">Material.create_voronoi()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_id_range"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_id_range()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_range"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_range()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop"><code class="docutils literal notranslate"><span class="pre">Material.crop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_id"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_id()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.dimensions"><code class="docutils literal notranslate"><span class="pre">Material.dimensions</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.export_to_evpfft"><code class="docutils literal notranslate"><span class="pre">Material.export_to_evpfft()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.export_to_vtk"><code class="docutils literal notranslate"><span class="pre">Material.export_to_vtk()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.extract"><code class="docutils literal notranslate"><span class="pre">Material.extract()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.extract_regional_field"><code class="docutils literal notranslate"><span class="pre">Material.extract_regional_field()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.far_corner"><code class="docutils literal notranslate"><span class="pre">Material.far_corner</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.from_image"><code class="docutils literal notranslate"><span class="pre">Material.from_image()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_fields"><code class="docutils literal notranslate"><span class="pre">Material.get_fields()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_region_indices"><code class="docutils literal notranslate"><span class="pre">Material.get_region_indices()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_region_volume_fractions"><code class="docutils literal notranslate"><span class="pre">Material.get_region_volume_fractions()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.insert_feature"><code class="docutils literal notranslate"><span class="pre">Material.insert_feature()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.max_corner"><code class="docutils literal notranslate"><span class="pre">Material.max_corner</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.min_corner"><code class="docutils literal notranslate"><span class="pre">Material.min_corner</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.num_points"><code class="docutils literal notranslate"><span class="pre">Material.num_points</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.origin"><code class="docutils literal notranslate"><span class="pre">Material.origin</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.pipe"><code class="docutils literal notranslate"><span class="pre">Material.pipe()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.plot"><code class="docutils literal notranslate"><span class="pre">Material.plot()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.region_centroids"><code class="docutils literal notranslate"><span class="pre">Material.region_centroids()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.remove_field"><code class="docutils literal notranslate"><span class="pre">Material.remove_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.run"><code class="docutils literal notranslate"><span class="pre">Material.run()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.sample_from"><code class="docutils literal notranslate"><span class="pre">Material.sample_from()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.scale"><code class="docutils literal notranslate"><span class="pre">Material.scale()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.segment"><code class="docutils literal notranslate"><span class="pre">Material.segment()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.sizes"><code class="docutils literal notranslate"><span class="pre">Material.sizes</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.spacing"><code class="docutils literal notranslate"><span class="pre">Material.spacing</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.translate"><code class="docutils literal notranslate"><span class="pre">Material.translate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.update_regional_field"><code class="docutils literal notranslate"><span class="pre">Material.update_regional_field()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.NoFormatter"><code class="docutils literal notranslate"><span class="pre">NoFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.NoFormatter.format_field"><code class="docutils literal notranslate"><span class="pre">NoFormatter.format_field()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.NoFormatter.format_result"><code class="docutils literal notranslate"><span class="pre">NoFormatter.format_result()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Sphere"><code class="docutils literal notranslate"><span class="pre">Sphere</span></code></a><ul class="nav section-nav flex-column">
@@ -502,10 +530,9 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.norm"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.norm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.outer"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.outer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.random"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.random()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.rotate"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.rotate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.strain_voigt"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.strain_voigt</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.stress_voigt"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.stress_voigt</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.to_crystal_frame"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.to_crystal_frame()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.to_specimen_frame"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.to_specimen_frame()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.trace"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.trace</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.transpose"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.transpose</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.zero"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.zero()</span></code></a></li>
@@ -521,9 +548,8 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.inverse"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.inverse</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.norm"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.norm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.random"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.random()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.rotate"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.rotate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.sym"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.sym</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.to_crystal_frame"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.to_crystal_frame()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.to_specimen_frame"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.to_specimen_frame()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.trace"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.trace</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.transpose"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.transpose</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.zero"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.zero()</span></code></a></li>
@@ -547,8 +573,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.mandel"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.mandel</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.natural"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.natural</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.norm"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.norm</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.to_crystal_frame"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.to_crystal_frame()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.to_specimen_frame"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.to_specimen_frame()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.rotate"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.rotate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.voigt"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.voigt</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.zero"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.zero()</span></code></a></li>
 </ul>
@@ -557,28 +582,36 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.copy"><code class="docutils literal notranslate"><span class="pre">Orientation.copy()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.euler_angles"><code class="docutils literal notranslate"><span class="pre">Orientation.euler_angles</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.euler_angles_in_degrees"><code class="docutils literal notranslate"><span class="pre">Orientation.euler_angles_in_degrees</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_axis_angle"><code class="docutils literal notranslate"><span class="pre">Orientation.from_axis_angle()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">Orientation.from_euler_angles()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_list"><code class="docutils literal notranslate"><span class="pre">Orientation.from_list()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_miller_indices"><code class="docutils literal notranslate"><span class="pre">Orientation.from_miller_indices()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_rotation_matrix"><code class="docutils literal notranslate"><span class="pre">Orientation.from_rotation_matrix()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_rotation_vector"><code class="docutils literal notranslate"><span class="pre">Orientation.from_rotation_vector()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.identity"><code class="docutils literal notranslate"><span class="pre">Orientation.identity()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.inv"><code class="docutils literal notranslate"><span class="pre">Orientation.inv</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.inverse"><code class="docutils literal notranslate"><span class="pre">Orientation.inverse</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.num_dims"><code class="docutils literal notranslate"><span class="pre">Orientation.num_dims</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.num_indices"><code class="docutils literal notranslate"><span class="pre">Orientation.num_indices</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.random"><code class="docutils literal notranslate"><span class="pre">Orientation.random()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.reorder"><code class="docutils literal notranslate"><span class="pre">Orientation.reorder()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.repeat"><code class="docutils literal notranslate"><span class="pre">Orientation.repeat()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.rotation_matrix_mandel"><code class="docutils literal notranslate"><span class="pre">Orientation.rotation_matrix_mandel</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.rotation_vector"><code class="docutils literal notranslate"><span class="pre">Orientation.rotation_vector</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.shape"><code class="docutils literal notranslate"><span class="pre">Orientation.shape</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.trace"><code class="docutils literal notranslate"><span class="pre">Orientation.trace</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.OrientationIterator"><code class="docutils literal notranslate"><span class="pre">OrientationIterator</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.PermutationTensor"><code class="docutils literal notranslate"><span class="pre">PermutationTensor</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar"><code class="docutils literal notranslate"><span class="pre">Scalar</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.abs"><code class="docutils literal notranslate"><span class="pre">Scalar.abs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.apply"><code class="docutils literal notranslate"><span class="pre">Scalar.apply()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.cos"><code class="docutils literal notranslate"><span class="pre">Scalar.cos</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.cosh"><code class="docutils literal notranslate"><span class="pre">Scalar.cosh</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.max"><code class="docutils literal notranslate"><span class="pre">Scalar.max()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.random"><code class="docutils literal notranslate"><span class="pre">Scalar.random()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.sin"><code class="docutils literal notranslate"><span class="pre">Scalar.sin</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.sqrt"><code class="docutils literal notranslate"><span class="pre">Scalar.sqrt</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.zero"><code class="docutils literal notranslate"><span class="pre">Scalar.zero()</span></code></a></li>
 </ul>
@@ -600,15 +633,18 @@ document.write(`
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.TensorIterator"><code class="docutils literal notranslate"><span class="pre">TensorIterator</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector"><code class="docutils literal notranslate"><span class="pre">Vector</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.X"><code class="docutils literal notranslate"><span class="pre">Vector.X</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.Y"><code class="docutils literal notranslate"><span class="pre">Vector.Y</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.Z"><code class="docutils literal notranslate"><span class="pre">Vector.Z</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.basis"><code class="docutils literal notranslate"><span class="pre">Vector.basis()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.cartesian"><code class="docutils literal notranslate"><span class="pre">Vector.cartesian</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.cross"><code class="docutils literal notranslate"><span class="pre">Vector.cross()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.cross_product_tensor"><code class="docutils literal notranslate"><span class="pre">Vector.cross_product_tensor</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.norm"><code class="docutils literal notranslate"><span class="pre">Vector.norm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.outer"><code class="docutils literal notranslate"><span class="pre">Vector.outer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.random"><code class="docutils literal notranslate"><span class="pre">Vector.random()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.random_unit"><code class="docutils literal notranslate"><span class="pre">Vector.random_unit()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.to_crystal_frame"><code class="docutils literal notranslate"><span class="pre">Vector.to_crystal_frame()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.to_specimen_frame"><code class="docutils literal notranslate"><span class="pre">Vector.to_specimen_frame()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.rotate"><code class="docutils literal notranslate"><span class="pre">Vector.rotate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.unit"><code class="docutils literal notranslate"><span class="pre">Vector.unit</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.zero"><code class="docutils literal notranslate"><span class="pre">Vector.zero()</span></code></a></li>
 </ul>
@@ -687,6 +723,145 @@ specific geometric regions.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="materialite.material.FieldFormatter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">materialite.material.</span></span><span class="sig-name descname"><span class="pre">FieldFormatter</span></span><a class="reference internal" href="_modules/materialite/material.html#FieldFormatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.FieldFormatter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for field formatting strategies.</p>
+<p>Strategies define how to transform flat C-ordered field arrays into
+formats expected by different processing libraries, and how to convert
+results back to flat arrays for Material storage.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.FieldFormatter.format_field">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#FieldFormatter.format_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.FieldFormatter.format_field" title="Link to this definition">#</a></dt>
+<dd><p>Format a flat field array to the required shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>ndarray</em>) – Flat 1D array to format</p></li>
+<li><p><strong>dimensions</strong> (<em>ndarray</em>) – Material dimensions (nx, ny, nz)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Formatted array in the shape needed by the target function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.FieldFormatter.format_result">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#FieldFormatter.format_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.FieldFormatter.format_result" title="Link to this definition">#</a></dt>
+<dd><p>Format function result back to flat 1D array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>result</strong> (<em>ndarray</em>) – Result from the applied function</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened result for Material storage</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="materialite.material.Formatter3D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">materialite.material.</span></span><span class="sig-name descname"><span class="pre">Formatter3D</span></span><a class="reference internal" href="_modules/materialite/material.html#Formatter3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Formatter3D" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#materialite.material.FieldFormatter" title="materialite.material.FieldFormatter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FieldFormatter</span></code></a></p>
+<p>Format to full 3D volume (nx, ny, nz).</p>
+<p>Used for volumetric operations on 3D data (e.g., scipy.ndimage,
+skimage filters on volumes).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.Formatter3D.format_field">
+<span class="sig-name descname"><span class="pre">format_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Formatter3D.format_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Formatter3D.format_field" title="Link to this definition">#</a></dt>
+<dd><p>Format a flat field array to the required shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>ndarray</em>) – Flat 1D array to format</p></li>
+<li><p><strong>dimensions</strong> (<em>ndarray</em>) – Material dimensions (nx, ny, nz)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Formatted array in the shape needed by the target function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.Formatter3D.format_result">
+<span class="sig-name descname"><span class="pre">format_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Formatter3D.format_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Formatter3D.format_result" title="Link to this definition">#</a></dt>
+<dd><p>Format function result back to flat 1D array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>result</strong> (<em>ndarray</em>) – Result from the applied function</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened result for Material storage</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="materialite.material.ImageFormatter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">materialite.material.</span></span><span class="sig-name descname"><span class="pre">ImageFormatter</span></span><a class="reference internal" href="_modules/materialite/material.html#ImageFormatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.ImageFormatter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#materialite.material.FieldFormatter" title="materialite.material.FieldFormatter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FieldFormatter</span></code></a></p>
+<p>Format to 2D image (H, W) for skimage-style operations.</p>
+<p>Most skimage functions expect pure 2D arrays. Requires exactly one
+singleton dimension in the Material.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.ImageFormatter.format_field">
+<span class="sig-name descname"><span class="pre">format_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#ImageFormatter.format_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.ImageFormatter.format_field" title="Link to this definition">#</a></dt>
+<dd><p>Format a flat field array to the required shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>ndarray</em>) – Flat 1D array to format</p></li>
+<li><p><strong>dimensions</strong> (<em>ndarray</em>) – Material dimensions (nx, ny, nz)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Formatted array in the shape needed by the target function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.ImageFormatter.format_result">
+<span class="sig-name descname"><span class="pre">format_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#ImageFormatter.format_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.ImageFormatter.format_result" title="Link to this definition">#</a></dt>
+<dd><p>Format function result back to flat 1D array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>result</strong> (<em>ndarray</em>) – Result from the applied function</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened result for Material storage</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="materialite.material.Material">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">materialite.material.</span></span><span class="sig-name descname"><span class="pre">Material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dimensions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[16,</span> <span class="pre">16,</span> <span class="pre">16]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sizes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -707,33 +882,68 @@ tensorial fields.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.apply">
-<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">func_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">func_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.apply" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">func_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">func_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.apply" title="Link to this definition">#</a></dt>
 <dd><p>Apply function with automatic field extraction and optional field creation.</p>
 <section id="parameters">
 <h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
-<dl class="simple">
+<dl>
 <dt>func<span class="classifier">callable</span></dt><dd><p>Function to apply to the extracted fields</p>
 </dd>
-<dt><a href="#id1"><span class="problematic" id="id2">*</span></a>func_args<span class="classifier">str or any</span></dt><dd><p>Field labels (str) to extract or raw values to pass to function</p>
+<dt><a href="#id1"><span class="problematic" id="id2">*</span></a>func_args<span class="classifier">str or any</span></dt><dd><p>Field labels (str) to extract, Material attribute names (str) to access,
+or raw values to pass to function</p>
 </dd>
-<dt>out<span class="classifier">str or iterable of str, optional</span></dt><dd><p>If provided, create field(s) with these labels containing the result(s)</p>
+<dt><a href="#id1"><span class="problematic" id="id2">return_</span></a><span class="classifier">str or iterable of str, optional</span></dt><dd><p>If provided, create field(s) with these labels containing the result(s)</p>
 </dd>
-<dt><a href="#id3"><span class="problematic" id="id4">**</span></a>func_kwargs<span class="classifier">str or any</span></dt><dd><p>Field labels (str) to extract or raw values to pass as keyword arguments</p>
+<dt><a href="#id3"><span class="problematic" id="id4">format_</span></a><span class="classifier">str or None, optional</span></dt><dd><p>How to format fields before/after function application:
+- ‘auto’: Auto-detect from the function’s module (default). Uses</p>
+<blockquote>
+<div><p>‘image’ for skimage functions, ‘3d’ for scipy.ndimage functions,
+and no formatting otherwise.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>None: No formatting, pass flat arrays</p></li>
+<li><p>‘3d’: Reshape to (D, H, W) for volumetric operations</p></li>
+<li><p>‘image’: Reshape to (H, W) for 2D image operations</p></li>
+</ul>
+</dd>
+<dt><a href="#id3"><span class="problematic" id="id4">**</span></a>func_kwargs<span class="classifier">str or any</span></dt><dd><p>Field labels (str) to extract, Material attribute names (str) to access,
+or raw values to pass as keyword arguments</p>
 </dd>
 </dl>
 </section>
 <section id="returns">
 <h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading">#</a></h2>
 <dl class="simple">
-<dt>Material or result</dt><dd><p>New Material with added field(s) if <cite>out</cite> is specified, otherwise the raw result</p>
+<dt>Material or result</dt><dd><p>New Material with added field(s) if <cite>return_</cite> is specified, otherwise the raw result</p>
 </dd>
 </dl>
+</section>
+<section id="notes">
+<h2>Notes:<a class="headerlink" href="#notes" title="Link to this heading">#</a></h2>
+<p>String arguments are automatically resolved in the following order:
+1. If the string matches a field label, that field is extracted
+2. If the string matches a Material attribute (e.g., ‘num_points’, ‘dimensions’),</p>
+<blockquote>
+<div><p>that attribute value is accessed</p>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>Otherwise, the string is passed as-is to the function</p></li>
+</ol>
+</section>
+<section id="examples">
+<h2>Examples:<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access Material attributes in functions</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">material</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">integers</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;num_points&quot;</span><span class="p">,</span> <span class="n">return_</span><span class="o">=</span><span class="s2">&quot;random&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Mix fields and attributes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">material</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">some_func</span><span class="p">,</span> <span class="s2">&quot;field1&quot;</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="s2">&quot;dimensions&quot;</span><span class="p">,</span> <span class="n">return_</span><span class="o">=</span><span class="s2">&quot;result&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.assign_random_orientations">
-<span class="sig-name descname"><span class="pre">assign_random_orientations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region_label='region'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation_label='orientation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x1C80B15B5A0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.assign_random_orientations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.assign_random_orientations" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">assign_random_orientations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region_label='region'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation_label='orientation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x18F466A0BA0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.assign_random_orientations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.assign_random_orientations" title="Link to this definition">#</a></dt>
 <dd><p>Assign random crystallographic orientations to regions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -756,6 +966,12 @@ tensorial fields.</p>
 <dt class="sig sig-object py" id="materialite.material.Material.center">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">center</span></span><a class="headerlink" href="#materialite.material.Material.center" title="Link to this definition">#</a></dt>
 <dd><p>Center of the domain.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="materialite.material.Material.center_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">center_id</span></span><a class="headerlink" href="#materialite.material.Material.center_id" title="Link to this definition">#</a></dt>
+<dd><p>Index of the center point of the domain.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -786,6 +1002,12 @@ tensorial fields.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="materialite.material.Material.corner_ids">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">corner_ids</span></span><a class="headerlink" href="#materialite.material.Material.corner_ids" title="Link to this definition">#</a></dt>
+<dd><p>All corner indices of the domain.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="materialite.material.Material.corners">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">corners</span></span><a class="headerlink" href="#materialite.material.Material.corners" title="Link to this definition">#</a></dt>
 <dd><p>All corners of the domain indexed by multi-dimensional index.</p>
@@ -810,7 +1032,7 @@ tensorial fields.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.create_random_integer_field">
-<span class="sig-name descname"><span class="pre">create_random_integer_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x1C80B15B3E0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.create_random_integer_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.create_random_integer_field" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">create_random_integer_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x18F466A09E0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.create_random_integer_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.create_random_integer_field" title="Link to this definition">#</a></dt>
 <dd><p>Create a field with random integer values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -872,15 +1094,17 @@ tensorial fields.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.create_voronoi">
-<span class="sig-name descname"><span class="pre">create_voronoi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_regions=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label='region'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x1C80B15B4C0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periodic=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.create_voronoi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.create_voronoi" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">create_voronoi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_regions=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label='region'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x18F466A0AC0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periodic=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seeds=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.create_voronoi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.create_voronoi" title="Link to this definition">#</a></dt>
 <dd><p>Create Voronoi regions in the material.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>num_regions</strong> (<em>int</em><em>, </em><em>default 10</em>) – Number of Voronoi regions to create.</p></li>
+<li><p><strong>num_regions</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of Voronoi regions to create (ignored if seeds provided).</p></li>
 <li><p><strong>label</strong> (<em>str</em><em>, </em><em>default &quot;region&quot;</em>) – Name for the region field.</p></li>
 <li><p><strong>rng</strong> (<em>numpy.random.Generator</em>) – Random number generator for seed points.</p></li>
 <li><p><strong>periodic</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to enforce periodic boundary conditions.</p></li>
+<li><p><strong>seeds</strong> (<em>array-like</em><em>, </em><em>shape</em><em> (</em><em>N</em><em>, </em><em>3</em><em>)</em><em>, </em><em>optional</em>) – Seed points (centroids) for Voronoi regions. If provided,
+num_regions is ignored.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -893,16 +1117,16 @@ tensorial fields.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="materialite.material.Material.crop_by_id_range">
-<span class="sig-name descname"><span class="pre">crop_by_id_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_id_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_id_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_id_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.crop_by_id_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.crop_by_id_range" title="Link to this definition">#</a></dt>
-<dd><p>Crop the material by point ID ranges. The returned material will include points at both
+<dt class="sig sig-object py" id="materialite.material.Material.crop">
+<span class="sig-name descname"><span class="pre">crop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.crop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.crop" title="Link to this definition">#</a></dt>
+<dd><p>Crop the material by coordinate ranges. The returned material will include points at both
 endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x_id_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Point ID ranges (min, max) for each direction.</p></li>
-<li><p><strong>y_id_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Point ID ranges (min, max) for each direction.</p></li>
-<li><p><strong>z_id_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Point ID ranges (min, max) for each direction.</p></li>
+<li><p><strong>x</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Coordinate ranges (min, max) for each direction.</p></li>
+<li><p><strong>y</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Coordinate ranges (min, max) for each direction.</p></li>
+<li><p><strong>z</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Coordinate ranges (min, max) for each direction.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -915,16 +1139,16 @@ endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="materialite.material.Material.crop_by_range">
-<span class="sig-name descname"><span class="pre">crop_by_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.crop_by_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.crop_by_range" title="Link to this definition">#</a></dt>
-<dd><p>Crop the material by coordinate ranges. The returned material will include points at both
+<dt class="sig sig-object py" id="materialite.material.Material.crop_by_id">
+<span class="sig-name descname"><span class="pre">crop_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.crop_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.crop_by_id" title="Link to this definition">#</a></dt>
+<dd><p>Crop the material by point ID ranges. The returned material will include points at both
 endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Coordinate ranges (min, max) for each direction.</p></li>
-<li><p><strong>y_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Coordinate ranges (min, max) for each direction.</p></li>
-<li><p><strong>z_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Coordinate ranges (min, max) for each direction.</p></li>
+<li><p><strong>x</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Point ID ranges (start, end) for each direction.</p></li>
+<li><p><strong>y</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Point ID ranges (start, end) for each direction.</p></li>
+<li><p><strong>z</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Point ID ranges (start, end) for each direction.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1010,10 +1234,48 @@ endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 </dl>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="materialite.material.Material.far_corner">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">far_corner</span></span><a class="headerlink" href="#materialite.material.Material.far_corner" title="Link to this definition">#</a></dt>
-<dd><p>Far corner of the domain.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.Material.from_image">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'intensity'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'image'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.from_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.from_image" title="Link to this definition">#</a></dt>
+<dd><p>Create a Material from a 2D image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>2D array-like</em>) – Input image data.</p></li>
+<li><p><strong>spacing</strong> (<em>float</em><em> or </em><em>list</em><em>, </em><em>default 1</em>) – Spacing between points in the two non-extruded directions. Can be a
+scalar (uniform) or a list of two values matching the <code class="docutils literal notranslate"><span class="pre">plane</span></code> axes
+in order.</p></li>
+<li><p><strong>label</strong> (<em>str</em><em>, </em><em>default 'intensity'</em>) – Label for the image intensity field.</p></li>
+<li><p><strong>convention</strong> (<em>{'image'</em><em>, </em><em>'plot'</em><em>, </em><em>'cartesian'}</em><em>, </em><em>default 'image'</em>) – <p>The array convention of the input, combining axis ordering and origin:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'image'</span></code>: Row-column ordering, origin at top-left. Used by PIL,
+OpenCV, and <code class="docutils literal notranslate"><span class="pre">matplotlib.imread</span></code>. Array axis 0 is rows (decreasing
+y), axis 1 is columns (increasing x).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'plot'</span></code>: Row-column ordering, origin at bottom-left. Matches
+<code class="docutils literal notranslate"><span class="pre">matplotlib.imshow(origin='lower')</span></code>. Array axis 0 is rows
+(increasing y), axis 1 is columns (increasing x).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'cartesian'</span></code>: Array axes already match the declared <code class="docutils literal notranslate"><span class="pre">plane</span></code>
+axes in order, origin at bottom-left. No transformation is applied.
+Use this when the array is already in the Material’s coordinate system.</p></li>
+</ul>
+</p></li>
+<li><p><strong>plane</strong> (<em>str</em><em>, </em><em>default 'xy'</em>) – The material plane the image represents, as two distinct axes from
+<code class="docutils literal notranslate"><span class="pre">{'x',</span> <span class="pre">'y',</span> <span class="pre">'z'}</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">'xy'</span></code>, <code class="docutils literal notranslate"><span class="pre">'zx'</span></code>, <code class="docutils literal notranslate"><span class="pre">'yz'</span></code>). The first
+character names the material axis for the image’s first axis after
+convention transforms; the second names the axis for the image’s second
+axis. The remaining axis is the extrusion direction.</p></li>
+<li><p><strong>extrude</strong> (<em>int</em><em>, </em><em>default 1</em>) – Number of layers to extrude the image along the axis normal to
+<code class="docutils literal notranslate"><span class="pre">plane</span></code>. <code class="docutils literal notranslate"><span class="pre">extrude=1</span></code> produces a single-layer (2D) material.
+Values greater than 1 tile the image uniformly to create a 3D volume.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New Material instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#materialite.material.Material" title="materialite.material.Material">Material</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1085,6 +1347,18 @@ endpoints of the provided ranges (i.e., the endpoints are inclusive).</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="materialite.material.Material.max_corner">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_corner</span></span><a class="headerlink" href="#materialite.material.Material.max_corner" title="Link to this definition">#</a></dt>
+<dd><p>Max corner of the domain.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="materialite.material.Material.min_corner">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min_corner</span></span><a class="headerlink" href="#materialite.material.Material.min_corner" title="Link to this definition">#</a></dt>
+<dd><p>Min corner of the domain.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="materialite.material.Material.num_points">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_points</span></span><a class="headerlink" href="#materialite.material.Material.num_points" title="Link to this definition">#</a></dt>
 <dd><p>Total number of points in the material.</p>
@@ -1140,6 +1414,26 @@ or methods by passing the current material as the first argument to func.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.Material.region_centroids">
+<span class="sig-name descname"><span class="pre">region_centroids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'region'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centroid_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'centroid'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.region_centroids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.region_centroids" title="Link to this definition">#</a></dt>
+<dd><p>Compute centroids for each region and add to regional fields.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region_label</strong> (<em>str</em><em>, </em><em>default &quot;region&quot;</em>) – Name of the field containing region IDs.</p></li>
+<li><p><strong>centroid_label</strong> (<em>str</em><em>, </em><em>default &quot;centroid&quot;</em>) – Name for the centroid field.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New material with centroid added to regional fields.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#materialite.material.Material" title="materialite.material.Material">Material</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.remove_field">
 <span class="sig-name descname"><span class="pre">remove_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_regional_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.remove_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.remove_field" title="Link to this definition">#</a></dt>
 <dd><p>Remove a field from the material.</p>
@@ -1172,6 +1466,43 @@ or methods by passing the current material as the first argument to func.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Result of the model evaluation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.Material.sample_from">
+<span class="sig-name descname"><span class="pre">sample_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_material</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.sample_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.sample_from" title="Link to this definition">#</a></dt>
+<dd><p>Sample all field values from another material using nearest neighbor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>source_material</strong> (<a class="reference internal" href="#materialite.material.Material" title="materialite.material.Material"><em>Material</em></a>) – Material to sample values from.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New material with all sampled fields added.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#materialite.material.Material" title="materialite.material.Material">Material</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.Material.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.scale" title="Link to this definition">#</a></dt>
+<dd><p>Scale the material domain relative to its origin.</p>
+<p>The origin is held fixed; all other coordinates are scaled away from
+it. Spacing and sizes are updated proportionally.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>factor</strong> (<em>float</em><em> or </em><em>array-like</em>) – Scale factor(s). A scalar is applied uniformly to all axes;
+a 3-element array scales each axis independently [sx, sy, sz].</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New material with scaled coordinates, spacing, and sizes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#materialite.material.Material" title="materialite.material.Material">Material</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1212,9 +1543,71 @@ or methods by passing the current material as the first argument to func.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.Material.translate">
+<span class="sig-name descname"><span class="pre">translate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.translate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.translate" title="Link to this definition">#</a></dt>
+<dd><p>Translate the material by shifting all coordinates by an offset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>offset</strong> (<em>float</em><em> or </em><em>array-like</em>) – Translation vector [dx, dy, dz]. A scalar is applied uniformly
+to all axes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New material with shifted coordinates and origin.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#materialite.material.Material" title="materialite.material.Material">Material</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="materialite.material.Material.update_regional_field">
 <span class="sig-name descname"><span class="pre">update_regional_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regional_field_update</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#Material.update_regional_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.Material.update_regional_field" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="materialite.material.NoFormatter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">materialite.material.</span></span><span class="sig-name descname"><span class="pre">NoFormatter</span></span><a class="reference internal" href="_modules/materialite/material.html#NoFormatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.NoFormatter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#materialite.material.FieldFormatter" title="materialite.material.FieldFormatter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FieldFormatter</span></code></a></p>
+<p>Pass fields as flat arrays (default behavior).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.NoFormatter.format_field">
+<span class="sig-name descname"><span class="pre">format_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#NoFormatter.format_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.NoFormatter.format_field" title="Link to this definition">#</a></dt>
+<dd><p>Format a flat field array to the required shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> (<em>ndarray</em>) – Flat 1D array to format</p></li>
+<li><p><strong>dimensions</strong> (<em>ndarray</em>) – Material dimensions (nx, ny, nz)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Formatted array in the shape needed by the target function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.material.NoFormatter.format_result">
+<span class="sig-name descname"><span class="pre">format_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/material.html#NoFormatter.format_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.material.NoFormatter.format_result" title="Link to this definition">#</a></dt>
+<dd><p>Format function result back to flat 1D array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>result</strong> (<em>ndarray</em>) – Result from the applied function</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened result for Material storage</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -1357,7 +1750,12 @@ or methods by passing the current material as the first argument to func.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Order2SymmetricTensor.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x1C80AD089E0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2SymmetricTensor.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2SymmetricTensor.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x18F4BE343C0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2SymmetricTensor.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2SymmetricTensor.random" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.tensor.Order2SymmetricTensor.rotate">
+<span class="sig-name descname"><span class="pre">rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2SymmetricTensor.rotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2SymmetricTensor.rotate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1368,16 +1766,6 @@ or methods by passing the current material as the first argument to func.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="materialite.tensor.Order2SymmetricTensor.stress_voigt">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stress_voigt</span></span><a class="headerlink" href="#materialite.tensor.Order2SymmetricTensor.stress_voigt" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="materialite.tensor.Order2SymmetricTensor.to_crystal_frame">
-<span class="sig-name descname"><span class="pre">to_crystal_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orientations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2SymmetricTensor.to_crystal_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2SymmetricTensor.to_crystal_frame" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="materialite.tensor.Order2SymmetricTensor.to_specimen_frame">
-<span class="sig-name descname"><span class="pre">to_specimen_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orientations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2SymmetricTensor.to_specimen_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2SymmetricTensor.to_specimen_frame" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1443,22 +1831,17 @@ or methods by passing the current material as the first argument to func.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Order2Tensor.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x1C80AD08820</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2Tensor.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2Tensor.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x18F4BE34200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2Tensor.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2Tensor.random" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="materialite.tensor.Order2Tensor.rotate">
+<span class="sig-name descname"><span class="pre">rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2Tensor.rotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2Tensor.rotate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="materialite.tensor.Order2Tensor.sym">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sym</span></span><a class="headerlink" href="#materialite.tensor.Order2Tensor.sym" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="materialite.tensor.Order2Tensor.to_crystal_frame">
-<span class="sig-name descname"><span class="pre">to_crystal_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orientations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2Tensor.to_crystal_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2Tensor.to_crystal_frame" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="materialite.tensor.Order2Tensor.to_specimen_frame">
-<span class="sig-name descname"><span class="pre">to_specimen_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orientations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order2Tensor.to_specimen_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order2Tensor.to_specimen_frame" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1568,13 +1951,8 @@ or methods by passing the current material as the first argument to func.</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="materialite.tensor.Order4SymmetricTensor.to_crystal_frame">
-<span class="sig-name descname"><span class="pre">to_crystal_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orientations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order4SymmetricTensor.to_crystal_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order4SymmetricTensor.to_crystal_frame" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="materialite.tensor.Order4SymmetricTensor.to_specimen_frame">
-<span class="sig-name descname"><span class="pre">to_specimen_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orientations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order4SymmetricTensor.to_specimen_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order4SymmetricTensor.to_specimen_frame" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="materialite.tensor.Order4SymmetricTensor.rotate">
+<span class="sig-name descname"><span class="pre">rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Order4SymmetricTensor.rotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Order4SymmetricTensor.rotate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1609,23 +1987,38 @@ or methods by passing the current material as the first argument to func.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="materialite.tensor.Orientation.from_axis_angle">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_axis_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.from_axis_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.from_axis_angle" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Orientation.from_euler_angles">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_euler_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">euler_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.from_euler_angles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.from_euler_angles" title="Link to this definition">#</a></dt>
 <dd><p>Bunge Euler Angle Convention</p>
 <p>The rotation matrix R formed from these Euler angles is used to take a vector’s
-components relative to a specimen reference frame (v_i) and transform them to that same
-vector’s components relative to the crystal reference frame (v’_i).</p>
-<p>v’_i = R_ij * v_j</p>
-<p>R can also be used to construct the crystal basis <em>vectors</em> (e’_i) as a linear combination
+components relative to a crystal reference frame (v’_i) and transform them to that same
+vector’s components relative to the specimen reference frame (v_i).</p>
+<p>v_i = R_ij * v’_j</p>
+<p>R can also be used to construct the crystal basis <em>vectors</em> (e’_j) as a linear combination
 of specimen basis <em>vectors</em> (e_i).</p>
-<p>e’_i = R_ij * e_j</p>
+<p>e’_j = R_ij * e_i</p>
 <p>R can equivalently be written in terms of dot products of the basis vectors.</p>
-<p>R_ij = e’_i . e_j</p>
+<p>R_ij = e_i . e’_j</p>
+<p>The actual tensor Q that performs the Euler angle rotation sequence has components in the
+basis of the specimen reference frame given by the transpose of this rotation matrix as its
+components. Therefore, Q has components R_ji and is used to transform the basis vectors
+in the following way,</p>
+<p>e’_j = Q &#64; e_j</p>
+<p>e’_j = Q_ji * e_i (transpose usage of the above rotation matrix)</p>
+<p>The Q_ij are just the components of this tensor and is what is used in the final
+rotation_matrix variable below.</p>
+<p>Apologies for any confusion resulting from the above notation.
+We will be updating all documentation regarding rotations in an upcoming release.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Orientation.from_list">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orientations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.from_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.from_list" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.from_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.from_list" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1639,8 +2032,30 @@ of specimen basis <em>vectors</em> (e_i).</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="materialite.tensor.Orientation.from_rotation_vector">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_rotation_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_vector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.from_rotation_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.from_rotation_vector" title="Link to this definition">#</a></dt>
+<dd><p>Construct an Orientation from a rotation vector (axis-angle representation).</p>
+<p>The rotation vector is a vector where:
+- The direction represents the axis of rotation
+- The magnitude represents the angle of rotation (in radians)</p>
+<p>Q = cos(θ) * I - sin(θ) * ε(axis) + (1 - cos(θ)) * (axis ⊗ axis)</p>
+<p>where θ is the angle, axis is the unit rotation axis, and ε(axis) is
+the permutation tensor contracted with axis.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Orientation.identity">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.identity" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="materialite.tensor.Orientation.inv">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inv</span></span><a class="headerlink" href="#materialite.tensor.Orientation.inv" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="materialite.tensor.Orientation.inverse">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inverse</span></span><a class="headerlink" href="#materialite.tensor.Orientation.inverse" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1655,7 +2070,7 @@ of specimen basis <em>vectors</em> (e_i).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Orientation.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x1C80AD08C80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x18F4BE34660</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Orientation.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Orientation.random" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1672,6 +2087,22 @@ of specimen basis <em>vectors</em> (e_i).</p>
 <dt class="sig sig-object py" id="materialite.tensor.Orientation.rotation_matrix_mandel">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation_matrix_mandel</span></span><a class="headerlink" href="#materialite.tensor.Orientation.rotation_matrix_mandel" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="materialite.tensor.Orientation.rotation_vector">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation_vector</span></span><a class="headerlink" href="#materialite.tensor.Orientation.rotation_vector" title="Link to this definition">#</a></dt>
+<dd><p>Convert the rotation matrix to a rotation vector (axis-angle representation).</p>
+<p>The rotation vector is a vector where the direction represents the axis
+of rotation and the magnitude represents the angle in radians.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Rotation vector(s) with shape (…, 3).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="materialite.tensor.Orientation.shape">
@@ -1692,6 +2123,19 @@ of specimen basis <em>vectors</em> (e_i).</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="materialite.tensor.PermutationTensor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">materialite.tensor.</span></span><span class="sig-name descname"><span class="pre">PermutationTensor</span></span><a class="reference internal" href="_modules/materialite/tensor.html#PermutationTensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.PermutationTensor" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The 3D permutation (Levi-Civita) tensor, viewed as a map from a vector to
+a skew-symmetric tensor. It can be characterized epsilon as:
+For any right-handed orthonormal triad {a, b, c}
+satisfying epsilon(a, b, c) = 1,
+epsilon(c) = a wedge b
+where a wedge b is a dyad b - b dyad a
+Also, epsilon(v) &#64; u = u x v.</p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="materialite.tensor.Scalar">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">materialite.tensor.</span></span><span class="sig-name descname"><span class="pre">Scalar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Scalar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Scalar" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#materialite.tensor.Tensor" title="materialite.tensor.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a></p>
@@ -1706,6 +2150,11 @@ of specimen basis <em>vectors</em> (e_i).</p>
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="materialite.tensor.Scalar.cos">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cos</span></span><a class="headerlink" href="#materialite.tensor.Scalar.cos" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="materialite.tensor.Scalar.cosh">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cosh</span></span><a class="headerlink" href="#materialite.tensor.Scalar.cosh" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
@@ -1717,7 +2166,12 @@ of specimen basis <em>vectors</em> (e_i).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Scalar.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x1C80AD083C0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Scalar.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Scalar.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x18F4BDAFCA0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Scalar.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Scalar.random" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="materialite.tensor.Scalar.sin">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sin</span></span><a class="headerlink" href="#materialite.tensor.Scalar.sin" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1824,6 +2278,21 @@ of specimen basis <em>vectors</em> (e_i).</p>
 <dt class="sig sig-object py" id="materialite.tensor.Vector">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">materialite.tensor.</span></span><span class="sig-name descname"><span class="pre">Vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#materialite.tensor.Tensor" title="materialite.tensor.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="materialite.tensor.Vector.X">
+<span class="sig-name descname"><span class="pre">X</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Vector([1</span> <span class="pre">0</span> <span class="pre">0],</span> <span class="pre">dims:</span> <span class="pre">(),</span> <span class="pre">components</span> <span class="pre">shape:</span> <span class="pre">(3,))</span></em><a class="reference internal" href="_modules/materialite/tensor.html#Vector.X"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.X" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="materialite.tensor.Vector.Y">
+<span class="sig-name descname"><span class="pre">Y</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Vector([0</span> <span class="pre">1</span> <span class="pre">0],</span> <span class="pre">dims:</span> <span class="pre">(),</span> <span class="pre">components</span> <span class="pre">shape:</span> <span class="pre">(3,))</span></em><a class="reference internal" href="_modules/materialite/tensor.html#Vector.Y"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.Y" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="materialite.tensor.Vector.Z">
+<span class="sig-name descname"><span class="pre">Z</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Vector([0</span> <span class="pre">0</span> <span class="pre">1],</span> <span class="pre">dims:</span> <span class="pre">(),</span> <span class="pre">components</span> <span class="pre">shape:</span> <span class="pre">(3,))</span></em><a class="reference internal" href="_modules/materialite/tensor.html#Vector.Z"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.Z" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Vector.basis">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">basis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'b'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.basis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.basis" title="Link to this definition">#</a></dt>
@@ -1840,6 +2309,11 @@ of specimen basis <em>vectors</em> (e_i).</p>
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="materialite.tensor.Vector.cross_product_tensor">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cross_product_tensor</span></span><a class="headerlink" href="#materialite.tensor.Vector.cross_product_tensor" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="materialite.tensor.Vector.norm">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">norm</span></span><a class="headerlink" href="#materialite.tensor.Vector.norm" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
@@ -1851,22 +2325,17 @@ of specimen basis <em>vectors</em> (e_i).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Vector.random">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x1C80AD08580</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.random" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x18F4BDAFE60</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.random" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="materialite.tensor.Vector.random_unit">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x1C80AD08660</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.random_unit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.random_unit" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">random_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=Generator(PCG64)</span> <span class="pre">at</span> <span class="pre">0x18F4BE34040</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.random_unit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.random_unit" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="materialite.tensor.Vector.to_crystal_frame">
-<span class="sig-name descname"><span class="pre">to_crystal_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orientations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.to_crystal_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.to_crystal_frame" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="materialite.tensor.Vector.to_specimen_frame">
-<span class="sig-name descname"><span class="pre">to_specimen_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orientations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.to_specimen_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.to_specimen_frame" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="materialite.tensor.Vector.rotate">
+<span class="sig-name descname"><span class="pre">rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/materialite/tensor.html#Vector.rotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#materialite.tensor.Vector.rotate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1989,40 +2458,68 @@ that decide where new dimensions from the right should be placed.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Feature.check_inside"><code class="docutils literal notranslate"><span class="pre">Feature.check_inside()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.FieldFormatter"><code class="docutils literal notranslate"><span class="pre">FieldFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.FieldFormatter.format_field"><code class="docutils literal notranslate"><span class="pre">FieldFormatter.format_field()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.FieldFormatter.format_result"><code class="docutils literal notranslate"><span class="pre">FieldFormatter.format_result()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Formatter3D"><code class="docutils literal notranslate"><span class="pre">Formatter3D</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Formatter3D.format_field"><code class="docutils literal notranslate"><span class="pre">Formatter3D.format_field()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Formatter3D.format_result"><code class="docutils literal notranslate"><span class="pre">Formatter3D.format_result()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.ImageFormatter"><code class="docutils literal notranslate"><span class="pre">ImageFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.ImageFormatter.format_field"><code class="docutils literal notranslate"><span class="pre">ImageFormatter.format_field()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.ImageFormatter.format_result"><code class="docutils literal notranslate"><span class="pre">ImageFormatter.format_result()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material"><code class="docutils literal notranslate"><span class="pre">Material</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.apply"><code class="docutils literal notranslate"><span class="pre">Material.apply()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.assign_random_orientations"><code class="docutils literal notranslate"><span class="pre">Material.assign_random_orientations()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.center"><code class="docutils literal notranslate"><span class="pre">Material.center</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.center_id"><code class="docutils literal notranslate"><span class="pre">Material.center_id</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.chop_by_point_count"><code class="docutils literal notranslate"><span class="pre">Material.chop_by_point_count()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.copy"><code class="docutils literal notranslate"><span class="pre">Material.copy()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.corner_ids"><code class="docutils literal notranslate"><span class="pre">Material.corner_ids</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.corners"><code class="docutils literal notranslate"><span class="pre">Material.corners</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_fields"><code class="docutils literal notranslate"><span class="pre">Material.create_fields()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_random_integer_field"><code class="docutils literal notranslate"><span class="pre">Material.create_random_integer_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_regional_fields"><code class="docutils literal notranslate"><span class="pre">Material.create_regional_fields()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_uniform_field"><code class="docutils literal notranslate"><span class="pre">Material.create_uniform_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.create_voronoi"><code class="docutils literal notranslate"><span class="pre">Material.create_voronoi()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_id_range"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_id_range()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_range"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_range()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop"><code class="docutils literal notranslate"><span class="pre">Material.crop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.crop_by_id"><code class="docutils literal notranslate"><span class="pre">Material.crop_by_id()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.dimensions"><code class="docutils literal notranslate"><span class="pre">Material.dimensions</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.export_to_evpfft"><code class="docutils literal notranslate"><span class="pre">Material.export_to_evpfft()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.export_to_vtk"><code class="docutils literal notranslate"><span class="pre">Material.export_to_vtk()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.extract"><code class="docutils literal notranslate"><span class="pre">Material.extract()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.extract_regional_field"><code class="docutils literal notranslate"><span class="pre">Material.extract_regional_field()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.far_corner"><code class="docutils literal notranslate"><span class="pre">Material.far_corner</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.from_image"><code class="docutils literal notranslate"><span class="pre">Material.from_image()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_fields"><code class="docutils literal notranslate"><span class="pre">Material.get_fields()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_region_indices"><code class="docutils literal notranslate"><span class="pre">Material.get_region_indices()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.get_region_volume_fractions"><code class="docutils literal notranslate"><span class="pre">Material.get_region_volume_fractions()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.insert_feature"><code class="docutils literal notranslate"><span class="pre">Material.insert_feature()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.max_corner"><code class="docutils literal notranslate"><span class="pre">Material.max_corner</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.min_corner"><code class="docutils literal notranslate"><span class="pre">Material.min_corner</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.num_points"><code class="docutils literal notranslate"><span class="pre">Material.num_points</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.origin"><code class="docutils literal notranslate"><span class="pre">Material.origin</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.pipe"><code class="docutils literal notranslate"><span class="pre">Material.pipe()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.plot"><code class="docutils literal notranslate"><span class="pre">Material.plot()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.region_centroids"><code class="docutils literal notranslate"><span class="pre">Material.region_centroids()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.remove_field"><code class="docutils literal notranslate"><span class="pre">Material.remove_field()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.run"><code class="docutils literal notranslate"><span class="pre">Material.run()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.sample_from"><code class="docutils literal notranslate"><span class="pre">Material.sample_from()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.scale"><code class="docutils literal notranslate"><span class="pre">Material.scale()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.segment"><code class="docutils literal notranslate"><span class="pre">Material.segment()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.sizes"><code class="docutils literal notranslate"><span class="pre">Material.sizes</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.spacing"><code class="docutils literal notranslate"><span class="pre">Material.spacing</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.translate"><code class="docutils literal notranslate"><span class="pre">Material.translate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Material.update_regional_field"><code class="docutils literal notranslate"><span class="pre">Material.update_regional_field()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.NoFormatter"><code class="docutils literal notranslate"><span class="pre">NoFormatter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.NoFormatter.format_field"><code class="docutils literal notranslate"><span class="pre">NoFormatter.format_field()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.NoFormatter.format_result"><code class="docutils literal notranslate"><span class="pre">NoFormatter.format_result()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.material.Sphere"><code class="docutils literal notranslate"><span class="pre">Sphere</span></code></a><ul class="nav section-nav flex-column">
@@ -2055,10 +2552,9 @@ that decide where new dimensions from the right should be placed.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.norm"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.norm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.outer"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.outer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.random"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.random()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.rotate"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.rotate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.strain_voigt"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.strain_voigt</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.stress_voigt"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.stress_voigt</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.to_crystal_frame"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.to_crystal_frame()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.to_specimen_frame"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.to_specimen_frame()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.trace"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.trace</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.transpose"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.transpose</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2SymmetricTensor.zero"><code class="docutils literal notranslate"><span class="pre">Order2SymmetricTensor.zero()</span></code></a></li>
@@ -2074,9 +2570,8 @@ that decide where new dimensions from the right should be placed.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.inverse"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.inverse</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.norm"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.norm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.random"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.random()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.rotate"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.rotate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.sym"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.sym</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.to_crystal_frame"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.to_crystal_frame()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.to_specimen_frame"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.to_specimen_frame()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.trace"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.trace</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.transpose"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.transpose</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order2Tensor.zero"><code class="docutils literal notranslate"><span class="pre">Order2Tensor.zero()</span></code></a></li>
@@ -2100,8 +2595,7 @@ that decide where new dimensions from the right should be placed.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.mandel"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.mandel</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.natural"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.natural</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.norm"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.norm</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.to_crystal_frame"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.to_crystal_frame()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.to_specimen_frame"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.to_specimen_frame()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.rotate"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.rotate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.voigt"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.voigt</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Order4SymmetricTensor.zero"><code class="docutils literal notranslate"><span class="pre">Order4SymmetricTensor.zero()</span></code></a></li>
 </ul>
@@ -2110,28 +2604,36 @@ that decide where new dimensions from the right should be placed.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.copy"><code class="docutils literal notranslate"><span class="pre">Orientation.copy()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.euler_angles"><code class="docutils literal notranslate"><span class="pre">Orientation.euler_angles</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.euler_angles_in_degrees"><code class="docutils literal notranslate"><span class="pre">Orientation.euler_angles_in_degrees</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_axis_angle"><code class="docutils literal notranslate"><span class="pre">Orientation.from_axis_angle()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">Orientation.from_euler_angles()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_list"><code class="docutils literal notranslate"><span class="pre">Orientation.from_list()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_miller_indices"><code class="docutils literal notranslate"><span class="pre">Orientation.from_miller_indices()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_rotation_matrix"><code class="docutils literal notranslate"><span class="pre">Orientation.from_rotation_matrix()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.from_rotation_vector"><code class="docutils literal notranslate"><span class="pre">Orientation.from_rotation_vector()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.identity"><code class="docutils literal notranslate"><span class="pre">Orientation.identity()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.inv"><code class="docutils literal notranslate"><span class="pre">Orientation.inv</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.inverse"><code class="docutils literal notranslate"><span class="pre">Orientation.inverse</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.num_dims"><code class="docutils literal notranslate"><span class="pre">Orientation.num_dims</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.num_indices"><code class="docutils literal notranslate"><span class="pre">Orientation.num_indices</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.random"><code class="docutils literal notranslate"><span class="pre">Orientation.random()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.reorder"><code class="docutils literal notranslate"><span class="pre">Orientation.reorder()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.repeat"><code class="docutils literal notranslate"><span class="pre">Orientation.repeat()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.rotation_matrix_mandel"><code class="docutils literal notranslate"><span class="pre">Orientation.rotation_matrix_mandel</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.rotation_vector"><code class="docutils literal notranslate"><span class="pre">Orientation.rotation_vector</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.shape"><code class="docutils literal notranslate"><span class="pre">Orientation.shape</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Orientation.trace"><code class="docutils literal notranslate"><span class="pre">Orientation.trace</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.OrientationIterator"><code class="docutils literal notranslate"><span class="pre">OrientationIterator</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.PermutationTensor"><code class="docutils literal notranslate"><span class="pre">PermutationTensor</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar"><code class="docutils literal notranslate"><span class="pre">Scalar</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.abs"><code class="docutils literal notranslate"><span class="pre">Scalar.abs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.apply"><code class="docutils literal notranslate"><span class="pre">Scalar.apply()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.cos"><code class="docutils literal notranslate"><span class="pre">Scalar.cos</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.cosh"><code class="docutils literal notranslate"><span class="pre">Scalar.cosh</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.max"><code class="docutils literal notranslate"><span class="pre">Scalar.max()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.random"><code class="docutils literal notranslate"><span class="pre">Scalar.random()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.sin"><code class="docutils literal notranslate"><span class="pre">Scalar.sin</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.sqrt"><code class="docutils literal notranslate"><span class="pre">Scalar.sqrt</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Scalar.zero"><code class="docutils literal notranslate"><span class="pre">Scalar.zero()</span></code></a></li>
 </ul>
@@ -2153,15 +2655,18 @@ that decide where new dimensions from the right should be placed.</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.TensorIterator"><code class="docutils literal notranslate"><span class="pre">TensorIterator</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector"><code class="docutils literal notranslate"><span class="pre">Vector</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.X"><code class="docutils literal notranslate"><span class="pre">Vector.X</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.Y"><code class="docutils literal notranslate"><span class="pre">Vector.Y</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.Z"><code class="docutils literal notranslate"><span class="pre">Vector.Z</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.basis"><code class="docutils literal notranslate"><span class="pre">Vector.basis()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.cartesian"><code class="docutils literal notranslate"><span class="pre">Vector.cartesian</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.cross"><code class="docutils literal notranslate"><span class="pre">Vector.cross()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.cross_product_tensor"><code class="docutils literal notranslate"><span class="pre">Vector.cross_product_tensor</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.norm"><code class="docutils literal notranslate"><span class="pre">Vector.norm</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.outer"><code class="docutils literal notranslate"><span class="pre">Vector.outer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.random"><code class="docutils literal notranslate"><span class="pre">Vector.random()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.random_unit"><code class="docutils literal notranslate"><span class="pre">Vector.random_unit()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.to_crystal_frame"><code class="docutils literal notranslate"><span class="pre">Vector.to_crystal_frame()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.to_specimen_frame"><code class="docutils literal notranslate"><span class="pre">Vector.to_specimen_frame()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.rotate"><code class="docutils literal notranslate"><span class="pre">Vector.rotate()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.unit"><code class="docutils literal notranslate"><span class="pre">Vector.unit</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#materialite.tensor.Vector.zero"><code class="docutils literal notranslate"><span class="pre">Vector.zero()</span></code></a></li>
 </ul>
