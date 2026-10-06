@@ -834,7 +834,7 @@ class LaserBeam:
             "y": self.y_pos[self.time_step],
             "z": self.z_pos[self.time_step],
             "time": self.time[self.time_step],
-            "beam_power": self.z_pos[self.time_step],
+            "beam_power": self.beam_power[self.time_step],
             "scan_number": self.scan_number[self.time_step],
             "layer_number": self.layer_number[self.time_step],
         }
