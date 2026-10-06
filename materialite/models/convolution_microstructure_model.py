@@ -102,6 +102,9 @@ class ConvolutionMicrostructureGPUModel(Model):
     def run(self, material, laser, temperature_label, spin_label):
         self._clear_gpu_fields()
         self._check_orientations(material, spin_label)
+        if self.seed is not None:
+            # Seed once per run, rather than at every call of the flip functions
+            _seed_numba_rngs(self.seed)
         self._initiate_temperature_simulation(material, laser, temperature_label)
         self._initiate_enthalpy_method()
         self._initiate_microstructure_simulation(material, spin_label)
@@ -174,8 +177,11 @@ class ConvolutionMicrostructureGPUModel(Model):
         material_temp = Material(
             dimensions=self._x.super_set.shape, spacing=material.spacing
         )
+        # Start at 1 because a spin of 0 marks liquid
         spin_temp = (
-            material_temp.create_random_integer_field("spin", 0, self.max_spin)
+            material_temp.create_random_integer_field(
+                spin_label, 1, self.max_spin, rng=np.random.default_rng(self.seed)
+            )
             .extract(spin_label)
             .astype(int)
             .reshape(material_temp.dimensions)
@@ -290,7 +296,7 @@ class ConvolutionMicrostructureGPUModel(Model):
                 else:
                     pass
 
-            return spin_field, successful_flip_attempts
+        return spin_field, successful_flip_attempts
 
     @staticmethod
     @numba.jit(nopython=True)
@@ -997,6 +1003,14 @@ def _get_neighbors(material, neighborhood_distance):
 
     num_neighbors = np.sum(neighbors != -1, axis=1)
     return neighbors, num_neighbors, distances
+
+
+@numba.jit(nopython=True)
+def _seed_numba_rngs(seed):
+    # Numba keeps its own generators for the random and np.random modules,
+    # separate from the ones used by regular Python code
+    random.seed(seed)
+    np.random.seed(seed)
 
 
 @numba.jit(nopython=True)
