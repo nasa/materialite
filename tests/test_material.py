@@ -10,7 +10,7 @@ from pandas.testing import assert_frame_equal
 from materialite import (
     Box,
     Material,
-    Orientation2,
+    Orientation,
     Scalar,
     Sphere,
     Superellipsoid,
@@ -658,7 +658,7 @@ def test_export_to_evpfft(tmp_path, expected_evpfft_file_contents):
         region_id_path=f"{data_container}/CellData/FeatureIds",
         region_field_paths=[f"{data_container}/Grain Data/EulerAngles"],
     ).create_uniform_field("phase", 1)
-    orientations = Orientation2.from_euler_angles(
+    orientations = Orientation.from_euler_angles(
         material.extract(["euler_angles_1", "euler_angles_2", "euler_angles_3"]),
     )
     material = material.create_fields({"orientation": orientations}).crop_by_id(
@@ -678,8 +678,8 @@ def test_export_to_evpfft(tmp_path, expected_evpfft_file_contents):
 
 def test_export_to_evpfft_without_dream3d(tmp_path):
     sphere = Sphere(radius=1, centroid=[0, 0, 0])
-    orientation1 = Orientation2.from_euler_angles([0, 0, 0])
-    orientation2 = Orientation2.from_euler_angles([30, 45, 60], in_degrees=True)
+    orientation1 = Orientation.from_euler_angles([0, 0, 0])
+    orientation2 = Orientation.from_euler_angles([30, 45, 60], in_degrees=True)
     material = (
         Material(dimensions=[2, 2, 2])
         .create_uniform_field("orientation", orientation1)

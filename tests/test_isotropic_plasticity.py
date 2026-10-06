@@ -11,7 +11,7 @@ from materialite.models.small_strain_fft import (
 from materialite.models.small_strain_fft.temperature_history import TemperatureHistory
 from numpy.testing import assert_allclose
 
-from materialite import Material, Order2SymmetricTensor, Orientation2, Scalar
+from materialite import Material, Order2SymmetricTensor, Orientation, Scalar
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def material():
     sizes = [3, 3, 3]
     return (
         Material(dimensions=[8, 8, 8], sizes=sizes)
-        .create_uniform_field("orientation", Orientation2.identity())
+        .create_uniform_field("orientation", Orientation.identity())
         .create_uniform_field("phase", 1)
     )
 

@@ -3,7 +3,7 @@ import pytest
 from materialite.get_ipf_colors import get_symmetry_operators
 from numpy.testing import assert_allclose
 
-from materialite import Orientation2, SlipSystem, Vector, get_ipf, get_ipf_colors
+from materialite import Orientation, SlipSystem, Vector, get_ipf, get_ipf_colors
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ def rotation_matrices_hcp():
 
 def test_ipf_corners_map_to_rgb_cubic(rotation_matrices_cubic):
     direction = Vector([0, 0, 1])
-    orientations = Orientation2(rotation_matrices_cubic)
+    orientations = Orientation(rotation_matrices_cubic)
     expected_red = np.repeat([[1, 0, 0]], 24, axis=0)
     expected_green = np.repeat([[0, 1, 0]], 24, axis=0)
     expected_blue = np.repeat([[0, 0, 1]], 24, axis=0)
@@ -67,7 +67,7 @@ def test_ipf_corners_map_to_rgb_cubic(rotation_matrices_cubic):
 
 def test_ipf_corners_map_to_rgb_cubic_no_tensor(rotation_matrices_cubic):
     direction = [0, 0, 1]
-    orientations = Orientation2(rotation_matrices_cubic)
+    orientations = Orientation(rotation_matrices_cubic)
     expected_red = np.repeat([[1, 0, 0]], 24, axis=0)
     expected_green = np.repeat([[0, 1, 0]], 24, axis=0)
     expected_blue = np.repeat([[0, 0, 1]], 24, axis=0)
@@ -83,7 +83,7 @@ def test_ipf_corners_map_to_rgb_cubic_no_tensor(rotation_matrices_cubic):
 
 def test_ipf_corners_map_to_rgb_hcp(rotation_matrices_hcp):
     direction = Vector(np.array([0, 0, 1]))
-    orientations = Orientation2(rotation_matrices_hcp)
+    orientations = Orientation(rotation_matrices_hcp)
     expected_red = np.repeat([[1, 0, 0]], 12, axis=0)
     expected_green = np.repeat([[0, 1, 0]], 12, axis=0)
     expected_blue = np.repeat([[0, 0, 1]], 12, axis=0)
@@ -99,7 +99,7 @@ def test_ipf_corners_map_to_rgb_hcp(rotation_matrices_hcp):
 
 def test_ipf_corners_stereographic_projection_cubic(rotation_matrices_cubic):
     direction = Vector(np.array([0, 0, 1]))
-    orientations = Orientation2(rotation_matrices_cubic)
+    orientations = Orientation(rotation_matrices_cubic)
     xy111 = 1 / (np.sqrt(3) + 1)
     expected_100_corner = np.repeat([[0, 0]], 24, axis=0)
     expected_101_corner = np.repeat([[np.sqrt(2) - 1, 0]], 24, axis=0)

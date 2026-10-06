@@ -3,7 +3,7 @@ import pytest  # Includes: tmp_path, mocker
 from numpy import array, pi
 from numpy.testing import assert_allclose, assert_array_equal
 
-from materialite import Orientation2, Scalar, Vector, Order4SymmetricTensor
+from materialite import Orientation, Scalar, Vector, Order4SymmetricTensor
 
 
 @pytest.fixture
@@ -31,12 +31,12 @@ def cubic_symmetry():
         ]
     ).unit
     angles = Scalar([0] + [120] * 8 + [180] * 3) * np.pi / 180
-    return Orientation2.from_rotation_vector(axes.unit * angles)
+    return Orientation.from_rotation_vector(axes.unit * angles)
 
 
 def test_get_rotation_matrix():
     rotation_matrix = np.eye(3)
-    orientation = Orientation2.from_rotation_matrix(rotation_matrix)
+    orientation = Orientation.from_rotation_matrix(rotation_matrix)
     assert_array_equal(rotation_matrix, orientation.rotation_matrix)
 
 
@@ -45,7 +45,7 @@ def test_initialize_with_euler_angles():
     expected_rotation_matrix = array(
         [[0.0, 0.0, 1.0], [0.0, -1.0, 0.0], [1.0, 0.0, 0.0]]
     )
-    orientation = Orientation2.from_euler_angles(euler_angles)
+    orientation = Orientation.from_euler_angles(euler_angles)
     assert_allclose(expected_rotation_matrix, orientation.rotation_matrix, atol=1e-14)
 
 
@@ -54,14 +54,14 @@ def test_initialize_with_euler_angles_singleton_dimension():
     expected_rotation_matrix = array(
         [[[0.0, 0.0, 1.0], [0.0, -1.0, 0.0], [1.0, 0.0, 0.0]]]
     )
-    orientation = Orientation2.from_euler_angles(euler_angles)
+    orientation = Orientation.from_euler_angles(euler_angles)
     assert orientation.dims_str == "p"
     assert_allclose(expected_rotation_matrix, orientation.rotation_matrix, atol=1e-14)
 
 
 def test_rotation_vector_with_singleton_dimension():
     euler_angles = [[pi / 2, 0, 0]]
-    orientation = Orientation2.from_euler_angles(euler_angles)
+    orientation = Orientation.from_euler_angles(euler_angles)
     rotation_vector = orientation.rotation_vector
     assert rotation_vector.dims_str == "p"
     assert_allclose(rotation_vector.components, np.array([[0, 0, pi / 2]]))
@@ -70,11 +70,11 @@ def test_rotation_vector_with_singleton_dimension():
 def test_euler_angles_R22_equals_one():
     euler_angles = [pi / 6, 0, pi / 4]
     expected_euler_angles = [5 * pi / 12, 0, 0]
-    orientation = Orientation2.from_euler_angles(euler_angles)
+    orientation = Orientation.from_euler_angles(euler_angles)
     assert_allclose(orientation.euler_angles, expected_euler_angles)
     assert_allclose(
         orientation.rotation_matrix,
-        Orientation2.from_euler_angles(expected_euler_angles).rotation_matrix,
+        Orientation.from_euler_angles(expected_euler_angles).rotation_matrix,
         atol=1e-15,
     )
 
@@ -82,11 +82,11 @@ def test_euler_angles_R22_equals_one():
 def test_euler_angles_R22_equals_minus_one():
     euler_angles = [pi / 6, pi, pi / 4]
     expected_euler_angles = [-pi / 12, pi, 0]
-    orientation = Orientation2.from_euler_angles(euler_angles)
+    orientation = Orientation.from_euler_angles(euler_angles)
     assert_allclose(orientation.euler_angles, expected_euler_angles)
     assert_allclose(
         orientation.rotation_matrix,
-        Orientation2.from_euler_angles(expected_euler_angles).rotation_matrix,
+        Orientation.from_euler_angles(expected_euler_angles).rotation_matrix,
         atol=1e-15,
     )
 
@@ -95,45 +95,45 @@ def test_euler_angles_R22_equals_minus_one():
     "euler_angles", [[pi / 3, pi / 6, pi / 2], [pi / 2, pi / 3, pi / 6], [0, 0, 0]]
 )
 def test_get_orientation_from_euler_angles(euler_angles):
-    orientation = Orientation2.from_euler_angles(euler_angles)
+    orientation = Orientation.from_euler_angles(euler_angles)
     assert_allclose(euler_angles, orientation.euler_angles)
 
 
 def test_get_orientation_from_euler_angles_in_degrees():
     euler_angles = [90, 60, 30]
-    orientation = Orientation2.from_euler_angles(euler_angles, in_degrees=True)
+    orientation = Orientation.from_euler_angles(euler_angles, in_degrees=True)
     assert_allclose(euler_angles, orientation.euler_angles_in_degrees)
 
 
 def test_get_orientations_from_euler_angles():
     euler_angles = [[pi / 3, pi / 6, pi / 2], [pi / 2, pi / 3, pi / 6], [0, 0, 0]]
-    orientations = Orientation2.from_euler_angles(euler_angles)
+    orientations = Orientation.from_euler_angles(euler_angles)
     assert_allclose(orientations.euler_angles, euler_angles)
 
 
 def test_initialize_with_orientations():
     euler_angles = [[pi / 3, pi / 6, pi / 2], [pi / 2, pi / 3, pi / 6], [0, 0, 0]]
-    orientations = Orientation2.from_euler_angles(euler_angles)
-    orientations2 = Orientation2(orientations)
+    orientations = Orientation.from_euler_angles(euler_angles)
+    orientations2 = Orientation(orientations)
     assert_allclose(orientations2.euler_angles, euler_angles)
     assert orientations2.dims_str == "p"
 
 
 def test_get_random_orientation(seeded_rng):
-    orientation = Orientation2.random(1, rng=seeded_rng)
+    orientation = Orientation.random(1, rng=seeded_rng)
     expected_euler_angles = np.array([1.42839436, 1.94602287, 5.00999493 - 2 * np.pi])
     assert_allclose(orientation.euler_angles, expected_euler_angles)
 
 
 def test_get_random_orientation_points_dimension(seeded_rng):
-    orientation = Orientation2.random(1, rng=seeded_rng, dims="p")
+    orientation = Orientation.random(1, rng=seeded_rng, dims="p")
     expected_euler_angles = np.array([[1.42839436, 1.94602287, 5.00999493 - 2 * np.pi]])
     assert orientation.dims_str == "p"
     assert_allclose(orientation.euler_angles, expected_euler_angles)
 
 
 def test_get_random_orientation_implicit_points_dimension(seeded_rng):
-    orientation = Orientation2.random((1,), rng=seeded_rng)
+    orientation = Orientation.random((1,), rng=seeded_rng)
     expected_euler_angles = np.array([[1.42839436, 1.94602287, 5.00999493 - 2 * np.pi]])
     assert orientation.dims_str == "p"
     assert_allclose(orientation.euler_angles, expected_euler_angles)
@@ -141,7 +141,7 @@ def test_get_random_orientation_implicit_points_dimension(seeded_rng):
 
 def test_get_rotation_matrices():
     rotation_matrices = np.tile(np.eye(3), (2, 1, 1))
-    orientations = Orientation2.from_rotation_matrix(rotation_matrices)
+    orientations = Orientation.from_rotation_matrix(rotation_matrices)
     assert_array_equal(rotation_matrices, orientations.rotation_matrix)
 
 
@@ -150,22 +150,22 @@ def test_get_orientations_from_euler_angles_with_s_dimension():
         [[pi / 3, pi / 6, pi / 2], [pi / 2, pi / 3, pi / 6]],
         [[pi / 6, pi / 2, pi / 3], [0, 0, 0]],
     ]
-    orientations = Orientation2.from_euler_angles(euler_angles)
+    orientations = Orientation.from_euler_angles(euler_angles)
     assert orientations.dims_str == "ps"
     assert_allclose(orientations.euler_angles, euler_angles)
 
 
 def test_consistent_rotation_matrices_with_extracted_euler_angles(seeded_rng):
     n = 10**3
-    orientations = Orientation2.random(n, rng=seeded_rng)
+    orientations = Orientation.random(n, rng=seeded_rng)
     expected_rotation_matrices = orientations.rotation_matrix
     euler_angles = orientations.euler_angles
-    rotation_matrices = Orientation2.from_euler_angles(euler_angles).rotation_matrix
+    rotation_matrices = Orientation.from_euler_angles(euler_angles).rotation_matrix
     assert_allclose(rotation_matrices, expected_rotation_matrices)
 
 
 def test_get_random_orientations(seeded_rng):
-    orientations = Orientation2.random(2, rng=seeded_rng)
+    orientations = Orientation.random(2, rng=seeded_rng)
     expected_euler_angles = np.array(
         [[1.42839436, 0.93386543, 2.45741378], [1.99025135, 1.2105451, 2.09113158]]
     )
@@ -184,24 +184,24 @@ def test_get_random_orientations(seeded_rng):
     ],
 )
 def test_miller_indices(euler_angles, plane, direction):
-    expected_rotation_matrix = Orientation2.from_euler_angles(
+    expected_rotation_matrix = Orientation.from_euler_angles(
         euler_angles, in_degrees=True
     ).rotation_matrix
-    rotation_matrix = Orientation2.from_miller_indices(plane, direction).rotation_matrix
+    rotation_matrix = Orientation.from_miller_indices(plane, direction).rotation_matrix
     assert_allclose(rotation_matrix, expected_rotation_matrix)
 
 
 def test_identity():
-    orientation = Orientation2.identity()
+    orientation = Orientation.identity()
     assert_array_equal(orientation.rotation_matrix, np.eye(3))
     assert_array_equal(orientation.euler_angles, [0, 0, 0])
 
 
 def test_trace():
-    orientation = Orientation2.identity()
+    orientation = Orientation.identity()
     assert orientation.trace.components == 3
     rng = np.random.default_rng(0)
-    orientations = Orientation2.random(100, rng=rng)
+    orientations = Orientation.random(100, rng=rng)
     assert_allclose(
         orientations.trace.components,
         np.trace(orientations.rotation_matrix, axis1=1, axis2=2),
@@ -211,7 +211,7 @@ def test_trace():
 def test_compose_orientations():
     euler_angles = np.array([30, 0, 0])
     expected_euler_angles = np.array([60, 0, 0])
-    orientation = Orientation2.from_euler_angles(euler_angles, in_degrees=True)
+    orientation = Orientation.from_euler_angles(euler_angles, in_degrees=True)
     assert_allclose(
         (orientation @ orientation).euler_angles_in_degrees,
         expected_euler_angles,
@@ -221,7 +221,7 @@ def test_compose_orientations():
 
 def test_compose_orientations_with_burgers_orientation_relationship(cubic_symmetry):
     euler_angles = [135.0, 90.0, 324.74]
-    orientation = Orientation2.from_euler_angles(euler_angles, in_degrees=True)
+    orientation = Orientation.from_euler_angles(euler_angles, in_degrees=True)
     variants = cubic_symmetry @ orientation
     alpha_plane = Vector([0, 0, 1])
     beta_planes = np.array(
@@ -271,7 +271,7 @@ def test_compose_orientations_with_burgers_orientation_relationship_s_dimension(
     cubic_symmetry,
 ):
     euler_angles = [[135.0, 90.0, 324.74]] * 2
-    orientation = Orientation2.from_euler_angles(
+    orientation = Orientation.from_euler_angles(
         euler_angles, in_degrees=True, dims="s"
     )
     variants = (cubic_symmetry[:3] @ orientation).reorder("ps")
@@ -305,7 +305,7 @@ def test_compose_orientations_with_burgers_orientation_relationship_s_dimension(
 
 def test_mandel(seeded_rng):
     tensor = Order4SymmetricTensor.from_cubic_constants(C11=252.0, C12=72.0, C44=90.0)
-    orientation = Orientation2.random(rng=seeded_rng)
+    orientation = Orientation.random(rng=seeded_rng)
     rotated_tensor = tensor.rotate(orientation)
     expected_rotated_tensor = np.einsum(
         "mi, nj, qk, rl, ijkl -> mnqr",
@@ -320,7 +320,7 @@ def test_mandel(seeded_rng):
 
 def test_mandel_with_singleton_points_dimension(seeded_rng):
     tensor = Order4SymmetricTensor.from_cubic_constants(C11=252.0, C12=72.0, C44=90.0)
-    orientation = Orientation2.random(shape=(1,), rng=seeded_rng)
+    orientation = Orientation.random(shape=(1,), rng=seeded_rng)
     rotated_tensor = tensor.rotate(orientation)
     expected_rotated_tensor = np.einsum(
         "pmi, pnj, pqk, prl, ijkl -> pmnqr",

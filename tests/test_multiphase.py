@@ -9,7 +9,7 @@ from materialite.models.small_strain_fft import (
 )
 from numpy.testing import assert_allclose
 
-from materialite import Box, Material, Orientation2, Scalar
+from materialite import Box, Material, Orientation, Scalar
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def material():
     box = Box(max_corner=[2, 2, 2])
     return (
         Material(dimensions=[8, 8, 8], sizes=sizes)
-        .create_uniform_field("orientation", Orientation2.identity())
+        .create_uniform_field("orientation", Orientation.identity())
         .create_uniform_field("phase", 0)
         .insert_feature(box, fields={"phase": 1})
     )

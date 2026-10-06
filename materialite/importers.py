@@ -13,7 +13,7 @@
 import h5py
 import numpy as np
 import pandas as pd
-from materialite import Material, Orientation2
+from materialite import Material, Orientation
 from materialite.util import camel_to_snake
 
 
@@ -177,12 +177,12 @@ def import_evpfft(
     ).sort_values(by=["x_id", "y_id", "z_id"])
 
     if euler_angles_to_radians:
-        orientations = Orientation2.from_euler_angles(
+        orientations = Orientation.from_euler_angles(
             fields[["euler_angle_1", "euler_angle_2", "euler_angle_3"]].to_numpy(),
             in_degrees=True,
         )
     else:
-        orientations = Orientation2.from_euler_angles(
+        orientations = Orientation.from_euler_angles(
             fields[["euler_angle_1", "euler_angle_2", "euler_angle_3"]].to_numpy()
         )
 

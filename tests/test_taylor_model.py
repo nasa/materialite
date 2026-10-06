@@ -4,7 +4,7 @@ import pytest
 from materialite.models import TaylorModel
 from numpy.testing import assert_allclose
 
-from materialite import Material, Order2SymmetricTensor, Orientation2, Scalar, Vector
+from materialite import Material, Order2SymmetricTensor, Orientation, Scalar, Vector
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ def expected_taylor_factors():
 def material():
     # 90 and 45 degree rotations about x axis
     angles = Scalar([90, 45]) * np.pi / 180
-    orientations = Orientation2.from_axis_angle(Vector.X, angles)
+    orientations = Orientation.from_axis_angle(Vector.X, angles)
     mask = [0, 1]
     fields = {"orientation": orientations, "mask": mask}
     return Material(dimensions=[2, 1, 1]).create_fields(fields)

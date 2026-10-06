@@ -17,7 +17,7 @@ from materialite import (
     Material,
     Order2SymmetricTensor,
     Order4SymmetricTensor,
-    Orientation2,
+    Orientation,
     Sphere,
 )
 
@@ -90,10 +90,10 @@ def elastic_model():
 def material():
     material = Material(dimensions=[4, 4, 4])
     material = material.create_uniform_field(
-        "orientation", Orientation2.from_euler_angles([0, np.pi / 4, 0])
+        "orientation", Orientation.from_euler_angles([0, np.pi / 4, 0])
     ).insert_feature(
         Box(max_corner=[None, None, material.sizes[2] / 2]),
-        fields={"orientation": Orientation2.identity()},
+        fields={"orientation": Orientation.identity()},
     )
     return material
 
@@ -101,7 +101,7 @@ def material():
 @pytest.fixture
 def simple_material():
     return Material(dimensions=[3, 4, 5]).create_uniform_field(
-        "orientation", Orientation2.identity()
+        "orientation", Orientation.identity()
     )
 
 
@@ -237,7 +237,7 @@ def test_periodicity(elastic_model):
     num_grains = grains_per_side**3
     grains_list = np.arange(num_grains) + 1
     rng = np.random.default_rng(12345)
-    orientations = Orientation2.random(num_grains, rng=rng)
+    orientations = Orientation.random(num_grains, rng=rng)
     regional_field = {"grain": grains_list, "orientation": orientations}
 
     end_time = 1.0e-4

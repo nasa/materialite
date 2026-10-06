@@ -8,7 +8,7 @@ from materialite import (
     Order2SymmetricTensor,
     Order2Tensor,
     Order4SymmetricTensor,
-    Orientation2,
+    Orientation,
     Scalar,
     Vector,
 )
@@ -1378,7 +1378,7 @@ def test_symmetric_tensor_voigt_mandel(sym_tensors, symmetric_matrices):
 
 
 def test_rotations_identity(o2_tensors, sym_tensors, vectors, minor_sym_tensors):
-    o_identity = Orientation2.identity()
+    o_identity = Orientation.identity()
     r2_rotated = o2_tensors.rotate(o_identity)
     sym_rotated = sym_tensors.rotate(o_identity)
     vec_rotated = vectors.rotate(o_identity)
@@ -1412,7 +1412,7 @@ def test_rotations_with_inverse(
         vector,
         minor_sym_tensor,
     ]
-    o = Orientation2.random(num_orientations, rng=rng)
+    o = Orientation.random(num_orientations, rng=rng)
     for t in tensors:
         if t.dims_str == "" and num_orientations == 2:
             expected = [t.components] * 2
@@ -1432,7 +1432,7 @@ def test_rotations_with_inverse_s_dimension(
     vectors,
     minor_sym_tensors,
 ):
-    o = Orientation2.random(shape=(NUM_POINTS, NUM_SLIP_SYSTEMS))
+    o = Orientation.random(shape=(NUM_POINTS, NUM_SLIP_SYSTEMS))
     tensors_p = [o2_tensors_p, sym_tensors_p, vectors_p, minor_sym_tensors_p]
     for t in tensors_p:
         expected = np.repeat(t.components[:, np.newaxis, ...], NUM_SLIP_SYSTEMS, axis=1)
@@ -1447,7 +1447,7 @@ def test_rotations_with_inverse_s_dimension(
 
 
 def test_rotations_stress_strain(sym_tensors, minor_sym_tensors, rng):
-    o = Orientation2.random(2, rng=rng)
+    o = Orientation.random(2, rng=rng)
     sym_rotations = (minor_sym_tensors @ sym_tensors.rotate(o.inv)).rotate(o)
     minor_sym_rotations = minor_sym_tensors.rotate(o) @ sym_tensors
     assert_allclose(sym_rotations.components, minor_sym_rotations.components)

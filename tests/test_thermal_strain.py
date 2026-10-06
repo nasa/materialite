@@ -20,7 +20,7 @@ from materialite import (
     Material,
     Order2SymmetricTensor,
     Order4SymmetricTensor,
-    Orientation2,
+    Orientation,
     Scalar,
     SlipSystem,
     Sphere,
@@ -75,7 +75,7 @@ def material(delta_T):
     material = Material(dimensions=[4, 4, 4])
     material = (
         material.create_uniform_field(
-            "orientation", Orientation2.from_euler_angles([0, 0, 0])
+            "orientation", Orientation.from_euler_angles([0, 0, 0])
         )
         .create_uniform_field("phase", 1)
         .insert_feature(
@@ -149,7 +149,7 @@ def test_isotropic_plasticity(
     modulus, shear_modulus, delta_T, thermal_expansion_coefficients, poisson
 ):
     material = Material(dimensions=[8, 8, 8]).create_uniform_field(
-        "orientation", Orientation2.identity()
+        "orientation", Orientation.identity()
     )
     yield_ratio = 0.001
     yield_stress = modulus * yield_ratio
@@ -214,7 +214,7 @@ def test_elastic_viscoplastic(thermal_expansion_coefficients, delta_T):
     df = pd.DataFrame(
         {
             "grain": [1, 2],
-            "orientation": Orientation2.from_euler_angles(
+            "orientation": Orientation.from_euler_angles(
                 [[0, 0, 0], [np.pi / 4, np.pi / 4, 0]]
             ),
         }
@@ -285,7 +285,7 @@ def test_eshelby_problem():
     material = (
         Material([256, 256, 1], sizes=[1023, 1023, 0])
         .create_uniform_field("phase", 1)
-        .create_uniform_field("orientation", Orientation2.identity())
+        .create_uniform_field("orientation", Orientation.identity())
     )
     times = np.array([0, 1])
     temperature1 = Scalar([0, 1000.0], dims="t")

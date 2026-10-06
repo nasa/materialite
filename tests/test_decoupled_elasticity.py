@@ -9,7 +9,7 @@ from materialite import (
     Material,
     Order2SymmetricTensor,
     Order4SymmetricTensor,
-    Orientation2,
+    Orientation,
     Scalar,
     Vector,
 )
@@ -38,7 +38,7 @@ def stiffness_tensor():
 def material(stiffness_tensor):
     # 90, 45, 90 degree rotations about x axis
     angles = Scalar([90, 45, 90]) * np.pi / 180
-    orientations = Orientation2.from_axis_angle(Vector.X, angles)
+    orientations = Orientation.from_axis_angle(Vector.X, angles)
     num_points = 3
     fields = {
         "stiffness": stiffness_tensor.repeat(num_points),

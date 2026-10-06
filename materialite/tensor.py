@@ -1798,7 +1798,7 @@ class Orientation:
         R_mandel[..., 5, 3] = R[..., 0, 1] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 1]
         R_mandel[..., 5, 4] = R[..., 0, 0] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 0]
         R_mandel[..., 5, 5] = R[..., 0, 0] * R[..., 1, 1] + R[..., 0, 1] * R[..., 1, 0]
-        return np.squeeze(R_mandel)
+        return np.squeeze(R_mandel) if len(self.dims_str) == 0 else R_mandel
 
     @property
     def num_dims(self):
@@ -1842,11 +1842,6 @@ class Orientation:
 
     def __iter__(self):
         return OrientationIterator(self.rotation_matrix)
-
-    # def __getitem__(self, slice_):
-    #     if len(self.dims_str) is None:
-    #         raise ValueError("can't index")
-    #     return Orientation(self.rotation_matrix[slice_])
 
     def __getitem__(self, slice_):
 
@@ -1946,510 +1941,6 @@ class Orientation:
             )
         td = plane.cross(direction)
         rotation_matrix = np.stack(
-            [direction.components, td.components, plane.components], axis=-1
-        )
-        return cls(rotation_matrix, dims)
-
-    @classmethod
-    def from_rotation_matrix(cls, rotation_matrix, dims=None):
-        return cls(rotation_matrix, dims)
-
-    @classmethod
-    def from_euler_angles(cls, euler_angles, in_degrees=False, dims=None):
-        """
-        Bunge Euler Angle Convention
-
-        The rotation matrix R formed from these Euler angles is used to take a vector's
-        components relative to a specimen reference frame (v_i) and transform them to that same
-        vector's components relative to the crystal reference frame (v'_i).
-
-        v'_i = R_ij * v_j
-
-        R can also be used to construct the crystal basis *vectors* (e'_i) as a linear combination
-        of specimen basis *vectors* (e_i).
-
-        e'_i = R_ij * e_j
-
-        R can equivalently be written in terms of dot products of the basis vectors.
-
-        R_ij = e'_i . e_j
-
-        """
-        euler_angles = np.asarray(euler_angles, dtype=np.float64)
-        if in_degrees:
-            euler_angles *= np.pi / 180.0
-
-        z1 = euler_angles[..., 0]
-        x2 = euler_angles[..., 1]
-        z3 = euler_angles[..., 2]
-        c1, c2, c3 = np.cos(z1), np.cos(x2), np.cos(z3)
-        s1, s2, s3 = np.sin(z1), np.sin(x2), np.sin(z3)
-
-        rotation_matrix = np.zeros((*euler_angles.shape[:-1], 3, 3))
-        rotation_matrix[..., 0, 0] = c1 * c3 - c2 * s1 * s3
-        rotation_matrix[..., 0, 1] = c3 * s1 + c1 * c2 * s3
-        rotation_matrix[..., 0, 2] = s2 * s3
-        rotation_matrix[..., 1, 0] = -c1 * s3 - c2 * c3 * s1
-        rotation_matrix[..., 1, 1] = c1 * c2 * c3 - s1 * s3
-        rotation_matrix[..., 1, 2] = c3 * s2
-        rotation_matrix[..., 2, 0] = s1 * s2
-        rotation_matrix[..., 2, 1] = -c1 * s2
-        rotation_matrix[..., 2, 2] = c2
-
-        return cls(np.squeeze(rotation_matrix), dims)
-
-    @classmethod
-    def from_rotation_vector(cls, rotation_vector):
-        """
-        Construct an Orientation from a rotation vector (axis-angle representation).
-
-        The rotation vector is a vector where:
-        - The direction represents the axis of rotation
-        - The magnitude represents the angle of rotation (in radians)
-
-        The conversion uses Rodrigues' rotation formula:
-        R = I - sin(θ) * K + (1 - cos(θ)) * K²
-
-        where θ is the angle and K is the skew-symmetric matrix of the unit axis.
-
-        Parameters
-        ----------
-        rotation_vector : array_like
-            Rotation vector(s) with shape (..., 3) where the last dimension
-            contains the rotation vector components.
-
-        Returns
-        -------
-        Orientation
-            An Orientation object constructed from the rotation vector(s).
-        """
-
-        rotation_vector = Vector(rotation_vector)
-        angle = rotation_vector.norm
-
-        # A bit hacky for now to avoid nans
-        safer_angle = angle + 1e-12
-        unit_axis = rotation_vector / safer_angle
-
-        K = unit_axis.cross_product_tensor
-
-        rotation = Order2Tensor.identity() - angle.sin * K + (1 - angle.cos) * K @ K
-
-        return cls(rotation.components, rotation.dims_str)
-
-    @classmethod
-    def random(cls, shape=1, rng=np.random.default_rng(), dims=None):
-        # Check if iterable to allow the user to pass in an int
-        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
-
-        # Generate random Euler angles using uniform distribution on SO(3)
-        z1 = rng.random(shape) * 2.0 * np.pi
-        cos_x2 = rng.random(shape) * 2.0 - 1.0
-        x2 = np.arccos(cos_x2)
-        z3 = rng.random(shape) * 2.0 * np.pi
-
-        # Stack Euler angles and create orientations
-        euler_angles = np.stack([z1, x2, z3], axis=-1)
-
-        return cls.from_euler_angles(euler_angles, dims=dims)
-
-    @classmethod
-    def from_list(cls, orientations):
-        rotation_matrices = [o.rotation_matrix for o in orientations]
-        return cls(rotation_matrices)
-
-    @property
-    def euler_angles(self):
-        # Source: "Euler Angle Formulas", David Eberly
-        R = self.rotation_matrix
-        n = self.shape
-
-        R22_less_than_one = R[..., 2, 2] < 1.0
-        R22_equals_one = np.logical_not(R22_less_than_one)
-
-        R22_greater_than_negative_one = R[..., 2, 2] > -1.0
-        R22_equals_negative_one = np.logical_not(R22_greater_than_negative_one)
-
-        R22_default = np.logical_and(R22_less_than_one, R22_greater_than_negative_one)
-        z1 = np.arctan2(R[..., 2, 0], -R[..., 2, 1])
-        x2 = np.arccos(R[..., 2, 2])
-        z3 = np.arctan2(R[..., 0, 2], R[..., 1, 2])
-        eulers_default = np.moveaxis(np.array([z1, x2, z3]), 0, -1)
-
-        if np.all(R22_default):
-            return np.squeeze(eulers_default)
-
-        eulers_negative_one = np.array(
-            [np.arctan2(R[..., 1, 0], R[..., 0, 0]), np.pi * np.ones(n), np.zeros(n)]
-        )
-        eulers_negative_one = np.moveaxis(eulers_negative_one, 0, -1)
-        eulers_one = np.array(
-            [np.arctan2(-R[..., 1, 0], R[..., 0, 0]), np.zeros(n), np.zeros(n)]
-        )
-        eulers_one = np.moveaxis(eulers_one, 0, -1)
-
-        # Three conditions rolled into a messy operation
-        return np.squeeze(
-            np.einsum("..., ...j -> ...j", R22_default, eulers_default)
-            + np.einsum(
-                "..., ...j -> ...j", R22_equals_negative_one, eulers_negative_one
-            )
-            + np.einsum("..., ...j -> ...j", R22_equals_one, eulers_one)
-        )
-
-    @property
-    def euler_angles_in_degrees(self):
-        return self.euler_angles * 180.0 / np.pi
-
-    @property
-    def rotation_vector(self):
-        """
-        Convert the rotation matrix to a rotation vector (axis-angle representation).
-
-        The rotation vector is a vector where the direction represents the axis
-        of rotation and the magnitude represents the angle in radians.
-
-        Returns
-        -------
-        ndarray
-            Rotation vector(s) with shape (..., 3).
-        """
-        R = self.rotation_matrix
-
-        # Compute angle from trace: trace(R) = 1 + 2*cos(θ)
-        trace = self.trace.components
-
-        # Just letting AI do its thing below for now but there are better ways
-        angle = np.arccos(np.clip((trace - 1.0) / 2.0, -1.0, 1.0))
-
-        # Extract axis from skew-symmetric part of R
-        # R - R^T = 2 * sin(θ) * K, where K is the skew-symmetric matrix of the axis
-        axis = np.zeros((*R.shape[:-2], 3))
-        axis[..., 0] = R[..., 2, 1] - R[..., 1, 2]
-        axis[..., 1] = R[..., 0, 2] - R[..., 2, 0]
-        axis[..., 2] = R[..., 1, 0] - R[..., 0, 1]
-
-        # Normalize axis (handle small angles where sin(θ) ≈ 0)
-        sin_angle = np.sin(angle)
-        small_angle = np.abs(sin_angle) < 1e-10
-
-        # For small angles, the axis direction doesn't matter (rotation is ~identity)
-        # For angles near π, use a different extraction method
-        near_pi = np.abs(angle - np.pi) < 1e-6
-
-        # Standard case: divide by 2*sin(θ)
-        axis_norm = 2.0 * sin_angle
-        axis = np.where(
-            small_angle[..., np.newaxis],
-            axis,  # Keep unnormalized for small angles (will be scaled by small angle anyway)
-            axis / np.where(small_angle, 1.0, axis_norm)[..., np.newaxis],
-        )
-
-        # Handle angles near π using diagonal elements
-        # For θ ≈ π: R_ii = 2*k_i^2 - 1, so k_i = sqrt((R_ii + 1) / 2)
-        if np.any(near_pi):
-            diag_axis = np.zeros_like(axis)
-            diag_axis[..., 0] = np.sqrt(np.clip((R[..., 0, 0] + 1.0) / 2.0, 0, 1))
-            diag_axis[..., 1] = np.sqrt(np.clip((R[..., 1, 1] + 1.0) / 2.0, 0, 1))
-            diag_axis[..., 2] = np.sqrt(np.clip((R[..., 2, 2] + 1.0) / 2.0, 0, 1))
-
-            # Determine signs from off-diagonal elements
-            # R_ij = 2*k_i*k_j for i ≠ j when θ = π
-            diag_axis[..., 1] = np.where(
-                R[..., 0, 1] < 0, -diag_axis[..., 1], diag_axis[..., 1]
-            )
-            diag_axis[..., 2] = np.where(
-                R[..., 0, 2] < 0, -diag_axis[..., 2], diag_axis[..., 2]
-            )
-
-            axis = np.where(near_pi[..., np.newaxis], diag_axis, axis)
-
-        # Scale axis by angle to get rotation vector
-        rotation_vector = axis * angle[..., np.newaxis]
-
-        return Vector(np.squeeze(rotation_vector), self.dims_str)
-
-    @property
-    def trace(self):
-        return Scalar(np.einsum("...ii -> ...", self.rotation_matrix), self.dims_str)
-
-    @property
-    def inverse(self):
-        return Orientation(np.swapaxes(self.rotation_matrix, -1, -2), self.dims_str)
-
-    @property
-    def inv(self):
-        return self.inverse
-
-    def __repr__(self):
-        dimensions = ", ".join([DIM_NAMES(i) for i in self.dims_str])
-        return (
-            f"{type(self).__name__}("
-            + str(np.round(self.euler_angles, 3))
-            + f", dims: ({dimensions}), Euler angles shape: {self.euler_angles.shape})"
-        )
-
-    def __matmul__(self, orientation):
-        if not isinstance(orientation, Orientation):
-            return NotImplemented
-        u = order_dims(self.dims_str, orientation.dims_str)
-        other_indices = orientation.dims_str + "jk"
-        output_indices = u + "ik"
-        return Orientation(
-            np.einsum(
-                f"{self.indices_str}, {other_indices} -> {output_indices}",
-                self.rotation_matrix,
-                orientation.rotation_matrix,
-                optimize=True,
-            ),
-            u,
-        )
-
-    def repeat(self, shape, dims=None):
-
-        # Only allow repeat on tensors with no dimensions
-        if self.dims_str:
-            raise ValueError(
-                f"Cannot repeat {type(self).__name__} that already has dimensions '{self.dims_str}'. "
-                f"Repeat only works on tensors with no existing dimensions."
-            )
-
-        # Check if iterable to allow the user to pass in an int
-        shape = tuple(shape) if hasattr(shape, "__iter__") else (shape,)
-
-        if dims is None:
-            dims = _default_dims(len(shape))
-
-        # Add singleton dimensions at the front
-        expanded = self.rotation_matrix[(np.newaxis,) * len(shape)]
-
-        # Broadcast to final shape
-        final_shape = shape + self.rotation_matrix.shape
-
-        # A copy of the broadcasted array is needed to avoid setitem issues for a view
-        # There are ways to avoid this, but it's the simplest solution
-        repeated_components = np.broadcast_to(expanded, final_shape).copy()
-
-        return type(self)(repeated_components, dims)
-
-
-class OrientationIterator:
-    def __init__(self, rotation_matrix):
-        self.idx = 0
-        self.rotation_matrix = rotation_matrix
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        self.idx += 1
-        try:
-            return Orientation(self.rotation_matrix[self.idx - 1])
-        except IndexError:
-            self.idx = 0
-            raise StopIteration
-
-
-class Orientation2:
-    __array_ufunc__ = None
-
-    def __init__(self, rotation_matrix, dims=None):
-        if isinstance(rotation_matrix, Orientation2):
-            self.rotation_matrix = rotation_matrix.rotation_matrix.copy()
-            self.indices_str = rotation_matrix.indices_str
-            self.dims_str = rotation_matrix.dims_str
-            return
-        self.rotation_matrix = np.asarray(rotation_matrix)
-        if dims is None:
-            num_indices = len(self.rotation_matrix.shape) - 2
-            dims = _default_dims(num_indices)
-        self.dims_str = dims
-        self.indices_str = dims + "ij"
-        matrix_shape = self.rotation_matrix.shape
-        if self.num_indices != len(matrix_shape):
-            raise ValueError(
-                f"tried to create Orientation2 with dimensions {self.indices_str} but rotation matrix has shape {matrix_shape}"
-            )
-
-    def copy(self):
-        return deepcopy(self)
-
-    @property
-    def rotation_matrix_mandel(self):
-        R_mandel = np.zeros((*self.shape, 6, 6))
-        R = self.rotation_matrix
-        r2 = np.sqrt(2)
-        R_mandel[..., :3, :3] = R**2
-        R_mandel[..., 0, 3] = r2 * R[..., 0, 1] * R[..., 0, 2]
-        R_mandel[..., 0, 4] = r2 * R[..., 0, 0] * R[..., 0, 2]
-        R_mandel[..., 0, 5] = r2 * R[..., 0, 0] * R[..., 0, 1]
-        R_mandel[..., 1, 3] = r2 * R[..., 1, 1] * R[..., 1, 2]
-        R_mandel[..., 1, 4] = r2 * R[..., 1, 0] * R[..., 1, 2]
-        R_mandel[..., 1, 5] = r2 * R[..., 1, 0] * R[..., 1, 1]
-        R_mandel[..., 2, 3] = r2 * R[..., 2, 1] * R[..., 2, 2]
-        R_mandel[..., 2, 4] = r2 * R[..., 2, 0] * R[..., 2, 2]
-        R_mandel[..., 2, 5] = r2 * R[..., 2, 0] * R[..., 2, 1]
-        R_mandel[..., 3, 0] = r2 * R[..., 1, 0] * R[..., 2, 0]
-        R_mandel[..., 3, 1] = r2 * R[..., 1, 1] * R[..., 2, 1]
-        R_mandel[..., 3, 2] = r2 * R[..., 1, 2] * R[..., 2, 2]
-        R_mandel[..., 4, 0] = r2 * R[..., 0, 0] * R[..., 2, 0]
-        R_mandel[..., 4, 1] = r2 * R[..., 0, 1] * R[..., 2, 1]
-        R_mandel[..., 4, 2] = r2 * R[..., 0, 2] * R[..., 2, 2]
-        R_mandel[..., 5, 0] = r2 * R[..., 0, 0] * R[..., 1, 0]
-        R_mandel[..., 5, 1] = r2 * R[..., 0, 1] * R[..., 1, 1]
-        R_mandel[..., 5, 2] = r2 * R[..., 0, 2] * R[..., 1, 2]
-        R_mandel[..., 3, 3] = R[..., 1, 1] * R[..., 2, 2] + R[..., 1, 2] * R[..., 2, 1]
-        R_mandel[..., 3, 4] = R[..., 1, 0] * R[..., 2, 2] + R[..., 1, 2] * R[..., 2, 0]
-        R_mandel[..., 3, 5] = R[..., 1, 0] * R[..., 2, 1] + R[..., 1, 1] * R[..., 2, 0]
-        R_mandel[..., 4, 3] = R[..., 0, 1] * R[..., 2, 2] + R[..., 0, 2] * R[..., 2, 1]
-        R_mandel[..., 4, 4] = R[..., 0, 0] * R[..., 2, 2] + R[..., 0, 2] * R[..., 2, 0]
-        R_mandel[..., 4, 5] = R[..., 0, 0] * R[..., 2, 1] + R[..., 0, 1] * R[..., 2, 0]
-        R_mandel[..., 5, 3] = R[..., 0, 1] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 1]
-        R_mandel[..., 5, 4] = R[..., 0, 0] * R[..., 1, 2] + R[..., 0, 2] * R[..., 1, 0]
-        R_mandel[..., 5, 5] = R[..., 0, 0] * R[..., 1, 1] + R[..., 0, 1] * R[..., 1, 0]
-        return np.squeeze(R_mandel) if len(self.dims_str) == 0 else R_mandel
-
-    @property
-    def num_dims(self):
-        return len(self.dims_str)
-
-    @property
-    def num_indices(self):
-        return len(self.indices_str)
-
-    @property
-    def shape(self):
-        if self.num_dims == 0:
-            return ()
-        return self.rotation_matrix.shape[: self.num_dims]
-
-    def reorder(self, dims):
-
-        # If order is already correct, just return the rotation
-        if dims == self.dims_str:
-            return self
-
-        # Confirm that the new dims are a permutation of the original
-        if set(dims) != set(self.dims_str):
-            raise ValueError(
-                f"New dimension order '{dims}' must contain the same dimensions as "
-                f"the original rotation's '{self.dims_str}'"
-            )
-
-        # Use einsum to reorder (ending ellipsis for component dimensions)
-        new_components = np.einsum(
-            f"{self.dims_str}... -> {dims}...", self.rotation_matrix
-        )
-
-        return type(self)(new_components, dims)
-
-    def __len__(self):
-        if self.num_dims == 0:
-            return None
-        else:
-            return len(self.rotation_matrix)
-
-    def __iter__(self):
-        return Orientation2Iterator(self.rotation_matrix)
-
-    def __getitem__(self, slice_):
-
-        self._check_valid_slice(slice_)
-        components = self.rotation_matrix[slice_]
-
-        # Figure out which dimensions remain after slicing
-        dims = self._get_remaining_dims(slice_)
-
-        return type(self)(components, dims)
-
-    def _get_remaining_dims(self, slice_):
-        """
-        Determine which dimensions survive the slicing operation.
-
-        Rules: Integer indices remove dimensions, slices/lists/arrays keep them.
-        """
-        if isinstance(slice_, (int, np.integer)):
-            # Single integer removes the first dimension
-            return self.dims_str[1:]
-        elif isinstance(slice_, slice):
-            # Slice notation (e.g., [:]) keeps all dimensions
-            return self.dims_str
-        elif isinstance(slice_, (list, np.ndarray)):
-            # Fancy indexing keeps the dimension structure
-            return self.dims_str
-        elif isinstance(slice_, tuple):
-            # Multiple indices - check each one individually
-            remaining_dims = []
-            for i, s in enumerate(slice_):
-                if i >= len(self.dims_str):
-                    break  # Don't go beyond our named dimensions
-
-                # Determine if this index removes or keeps the dimension
-                if isinstance(s, (int, np.integer)):
-                    # Integer removes the dimension (skip it)
-                    pass
-                elif isinstance(s, (slice, list, np.ndarray)):
-                    # Slice/fancy indexing keeps the dimension
-                    remaining_dims.append(self.dims_str[i])
-
-            return "".join(remaining_dims)
-        else:
-            # Unknown slice type - assume it keeps dimensions
-            return self.dims_str
-
-    def _check_valid_slice(self, slice_):
-
-        # Tensors with no dimensions can't be indexed
-        if not self.dims_str:
-            raise ValueError(f"Cannot index {type(self).__name__} with no dimensions")
-
-        # Simple slice types are always valid
-        if isinstance(slice_, (Number, slice, list, np.ndarray)):
-            return
-
-        # For tuple slices, check bounds
-        if isinstance(slice_, tuple) and len(slice_) > len(self.dims_str):
-            dims_desc = ", ".join([DIM_NAMES(d) for d in self.dims_str])
-            raise ValueError(
-                f"Provided {len(slice_)} indices to {type(self).__name__} "
-                f"with only {len(self.dims_str)} dimensions ({dims_desc})"
-            )
-
-        # Ellipsis is not supported (would complicate dimension tracking)
-        if slice_ is ...:
-            raise ValueError(
-                f"Ellipsis indexing is not supported for {type(self).__name__}"
-            )
-
-        # Check for ellipsis in tuple slices
-        if isinstance(slice_, tuple):
-            for element in slice_:
-                if element is ...:
-                    raise ValueError(
-                        f"Ellipsis indexing is not supported for {type(self).__name__}"
-                    )
-
-        return
-
-    def __setitem__(self, key, item):
-        if not isinstance(item, Orientation2):
-            raise ValueError(f"tried to set Orientation2 with {type(item)}")
-        self.rotation_matrix[key] = item.rotation_matrix
-
-    @classmethod
-    def identity(cls):
-        return cls(np.eye(3))
-
-    @classmethod
-    def from_miller_indices(cls, plane, direction, dims=None):
-        plane = Vector(plane).unit
-        direction = Vector(direction).unit
-        if plane.shape != direction.shape:
-            raise ValueError(
-                "Must provide same number of plane(s) and direction(s) to construct Orientation2(s) from Miller indices"
-            )
-        td = plane.cross(direction)
-        rotation_matrix = np.stack(
             [direction.components, td.components, plane.components], axis=-2
         )
         return cls(rotation_matrix, dims)
@@ -2463,20 +1954,35 @@ class Orientation2:
         """
         Bunge Euler Angle Convention
 
-        The rotation matrix Q formed from these Euler angles is used to take a vector's
+        The rotation matrix R formed from these Euler angles is used to take a vector's
         components relative to a crystal reference frame (v'_i) and transform them to that same
         vector's components relative to the specimen reference frame (v_i).
 
-        v_i = Q_ij * v'_j
+        v_i = R_ij * v'_j
 
-        Q can also be used to construct the crystal basis *vectors* (e'_j) as a linear combination
+        R can also be used to construct the crystal basis *vectors* (e'_j) as a linear combination
         of specimen basis *vectors* (e_i).
 
-        e'_j = Q_ij * e_i
+        e'_j = R_ij * e_i
 
-        Q can equivalently be written in terms of dot products of the basis vectors.
+        R can equivalently be written in terms of dot products of the basis vectors.
 
-        Q_ij = e_i . e'_j
+        R_ij = e_i . e'_j
+
+        The actual tensor Q that performs the Euler angle rotation sequence has components in the
+        basis of the specimen reference frame given by the transpose of this rotation matrix as its
+        components. Therefore, Q has components R_ji and is used to transform the basis vectors
+        in the following way,
+
+        e'_j = Q @ e_j
+
+        e'_j = Q_ji * e_i (transpose usage of the above rotation matrix)
+
+        The Q_ij are just the components of this tensor and is what is used in the final
+        rotation_matrix variable below.
+
+        Apologies for any confusion resulting from the above notation.
+        We will be updating all documentation regarding rotations in an upcoming release.
 
         """
         euler_angles = np.asarray(euler_angles, dtype=np.float64)
@@ -2499,14 +2005,18 @@ class Orientation2:
         rotation_matrix[..., 2, 0] = s2 * s3
         rotation_matrix[..., 2, 1] = c3 * s2
         rotation_matrix[..., 2, 2] = c2
-        rotation_matrix = np.squeeze(rotation_matrix) if euler_angles.shape == (3,) else rotation_matrix
+        rotation_matrix = (
+            np.squeeze(rotation_matrix)
+            if euler_angles.shape == (3,)
+            else rotation_matrix
+        )
 
         return cls(rotation_matrix, dims)
 
     @classmethod
     def from_rotation_vector(cls, rotation_vector):
         """
-        Construct an Orientation2 from a rotation vector (axis-angle representation).
+        Construct an Orientation from a rotation vector (axis-angle representation).
 
         The rotation vector is a vector where:
         - The direction represents the axis of rotation
@@ -2553,7 +2063,9 @@ class Orientation2:
 
         # Stack Euler angles and create rotations
         euler_angles = np.stack([z1, x2, z3], axis=-1)
-        euler_angles = np.squeeze(euler_angles) if shape==1 and dims is None else euler_angles
+        euler_angles = (
+            np.squeeze(euler_angles) if shape == 1 and dims is None else euler_angles
+        )
 
         return cls.from_euler_angles(euler_angles, dims=dims)
 
@@ -2564,7 +2076,7 @@ class Orientation2:
 
     @property
     def euler_angles(self):
-        # Source: "Euler Angle Formulas", David Eberly (indices swapped for Q = R^T)
+        # Source: "Euler Angle Formulas", David Eberly (indices swapped for Q_ij = R_ji)
         Q = self.rotation_matrix
         n = self.shape
 
@@ -2581,7 +2093,11 @@ class Orientation2:
         eulers_default = np.moveaxis(np.array([z1, x2, z3]), 0, -1)
 
         if np.all(Q22_default):
-            return np.squeeze(eulers_default) if len(self.dims_str) == 0 else eulers_default
+            return (
+                np.squeeze(eulers_default)
+                if len(self.dims_str) == 0
+                else eulers_default
+            )
 
         eulers_negative_one = np.array(
             [np.arctan2(Q[..., 0, 1], Q[..., 0, 0]), np.pi * np.ones(n), np.zeros(n)]
@@ -2672,7 +2188,9 @@ class Orientation2:
         # Scale axis by angle to get rotation vector
         rotation_vector = axis * angle[..., np.newaxis]
 
-        rotation_vector = np.squeeze(rotation_vector) if len(self.dims_str) == 0 else rotation_vector
+        rotation_vector = (
+            np.squeeze(rotation_vector) if len(self.dims_str) == 0 else rotation_vector
+        )
 
         return Vector(rotation_vector, self.dims_str)
 
@@ -2682,7 +2200,7 @@ class Orientation2:
 
     @property
     def inverse(self):
-        return Orientation2(np.swapaxes(self.rotation_matrix, -1, -2), self.dims_str)
+        return Orientation(np.swapaxes(self.rotation_matrix, -1, -2), self.dims_str)
 
     @property
     def inv(self):
@@ -2697,12 +2215,12 @@ class Orientation2:
         )
 
     def __matmul__(self, rotation):
-        if not isinstance(rotation, Orientation2):
+        if not isinstance(rotation, Orientation):
             return NotImplemented
         u = order_dims(self.dims_str, rotation.dims_str)
         other_indices = rotation.dims_str + "jk"
         output_indices = u + "ik"
-        return Orientation2(
+        return Orientation(
             np.einsum(
                 f"{self.indices_str}, {other_indices} -> {output_indices}",
                 self.rotation_matrix,
@@ -2740,7 +2258,7 @@ class Orientation2:
         return type(self)(repeated_components, dims)
 
 
-class Orientation2Iterator:
+class OrientationIterator:
     def __init__(self, rotation_matrix):
         self.idx = 0
         self.rotation_matrix = rotation_matrix
@@ -2751,7 +2269,7 @@ class Orientation2Iterator:
     def __next__(self):
         self.idx += 1
         try:
-            return Orientation2(self.rotation_matrix[self.idx - 1])
+            return Orientation(self.rotation_matrix[self.idx - 1])
         except IndexError:
             self.idx = 0
             raise StopIteration
@@ -2760,7 +2278,7 @@ class Orientation2Iterator:
 class PermutationTensor:
     """
     The 3D permutation (Levi-Civita) tensor, viewed as a map from a vector to
-    a skew-symmetric tensor. We can characterize epsilon as:
+    a skew-symmetric tensor. It can be characterized epsilon as:
     For any right-handed orthonormal triad {a, b, c}
     satisfying epsilon(a, b, c) = 1,
     epsilon(c) = a wedge b
