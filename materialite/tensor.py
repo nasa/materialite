@@ -958,28 +958,6 @@ class Vector(Tensor):
 
         return Order2Tensor(components, self.dims_str)
 
-    def to_crystal_frame(self, orientations):
-        output_dims, output_indices = self._get_transformation_indices(orientations)
-        orientation_indices = orientations.dims_str + "mj"
-        components = np.einsum(
-            f"{orientation_indices}, {self.indices_str} -> {output_indices}",
-            orientations.rotation_matrix,
-            self.components,
-            optimize=True,
-        )
-        return Vector(components, output_dims)
-
-    def to_specimen_frame(self, orientations):
-        output_dims, output_indices = self._get_transformation_indices(orientations)
-        orientation_indices = orientations.dims_str + "jm"
-        components = np.einsum(
-            f"{orientation_indices}, {self.indices_str} -> {output_indices}",
-            orientations.rotation_matrix,
-            self.components,
-            optimize=True,
-        )
-        return Vector(components, output_dims)
-
     def rotate(self, rotation):
         output_dims, output_indices = self._get_transformation_indices(rotation)
         rotation_indices = rotation.dims_str + "mj"
@@ -1145,32 +1123,6 @@ class Order2Tensor(Tensor):
             ),
             u,
         )
-
-    def to_crystal_frame(self, orientations):
-        output_dims, output_indices = self._get_transformation_indices(orientations)
-        orientation_indices_1 = orientations.dims_str + "mi"
-        orientation_indices_2 = orientations.dims_str + "nj"
-        components = np.einsum(
-            f"{orientation_indices_1}, {orientation_indices_2}, {self.indices_str} -> {output_indices}",
-            orientations.rotation_matrix,
-            orientations.rotation_matrix,
-            self.components,
-            optimize=True,
-        )
-        return Order2Tensor(components, output_dims)
-
-    def to_specimen_frame(self, orientations):
-        output_dims, output_indices = self._get_transformation_indices(orientations)
-        orientation_indices_1 = orientations.dims_str + "im"
-        orientation_indices_2 = orientations.dims_str + "jn"
-        components = np.einsum(
-            f"{orientation_indices_1}, {orientation_indices_2}, {self.indices_str} -> {output_indices}",
-            orientations.rotation_matrix,
-            orientations.rotation_matrix,
-            self.components,
-            optimize=True,
-        )
-        return Order2Tensor(components, output_dims)
 
     def rotate(self, rotation):
         output_dims, output_indices = self._get_transformation_indices(rotation)
@@ -1414,36 +1366,6 @@ class Order2SymmetricTensor(Tensor):
             output_indices[:-2],
         )
 
-    def to_crystal_frame(self, orientations):
-        output_dims, output_indices, self_indices = self._get_transformation_indices(
-            orientations
-        )
-        orientation_indices_1 = orientations.dims_str + "mi"
-        orientation_indices_2 = orientations.dims_str + "nj"
-        components = np.einsum(
-            f"{orientation_indices_1}, {orientation_indices_2}, {self_indices} -> {output_indices}",
-            orientations.rotation_matrix,
-            orientations.rotation_matrix,
-            self.cartesian,
-            optimize=True,
-        )
-        return Order2SymmetricTensor._from_cartesian(components, output_dims)
-
-    def to_specimen_frame(self, orientations):
-        output_dims, output_indices, self_indices = self._get_transformation_indices(
-            orientations
-        )
-        orientation_indices_1 = orientations.dims_str + "im"
-        orientation_indices_2 = orientations.dims_str + "jn"
-        components = np.einsum(
-            f"{orientation_indices_1}, {orientation_indices_2}, {self_indices} -> {output_indices}",
-            orientations.rotation_matrix,
-            orientations.rotation_matrix,
-            self.cartesian,
-            optimize=True,
-        )
-        return Order2SymmetricTensor._from_cartesian(components, output_dims)
-
     def rotate(self, rotation):
         output_dims, output_indices, self_indices = self._get_transformation_indices(
             rotation
@@ -1685,38 +1607,6 @@ class Order4SymmetricTensor(Tensor):
         moduli = self.directional_modulus(unit_axial)
 
         return -moduli * (axial_tensor * (self.inv @ transverse_tensor))
-
-    def to_crystal_frame(self, orientations):
-        output_dims, output_indices, self_indices = self._get_transformation_indices(
-            orientations
-        )
-        orientation_indices_1 = orientations.dims_str + "ai"
-        orientation_indices_2 = orientations.dims_str + "bj"
-        R = orientations.rotation_matrix_mandel
-        components = np.einsum(
-            f"{orientation_indices_1}, {orientation_indices_2}, {self_indices} -> {output_indices}",
-            R,
-            R,
-            self.components,
-            optimize=True,
-        )
-        return Order4SymmetricTensor(components, output_dims)
-
-    def to_specimen_frame(self, orientations):
-        output_dims, output_indices, self_indices = self._get_transformation_indices(
-            orientations
-        )
-        orientation_indices_1 = orientations.dims_str + "ia"
-        orientation_indices_2 = orientations.dims_str + "jb"
-        R = orientations.rotation_matrix_mandel
-        components = np.einsum(
-            f"{orientation_indices_1}, {orientation_indices_2}, {self_indices} -> {output_indices}",
-            R,
-            R,
-            self.components,
-            optimize=True,
-        )
-        return Order4SymmetricTensor(components, output_dims)
 
     def rotate(self, rotation):
         output_dims, output_indices, self_indices = self._get_transformation_indices(
